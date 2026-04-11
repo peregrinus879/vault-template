@@ -165,7 +165,7 @@ sudo pacman -S rsync
 #### Clone the public repo
 
 ```bash
-cd ~/projects/repos/templates
+cd ~/projects/repos/dotfiles
 git clone git@github.com:<owner>/vault-template.git
 ```
 
@@ -174,15 +174,15 @@ git clone git@github.com:<owner>/vault-template.git
 Generate a dedicated SSH key for unattended push:
 
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/vault-template-deploy-key -N "" -C "vault-template-sync"
-cd ~/projects/repos/templates/vault-template && git config core.sshCommand "ssh -i ~/.ssh/vault-template-deploy-key -o IdentitiesOnly=yes"
-gh repo deploy-key add ~/.ssh/vault-template-deploy-key.pub --repo <owner>/vault-template --title "vault-template-sync" --allow-write
+ssh-keygen -t ed25519 -f ~/.ssh/obsidian-vault-deploy-key -N "" -C "obsidian-vault-sync"
+cd ~/projects/repos/dotfiles/vault-template && git config core.sshCommand "ssh -i ~/.ssh/obsidian-vault-deploy-key -o IdentitiesOnly=yes"
+gh repo deploy-key add ~/.ssh/obsidian-vault-deploy-key.pub --repo <owner>/vault-template --title "obsidian-vault-sync" --allow-write
 ```
 
 Verify push works without passphrase prompt:
 
 ```bash
-cd ~/projects/repos/templates/vault-template && git push --dry-run origin main
+cd ~/projects/repos/dotfiles/vault-template && git push --dry-run origin main
 ```
 
 #### Post-commit hook
@@ -203,7 +203,7 @@ Create `~/vault/.git/hooks/post-commit`:
 
 set -euo pipefail
 
-PUBLIC="$HOME/projects/repos/templates/vault-template"
+PUBLIC="$HOME/projects/repos/dotfiles/vault-template"
 
 # Bail if the public repo isn't cloned on this machine
 [ -d "$PUBLIC/.git" ] || exit 0
@@ -268,7 +268,7 @@ echo "PRIVATE" > ~/vault/journal/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: leak check"
 
 # Verify it did NOT appear in the public repo
-ls ~/projects/repos/templates/vault-template/journal/
+ls ~/projects/repos/dotfiles/vault-template/journal/
 # Expected: only .gitkeep
 
 # Clean up
@@ -284,7 +284,7 @@ echo "<!-- test -->" >> ~/vault/templates/daily.md
 cd ~/vault && git add -A && git commit -m "test: sync check"
 
 # Verify it appeared in the public repo
-tail -1 ~/projects/repos/templates/vault-template/templates/daily.md
+tail -1 ~/projects/repos/dotfiles/vault-template/templates/daily.md
 # Expected: <!-- test -->
 
 # Clean up
