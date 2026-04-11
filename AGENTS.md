@@ -18,7 +18,7 @@ It does not own:
 - Neovim plugin configuration (lives in `dotfiles-arch`)
 - Syncthing configuration (system service on the remote hub)
 - Git auto-commit timer (systemd user unit on the remote hub)
-- Public template repo (`obsidian-vault`); synced automatically via post-commit hook
+- Public template repo (`vault-template`); synced automatically via post-commit hook
 
 ## Key Files
 

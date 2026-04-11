@@ -154,7 +154,7 @@ journalctl --user -u vault-autocommit.service -n 10
 
 ### 1.5 Public Template Sync
 
-A public repo ([obsidian-vault](https://github.com/peregrinus879/obsidian-vault)) mirrors the vault's structure, templates, config, and docs. Note content is not synced. A git post-commit hook handles this automatically after every commit.
+A public repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and docs. Note content is not synced. A git post-commit hook handles this automatically after every commit.
 
 #### Install rsync
 
@@ -166,7 +166,7 @@ sudo pacman -S rsync
 
 ```bash
 cd ~/projects/repos/dotfiles
-git clone git@github.com:<owner>/obsidian-vault.git
+git clone git@github.com:<owner>/vault-template.git
 ```
 
 #### Deploy key
@@ -175,14 +175,14 @@ Generate a dedicated SSH key for unattended push:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/obsidian-vault-deploy-key -N "" -C "obsidian-vault-sync"
-cd ~/projects/repos/dotfiles/obsidian-vault && git config core.sshCommand "ssh -i ~/.ssh/obsidian-vault-deploy-key -o IdentitiesOnly=yes"
-gh repo deploy-key add ~/.ssh/obsidian-vault-deploy-key.pub --repo <owner>/obsidian-vault --title "obsidian-vault-sync" --allow-write
+cd ~/projects/repos/dotfiles/vault-template && git config core.sshCommand "ssh -i ~/.ssh/obsidian-vault-deploy-key -o IdentitiesOnly=yes"
+gh repo deploy-key add ~/.ssh/obsidian-vault-deploy-key.pub --repo <owner>/vault-template --title "obsidian-vault-sync" --allow-write
 ```
 
 Verify push works without passphrase prompt:
 
 ```bash
-cd ~/projects/repos/dotfiles/obsidian-vault && git push --dry-run origin main
+cd ~/projects/repos/dotfiles/vault-template && git push --dry-run origin main
 ```
 
 #### Post-commit hook
@@ -203,7 +203,7 @@ Create `~/vault/.git/hooks/post-commit`:
 
 set -euo pipefail
 
-PUBLIC="$HOME/projects/repos/dotfiles/obsidian-vault"
+PUBLIC="$HOME/projects/repos/dotfiles/vault-template"
 
 # Bail if the public repo isn't cloned on this machine
 [ -d "$PUBLIC/.git" ] || exit 0
@@ -268,7 +268,7 @@ echo "PRIVATE" > ~/vault/journal/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: leak check"
 
 # Verify it did NOT appear in the public repo
-ls ~/projects/repos/dotfiles/obsidian-vault/journal/
+ls ~/projects/repos/dotfiles/vault-template/journal/
 # Expected: only .gitkeep
 
 # Clean up
@@ -284,7 +284,7 @@ echo "<!-- test -->" >> ~/vault/templates/daily.md
 cd ~/vault && git add -A && git commit -m "test: sync check"
 
 # Verify it appeared in the public repo
-tail -1 ~/projects/repos/dotfiles/obsidian-vault/templates/daily.md
+tail -1 ~/projects/repos/dotfiles/vault-template/templates/daily.md
 # Expected: <!-- test -->
 
 # Clean up

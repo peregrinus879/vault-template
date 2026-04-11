@@ -133,7 +133,7 @@ vault-autocommit.timer (hourly, on the hour)
 
 ## Public Template
 
-A public template repo ([obsidian-vault](https://github.com/peregrinus879/obsidian-vault)) mirrors the vault's structure, templates, config, and documentation. It contains no note content.
+A public template repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and documentation. It contains no note content.
 
 A git post-commit hook syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, and documentation are copied. The public repo has its own deploy key for unattended push.
 
@@ -159,7 +159,7 @@ See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
 - `SETUP.md` - full setup guide with commands and app links
 - `AGENTS.md` - canonical assistant context
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
-- [obsidian-vault](https://github.com/peregrinus879/obsidian-vault) - public template repo
+- [vault-template](https://github.com/peregrinus879/vault-template) - public template repo
 - [Zettelkasten introduction](https://zettelkasten.de/introduction/)
 - [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim)
 - [git-crypt](https://github.com/AGWA/git-crypt)
