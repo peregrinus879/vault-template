@@ -1,11 +1,11 @@
 # vault
 
-Knowledge vault using the Zettelkasten method, managed with [Neovim](https://github.com/neovim/neovim) ([obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim)) and [Obsidian](https://obsidian.md).
+Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [Neovim](https://github.com/neovim/neovim) ([obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim)).
 
 ## Stack
 
-- **Editor (terminal)**: Neovim + obsidian.nvim + render-markdown.nvim
 - **Editor (GUI/mobile)**: Obsidian
+- **Editor (terminal)**: Neovim + obsidian.nvim + render-markdown.nvim
 - **Sync**: Syncthing over Tailscale (remote hub as always-on relay)
 - **Backup**: Git + GitHub (auto-commit via systemd timer)
 - **Security**: git-crypt (AES-256 encryption for vault content)
