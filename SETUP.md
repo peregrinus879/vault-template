@@ -174,9 +174,9 @@ git clone git@github.com:<owner>/vault-template.git
 Generate a dedicated SSH key for unattended push:
 
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/obsidian-vault-deploy-key -N "" -C "obsidian-vault-sync"
-cd ~/projects/repos/dotfiles/vault-template && git config core.sshCommand "ssh -i ~/.ssh/obsidian-vault-deploy-key -o IdentitiesOnly=yes"
-gh repo deploy-key add ~/.ssh/obsidian-vault-deploy-key.pub --repo <owner>/vault-template --title "obsidian-vault-sync" --allow-write
+ssh-keygen -t ed25519 -f ~/.ssh/vault-template-deploy-key -N "" -C "vault-template-sync"
+cd ~/projects/repos/dotfiles/vault-template && git config core.sshCommand "ssh -i ~/.ssh/vault-template-deploy-key -o IdentitiesOnly=yes"
+gh repo deploy-key add ~/.ssh/vault-template-deploy-key.pub --repo <owner>/vault-template --title "vault-template-sync" --allow-write
 ```
 
 Verify push works without passphrase prompt:
