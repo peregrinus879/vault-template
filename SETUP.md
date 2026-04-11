@@ -152,6 +152,146 @@ systemctl --user start vault-autocommit.service
 journalctl --user -u vault-autocommit.service -n 10
 ```
 
+### 1.5 Public Template Sync
+
+A public repo ([obsidian-vault](https://github.com/peregrinus879/obsidian-vault)) mirrors the vault's structure, templates, config, and docs. Note content is not synced. A git post-commit hook handles this automatically after every commit.
+
+#### Install rsync
+
+```bash
+sudo pacman -S rsync
+```
+
+#### Clone the public repo
+
+```bash
+cd ~/projects/repos/dotfiles
+git clone git@github.com:<owner>/obsidian-vault.git
+```
+
+#### Deploy key
+
+Generate a dedicated SSH key for unattended push:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/obsidian-vault-deploy-key -N "" -C "obsidian-vault-sync"
+cd ~/projects/repos/dotfiles/obsidian-vault && git config core.sshCommand "ssh -i ~/.ssh/obsidian-vault-deploy-key -o IdentitiesOnly=yes"
+gh repo deploy-key add ~/.ssh/obsidian-vault-deploy-key.pub --repo <owner>/obsidian-vault --title "obsidian-vault-sync" --allow-write
+```
+
+Verify push works without passphrase prompt:
+
+```bash
+cd ~/projects/repos/dotfiles/obsidian-vault && git push --dry-run origin main
+```
+
+#### Post-commit hook
+
+Create `~/vault/.git/hooks/post-commit`:
+
+```bash
+#!/usr/bin/env bash
+# Sync public-facing vault files to the public template repo.
+# Runs after every commit in ~/vault (including auto-commits).
+#
+# SAFETY: Content directories are excluded by rsync. Only structure
+# (empty dirs), templates, config, and docs are copied. Private
+# notes never leave this repo.
+#
+# UPDATE REQUIRED: If you add a new content directory to the vault
+# (e.g., drafts/), add a matching --exclude='drafts/**' line below.
+
+set -euo pipefail
+
+PUBLIC="$HOME/projects/repos/dotfiles/obsidian-vault"
+
+# Bail if the public repo isn't cloned on this machine
+[ -d "$PUBLIC/.git" ] || exit 0
+
+rsync -a --delete \
+  --filter='P .gitkeep' \
+  --filter='P LICENSE' \
+  --exclude='journal/**' \
+  --exclude='notes/**' \
+  --exclude='projects/**' \
+  --exclude='references/**' \
+  --exclude='meetings/**' \
+  --exclude='maps/**' \
+  --exclude='assets/**' \
+  --exclude='.git/' \
+  --exclude='.gitattributes' \
+  --exclude='.stignore' \
+  --exclude='.stfolder/' \
+  --exclude='.claude/' \
+  --exclude='.obsidian/workspace.json' \
+  --exclude='.obsidian/workspace-mobile.json' \
+  --exclude='.obsidian/cache' \
+  "$HOME/vault/" "$PUBLIC/"
+
+cd "$PUBLIC" || exit 1
+git add -A
+
+# Only commit and push if there are changes
+if ! git diff --cached --quiet; then
+  git commit -m "sync: $(date +%F-%H%M)"
+  git push --quiet origin main 2>/dev/null || true
+fi
+```
+
+Make executable:
+
+```bash
+chmod +x ~/vault/.git/hooks/post-commit
+```
+
+#### Rsync rules
+
+| Rule | Effect |
+|------|--------|
+| `--exclude='journal/**'` | Copies `journal/` directory shell but nothing inside it |
+| Same for `notes`, `projects`, `references`, `meetings`, `maps`, `assets` | All 7 content directories: structure only, zero files |
+| `--filter='P .gitkeep'` | Protects `.gitkeep` placeholder files in the public repo from deletion |
+| `--filter='P LICENSE'` | Protects `LICENSE` (exists only in public repo) from deletion |
+| `--exclude='.git/'` | Never touches git internals |
+| `--exclude='.gitattributes'` | git-crypt rules stay in private repo only |
+| `--exclude='.stignore'`, `'.stfolder/'`, `'.claude/'` | Syncthing and Claude artifacts stay private |
+| `--exclude='.obsidian/workspace*.json'`, `'.obsidian/cache'` | Machine-specific Obsidian state excluded |
+| `--delete` | Files removed from vault's public-facing set are removed from public repo |
+
+#### Testing
+
+Verify no private content leaks:
+
+```bash
+# Create a fake note in every content directory
+echo "PRIVATE" > ~/vault/journal/test-leak.md
+cd ~/vault && git add -A && git commit -m "test: leak check"
+
+# Verify it did NOT appear in the public repo
+ls ~/projects/repos/dotfiles/obsidian-vault/journal/
+# Expected: only .gitkeep
+
+# Clean up
+rm ~/vault/journal/test-leak.md
+cd ~/vault && git add -A && git commit -m "test: clean up"
+```
+
+Verify template sync works:
+
+```bash
+# Modify a template
+echo "<!-- test -->" >> ~/vault/templates/daily.md
+cd ~/vault && git add -A && git commit -m "test: sync check"
+
+# Verify it appeared in the public repo
+tail -1 ~/projects/repos/dotfiles/obsidian-vault/templates/daily.md
+# Expected: <!-- test -->
+
+# Clean up
+sed -i '$ d' ~/vault/templates/daily.md
+cd ~/vault && git add -A && git commit -m "test: clean up"
+```
+
 ## 2. Local Machines (Linux)
 
 ### 2.1 Install Packages
@@ -379,3 +519,4 @@ After setup on each device:
 - Confirm auto-commit timer is active (remote hub only): `systemctl --user list-timers vault-autocommit.timer`
 - Confirm deploy key push works (remote hub only): `cd ~/vault && git push --dry-run origin main`
 - Confirm encryption: push a test note, verify it appears as binary on GitHub
+- Confirm public template sync (remote hub only): modify a template, commit, verify it appears in the public repo and on GitHub

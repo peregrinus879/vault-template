@@ -18,6 +18,7 @@ It does not own:
 - Neovim plugin configuration (lives in `dotfiles-arch`)
 - Syncthing configuration (system service on the remote hub)
 - Git auto-commit timer (systemd user unit on the remote hub)
+- Public template repo (`obsidian-vault`); synced automatically via post-commit hook
 
 ## Key Files
 
@@ -25,6 +26,7 @@ It does not own:
 - `SETUP.md` - full setup guide with commands and app links for all devices
 - `AGENTS.md` - canonical assistant context
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
+- `.git/hooks/post-commit` - auto-sync hook for public template repo
 
 ## Structure
 
@@ -88,6 +90,8 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 - Commits all changes and pushes to GitHub via deploy key
 - Syncthing provides real-time sync; git provides version history and off-site backup
 - Local commits succeed even if push fails (network down); push retries next hour
+- Post-commit hook syncs public-facing files (templates, config, docs) to the public template repo via rsync
+- Content directories are excluded from sync; if a new content directory is added, update the hook's exclude list in `.git/hooks/post-commit`
 
 ## Workflow
 

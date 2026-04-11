@@ -122,6 +122,8 @@ The remote hub runs a systemd timer (`vault-autocommit.timer`) that commits and 
 vault-autocommit.timer (hourly, on the hour)
   └── vault-autocommit.service
         └── git add -A && git commit && git push
+              └── post-commit hook
+                    └── rsync to public repo && git commit && git push
 ```
 
 - Commits only when changes exist (no empty commits)
@@ -129,11 +131,23 @@ vault-autocommit.timer (hourly, on the hour)
 - Push retries automatically on the next hourly run
 - Syncthing provides real-time sync between devices; git provides version history and off-site backup
 
+## Public Template
+
+A public template repo ([obsidian-vault](https://github.com/peregrinus879/obsidian-vault)) mirrors the vault's structure, templates, config, and documentation. It contains no note content.
+
+A git post-commit hook syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, and documentation are copied. The public repo has its own deploy key for unattended push.
+
+**Synced**: `templates/`, `.obsidian/` config, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
+
+**Excluded**: `journal/`, `notes/`, `projects/`, `references/`, `meetings/`, `maps/`, `assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
+
+If a new content directory is added to the vault, a matching `--exclude` rule must be added to the hook (`.git/hooks/post-commit`).
+
 ## Setup
 
 See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
 
-1. **Remote hub** (headless Linux): Syncthing, git-crypt, deploy key, auto-commit timer
+1. **Remote hub** (headless Linux): Syncthing, git-crypt, deploy key, auto-commit timer, public template sync
 2. **Local machines** (Linux): Syncthing, Neovim config, Obsidian desktop
 3. **Local machines** (Windows / WSL): native Syncthing, Obsidian, WSL symlink
 4. **Mobile** (Android): Tailscale, Syncthing-Fork, Obsidian
@@ -145,6 +159,7 @@ See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
 - `SETUP.md` - full setup guide with commands and app links
 - `AGENTS.md` - canonical assistant context
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
+- [obsidian-vault](https://github.com/peregrinus879/obsidian-vault) - public template repo
 - [Zettelkasten introduction](https://zettelkasten.de/introduction/)
 - [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim)
 - [git-crypt](https://github.com/AGWA/git-crypt)
