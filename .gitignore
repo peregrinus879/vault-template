@@ -1,0 +1,16 @@
+# Obsidian workspace (machine-specific)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# Syncthing artifacts
+*.sync-conflict-*
+.stfolder/
+.stversions/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Claude Code local settings
+.claude/
