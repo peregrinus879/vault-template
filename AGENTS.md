@@ -41,6 +41,10 @@ For vault structure, directory layout, methodology, templates, sync topology, se
 - Do not create MOCs preemptively; let them emerge from linked note clusters
 - Move or rename notes only via neo-tree (nvim) or Obsidian's file explorer; both update `[[wiki-links]]` automatically. Do not use terminal `mv` or OS file managers as links will break.
 
+## Known Limitations
+
+- **Obsidian file explorer**: repo docs (README.md, AGENTS.md, CLAUDE.md, SETUP.md) appear in the Obsidian sidebar. The `userIgnoreFilters` setting in `.obsidian/app.json` only hides files from search, graph, and link suggestions, not from the file explorer. No native fix exists as of 2026-04. Revisit if Obsidian adds explorer-level exclusion.
+
 ## Neovim Usage
 
 *This section applies to users of [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). Skip if using Obsidian GUI only.*
