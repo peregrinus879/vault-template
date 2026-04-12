@@ -211,13 +211,14 @@ PUBLIC="$HOME/projects/repos/templates/vault-template"
 rsync -a --delete \
   --filter='P .gitkeep' \
   --filter='P LICENSE' \
-  --exclude='journal/**' \
-  --exclude='notes/**' \
-  --exclude='projects/**' \
-  --exclude='references/**' \
-  --exclude='meetings/**' \
-  --exclude='maps/**' \
-  --exclude='assets/**' \
+  --exclude='1-inbox/**' \
+  --exclude='2-daily/**' \
+  --exclude='3-notes/**' \
+  --exclude='4-references/**' \
+  --exclude='5-projects/**' \
+  --exclude='6-meetings/**' \
+  --exclude='7-maps/**' \
+  --exclude='9-assets/**' \
   --exclude='.git/' \
   --exclude='.gitattributes' \
   --exclude='.stignore' \
@@ -248,8 +249,8 @@ chmod +x ~/vault/.git/hooks/post-commit
 
 | Rule | Effect |
 |------|--------|
-| `--exclude='journal/**'` | Copies `journal/` directory shell but nothing inside it |
-| Same for `notes`, `projects`, `references`, `meetings`, `maps`, `assets` | All 7 content directories: structure only, zero files |
+| `--exclude='1-inbox/**'` | Copies `1-inbox/` directory shell but nothing inside it |
+| Same for `2-daily`, `3-notes`, `4-references`, `5-projects`, `6-meetings`, `7-maps`, `9-assets` | All 8 content directories: structure only, zero files |
 | `--filter='P .gitkeep'` | Protects `.gitkeep` placeholder files in the public repo from deletion |
 | `--filter='P LICENSE'` | Protects `LICENSE` (exists only in public repo) from deletion |
 | `--exclude='.git/'` | Never touches git internals |
@@ -264,15 +265,15 @@ Verify no private content leaks:
 
 ```bash
 # Create a fake note in every content directory
-echo "PRIVATE" > ~/vault/journal/test-leak.md
+echo "PRIVATE" > ~/vault/1-inbox/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: leak check"
 
 # Verify it did NOT appear in the public repo
-ls ~/projects/repos/templates/vault-template/journal/
+ls ~/projects/repos/templates/vault-template/1-inbox/
 # Expected: only .gitkeep
 
 # Clean up
-rm ~/vault/journal/test-leak.md
+rm ~/vault/1-inbox/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 
@@ -280,15 +281,15 @@ Verify template sync works:
 
 ```bash
 # Modify a template
-echo "<!-- test -->" >> ~/vault/templates/daily.md
+echo "<!-- test -->" >> ~/vault/8-templates/daily.md
 cd ~/vault && git add -A && git commit -m "test: sync check"
 
 # Verify it appeared in the public repo
-tail -1 ~/projects/repos/templates/vault-template/templates/daily.md
+tail -1 ~/projects/repos/templates/vault-template/8-templates/daily.md
 # Expected: <!-- test -->
 
 # Clean up
-sed -i '$ d' ~/vault/templates/daily.md
+sed -i '$ d' ~/vault/8-templates/daily.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 
@@ -364,7 +365,7 @@ Append to `~/.config/nvim/lua/config/options.lua` if not already present:
 vim.g.markdown_folding = 1
 ```
 
-Verify: `nvim ~/vault/journal/test.md` then `:checkhealth obsidian`
+Verify: `nvim ~/vault/1-inbox/test.md` then `:checkhealth obsidian`
 
 ### 2.6 Obsidian Desktop (optional)
 
@@ -490,7 +491,7 @@ Install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) fr
 2. Choose **Open folder as vault** (not "Create new vault")
 3. Select **Device storage** (not app storage)
 4. Navigate to the Syncthing vault folder
-5. Use `journal/` for quick captures; they sync to the hub within seconds
+5. Use `1-inbox/` for quick captures; they sync to the hub within seconds
 
 ### 4.4 Resolving Sync Conflicts
 
@@ -515,7 +516,7 @@ After setup on each device:
 
 - Confirm Syncthing is running: `systemctl --user status syncthing` (local) or `systemctl status syncthing@$USER` (remote hub)
 - Confirm vault folder is syncing: check Syncthing web UI for "Up to Date" status
-- Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/journal/test.md` then `:checkhealth obsidian`
+- Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/1-inbox/test.md` then `:checkhealth obsidian`
 - Confirm auto-commit timer is active (remote hub only): `systemctl --user list-timers vault-autocommit.timer`
 - Confirm deploy key push works (remote hub only): `cd ~/vault && git push --dry-run origin main`
 - Confirm encryption: push a test note, verify it appears as binary on GitHub

@@ -14,15 +14,16 @@ Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [Neovim](ht
 ## Structure
 
 ```text
-journal/          Daily notes and quick captures
-projects/         Active project notes (time-bound)
+1-inbox/          Quick captures, fleeting notes (processing queue)
+2-daily/          Daily journal notes (permanent chronological log)
+3-notes/          Permanent Zettelkasten notes (atomic, linked, tagged)
+4-references/     Literature notes (books, articles, podcasts, videos)
+5-projects/       Active project notes (time-bound)
   _archive/       Completed or paused projects
-notes/            Permanent Zettelkasten notes (atomic, linked, tagged)
-references/       Literature notes (books, articles, podcasts, videos)
-meetings/         Meeting notes
-maps/             Maps of Content (MOC index notes)
-templates/        Note templates
-assets/           Images and attachments
+6-meetings/       Meeting notes
+7-maps/           Maps of Content (MOC index notes)
+8-templates/      Note templates
+9-assets/         Images and attachments
 .obsidian/        Obsidian app configuration
 ```
 
@@ -34,46 +35,47 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
-| **Fleeting** | `journal/` | Quick captures, daily logs, half-formed ideas | Temporary; process into permanent notes or discard |
-| **Literature** | `references/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
-| **Permanent** | `notes/` | Your own refined ideas, one atomic concept per note | Permanent, the core of the Zettelkasten |
-| **Project** | `projects/` | Time-bound, context-specific work notes | Active during project, then archived |
-| **Meeting** | `meetings/` | Structured meeting records with actions and decisions | Permanent record |
-| **Index (MOC)** | `maps/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
+| **Fleeting** | `1-inbox/` | Quick captures, half-formed ideas | Temporary; process into permanent notes or discard |
+| **Daily** | `2-daily/` | Daily journal, plans, logs, reflections | Permanent chronological record |
+| **Literature** | `4-references/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
+| **Permanent** | `3-notes/` | Your own refined ideas, one atomic concept per note | Permanent, the core of the Zettelkasten |
+| **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
+| **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Permanent record |
+| **Index (MOC)** | `7-maps/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
 ### Principles
 
-1. **Atomic notes**: each note in `notes/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
+1. **Atomic notes**: each note in `3-notes/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
 2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage.
 3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
-4. **MOCs are emergent**: do not pre-plan index notes. Create a MOC in `maps/` when 5-10 related notes naturally cluster. A good MOC reads like a guided tour, not a table of contents.
+4. **MOCs are emergent**: do not pre-plan index notes. Create a MOC in `7-maps/` when 5-10 related notes naturally cluster. A good MOC reads like a guided tour, not a table of contents.
 5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes summarize; permanent notes synthesize.
 
 ### Processing Workflow
 
 ```text
-Capture (journal/) --> Refine --> Permanent (notes/)
-                                  Literature (references/)
-                   --> Connect --> Maps of Content (maps/)
-                   --> Discard
+Capture (1-inbox/) --> Refine --> Permanent (3-notes/)
+                                   Literature (4-references/)
+                    --> Connect --> Maps of Content (7-maps/)
+                    --> Discard
 ```
 
 | When | What | Where |
 |------|------|-------|
-| Anytime | Capture quickly, do not overthink | `journal/` |
-| Daily (2-5 min) | Review captures, promote or discard | `journal/` to `notes/` or `references/` |
+| Anytime | Capture quickly, do not overthink | `1-inbox/` |
+| Daily (2-5 min) | Review captures, promote or discard | `1-inbox/` to `3-notes/` or `4-references/` |
 | Weekly (15-30 min) | Write permanent notes, link, update MOCs if clusters emerge | All folders |
 
 ### Templates
 
 | Template | Target folder | Trigger |
 |----------|--------------|---------|
-| `daily.md` | `journal/` | `:Obsidian today` |
-| `capture.md` | `journal/` | `:Obsidian new` (default landing) |
-| `note.md` | `notes/` | Insert template after creating note |
-| `project.md` | `projects/` | Insert template after creating note |
-| `meeting.md` | `meetings/` | Insert template after creating note |
-| `reference.md` | `references/` | Insert template after creating note |
+| `daily.md` | `2-daily/` | `:Obsidian today` |
+| `capture.md` | `1-inbox/` | `:Obsidian new` (default landing) |
+| `note.md` | `3-notes/` | Insert template after creating note |
+| `project.md` | `5-projects/` | Insert template after creating note |
+| `meeting.md` | `6-meetings/` | Insert template after creating note |
+| `reference.md` | `4-references/` | Insert template after creating note |
 
 Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). In Obsidian GUI: use the Daily notes core plugin for `daily.md`, and Ctrl/Cmd+P > Insert template for others.
 
@@ -97,9 +99,9 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 
 Vault content is encrypted with [git-crypt](https://github.com/AGWA/git-crypt) before being pushed to GitHub. Files appear as plaintext locally; GitHub sees ciphertext.
 
-**Encrypted**: `journal/`, `notes/`, `projects/`, `references/`, `meetings/`, `maps/`, `assets/`
+**Encrypted**: `1-inbox/`, `2-daily/`, `3-notes/`, `4-references/`, `5-projects/`, `6-meetings/`, `7-maps/`, `9-assets/`
 
-**Unencrypted**: `templates/`, `.obsidian/`, repo documentation files
+**Unencrypted**: `8-templates/`, `.obsidian/`, repo documentation files
 
 Encryption rules are defined in `.gitattributes`. Filenames are not encrypted (git-crypt limitation).
 
@@ -137,9 +139,9 @@ A public template repo ([vault-template](https://github.com/peregrinus879/vault-
 
 A git post-commit hook syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, and documentation are copied. The public repo has its own deploy key for unattended push.
 
-**Synced**: `templates/`, `.obsidian/` config, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
+**Synced**: `8-templates/`, `.obsidian/` config, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
 
-**Excluded**: `journal/`, `notes/`, `projects/`, `references/`, `meetings/`, `maps/`, `assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
+**Excluded**: `1-inbox/`, `2-daily/`, `3-notes/`, `4-references/`, `5-projects/`, `6-meetings/`, `7-maps/`, `9-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 
 If a new content directory is added to the vault, a matching `--exclude` rule must be added to the hook (`.git/hooks/post-commit`).
 

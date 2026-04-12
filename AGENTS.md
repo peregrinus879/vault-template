@@ -8,7 +8,7 @@ This repo is a knowledge base, not a code project. It holds notes, not source co
 
 It owns:
 
-- Zettelkasten permanent notes, daily journals, project notes, meeting notes, and reference notes
+- Zettelkasten permanent notes, daily journals, fleeting captures, project notes, meeting notes, and reference notes
 - Obsidian app configuration (`.obsidian/`)
 - Note templates
 - Maps of Content (MOC index notes)
@@ -31,15 +31,16 @@ It does not own:
 ## Structure
 
 ```text
-journal/          Daily notes and quick captures
-projects/         Active project notes (time-bound)
+1-inbox/          Quick captures, fleeting notes (processing queue)
+2-daily/          Daily journal notes (permanent chronological log)
+3-notes/          Permanent Zettelkasten notes (atomic, linked, tagged)
+4-references/     Literature notes (books, articles, podcasts, videos)
+5-projects/       Active project notes (time-bound)
   _archive/       Completed or paused projects
-notes/            Permanent Zettelkasten notes (atomic, linked, tagged)
-references/       Literature notes (books, articles, podcasts, videos)
-meetings/         Meeting notes
-maps/             Maps of Content (MOC index notes)
-templates/        Note templates
-assets/           Images and attachments
+6-meetings/       Meeting notes
+7-maps/           Maps of Content (MOC index notes)
+8-templates/      Note templates
+9-assets/         Images and attachments
 .obsidian/        Obsidian app configuration
 ```
 
@@ -47,22 +48,23 @@ assets/           Images and attachments
 
 This vault follows the Zettelkasten method:
 
-- **Atomic notes**: each note in `notes/` captures one idea
+- **Atomic notes**: each note in `3-notes/` captures one idea
 - **Links over hierarchy**: `[[wiki-links]]` connect ideas; folders are just storage
 - **Tags for retrieval, links for connection**: tags help find notes; links express relationships
-- **Processing workflow**: capture in `journal/`, refine into `notes/` or `references/`, connect via `maps/`
-- **MOCs are emergent**: create index notes in `maps/` when clusters of 5-10 related notes form naturally
+- **Processing workflow**: capture in `1-inbox/`, refine into `3-notes/` or `4-references/`, connect via `7-maps/`
+- **Numbered directories**: prefixes (1-9) enforce a logical display order across all tools
+- **MOCs are emergent**: create index notes in `7-maps/` when clusters of 5-10 related notes form naturally
 
 ## Templates
 
 | Template | Target folder | Trigger |
 |----------|--------------|---------|
-| `daily.md` | `journal/` | `:Obsidian today` |
-| `capture.md` | `journal/` | `:Obsidian new` (default landing) |
-| `note.md` | `notes/` | Manual: insert template after creating note |
-| `project.md` | `projects/` | Manual |
-| `meeting.md` | `meetings/` | Manual |
-| `reference.md` | `references/` | Manual |
+| `daily.md` | `2-daily/` | `:Obsidian today` |
+| `capture.md` | `1-inbox/` | `:Obsidian new` (default landing) |
+| `note.md` | `3-notes/` | Manual: insert template after creating note |
+| `project.md` | `5-projects/` | Manual |
+| `meeting.md` | `6-meetings/` | Manual |
+| `reference.md` | `4-references/` | Manual |
 
 ## Sync Topology
 
@@ -77,8 +79,8 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 ## Security
 
 - Content directories are encrypted with [git-crypt](https://github.com/AGWA/git-crypt) (AES-256)
-- Encrypted: `journal/`, `notes/`, `projects/`, `references/`, `meetings/`, `maps/`, `assets/`
-- Unencrypted: `templates/`, `.obsidian/`, repo docs (`.gitignore`, `.stignore`, `.gitattributes`, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`)
+- Encrypted: `1-inbox/`, `2-daily/`, `3-notes/`, `4-references/`, `5-projects/`, `6-meetings/`, `7-maps/`, `9-assets/`
+- Unencrypted: `8-templates/`, `.obsidian/`, repo docs (`.gitignore`, `.stignore`, `.gitattributes`, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`)
 - Encryption is transparent locally; files appear as plaintext in the working directory
 - GitHub sees ciphertext for encrypted paths; filenames remain visible
 - The symmetric key must be backed up outside the vault and outside GitHub
@@ -95,10 +97,10 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 
 ## Workflow
 
-- Capture quickly in `journal/` without overthinking structure
-- Process daily: review captures, promote to `notes/` or `references/` if worth keeping
+- Capture quickly in `1-inbox/` without overthinking structure
+- Process daily: review captures, promote to `3-notes/` or `4-references/` if worth keeping
 - Process weekly: write permanent notes, update MOCs if clusters emerge
-- Always link: when writing in `notes/`, ask "what existing notes does this connect to?"
+- Always link: when writing in `3-notes/`, ask "what existing notes does this connect to?"
 - Do not create MOCs preemptively; let them emerge from linked note clusters
 - Move or rename notes only via neo-tree (nvim) or Obsidian's file explorer; both update `[[wiki-links]]` automatically. Do not use terminal `mv` or OS file managers as links will break.
 
@@ -106,12 +108,12 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 
 *This section applies to users of [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). Skip if using Obsidian GUI only.*
 
-obsidian.nvim only loads when a markdown file inside `~/vault/` is opened. Keybindings are not available until then. Start a vault session with `nvim ~/vault/journal/` or use `<leader>od` to open today's daily note.
+obsidian.nvim only loads when a markdown file inside `~/vault/` is opened. Keybindings are not available until then. Start a vault session with `nvim ~/vault/1-inbox/` or use `<leader>od` to open today's daily note.
 
 | Keys | Action |
 |------|--------|
 | `<leader>od` | Open/create daily note |
-| `<leader>on` | New note (lands in `journal/`) |
+| `<leader>on` | New note (lands in `1-inbox/`) |
 | `<leader>oo` | Find note (fuzzy search) |
 | `<leader>os` | Search vault content |
 | `<leader>ob` | Show backlinks |
