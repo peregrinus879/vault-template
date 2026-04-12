@@ -237,7 +237,8 @@ rsync -a --delete \
 for dir in "$PUBLIC"/*/; do
   [ -d "$dir" ] || continue
   name=$(basename "$dir")
-  [[ "$name" == .* ]] && continue
+  [[ "$name" == .git ]] && continue
+  [[ "$name" == .obsidian ]] && continue
   [ -d "$VAULT/$name" ] || rm -rf "$dir"
 done
 
