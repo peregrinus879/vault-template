@@ -1,1 +1,9 @@
-{}
+{
+  "userIgnoreFilters": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "SETUP.md",
+    "LICENSE"
+  ]
+}

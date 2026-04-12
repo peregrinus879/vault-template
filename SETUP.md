@@ -292,15 +292,15 @@ Verify no private content leaks:
 
 ```bash
 # Create a fake note in every content directory
-echo "PRIVATE" > ~/vault/1-inbox/test-leak.md
+echo "PRIVATE" > ~/vault/0-inbox/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: leak check"
 
 # Verify it did NOT appear in the public repo
-ls ~/projects/repos/templates/vault-template/1-inbox/
+ls ~/projects/repos/templates/vault-template/0-inbox/
 # Expected: only .gitkeep
 
 # Clean up
-rm ~/vault/1-inbox/test-leak.md
+rm ~/vault/0-inbox/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 
@@ -392,7 +392,7 @@ Append to `~/.config/nvim/lua/config/options.lua` if not already present:
 vim.g.markdown_folding = 1
 ```
 
-Verify: `nvim ~/vault/1-inbox/test.md` then `:checkhealth obsidian`
+Verify: `nvim ~/vault/0-inbox/test.md` then `:checkhealth obsidian`
 
 ### 2.6 Obsidian Desktop (optional)
 
@@ -518,7 +518,7 @@ Install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) fr
 2. Choose **Open folder as vault** (not "Create new vault")
 3. Select **Device storage** (not app storage)
 4. Navigate to the Syncthing vault folder
-5. Use `1-inbox/` for quick captures; they sync to the hub within seconds
+5. Use `0-inbox/` for quick captures; they sync to the hub within seconds
 
 ### 4.4 Resolving Sync Conflicts
 
@@ -543,7 +543,7 @@ After setup on each device:
 
 - Confirm Syncthing is running: `systemctl --user status syncthing` (local) or `systemctl status syncthing@$USER` (remote hub)
 - Confirm vault folder is syncing: check Syncthing web UI for "Up to Date" status
-- Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/1-inbox/test.md` then `:checkhealth obsidian`
+- Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/0-inbox/test.md` then `:checkhealth obsidian`
 - Confirm auto-commit timer is active (remote hub only): `systemctl --user list-timers vault-autocommit.timer`
 - Confirm deploy key push works (remote hub only): `cd ~/vault && git push --dry-run origin main`
 - Confirm encryption: push a test note, verify it appears as binary on GitHub

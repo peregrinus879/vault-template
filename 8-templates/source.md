@@ -1,7 +1,7 @@
 ---
 date: "{{date}}"
 tags:
-  - reference
+  - source
 type:
 source:
 author:
