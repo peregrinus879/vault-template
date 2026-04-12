@@ -448,7 +448,13 @@ Open the Syncthing web UI at `http://127.0.0.1:8384` (`localhost` may not work o
 
 ### 3.4 Obsidian Desktop
 
-Install from [obsidian.md/download](https://obsidian.md/download). Open `C:\Users\<user>\vault` as vault. Choose **Open folder as vault**.
+Install via winget:
+
+```powershell
+winget install Obsidian.Obsidian
+```
+
+Open `C:\Users\<user>\vault` as vault. Choose **Open folder as vault**.
 
 ### 3.5 WSL Access
 
@@ -491,8 +497,6 @@ Install [Tailscale](https://play.google.com/store/apps/details?id=com.tailscale.
 ### 4.2 Syncthing-Fork
 
 Install [Syncthing-Fork](https://github.com/Catfriend1/syncthing-android) via [Obtainium](https://github.com/ImranR98/Obtainium) (recommended, most up-to-date releases). The [Play Store](https://play.google.com/store/apps/details?id=com.github.catfriend1.syncthingandroid) version may be significantly outdated.
-
-GitHub repo for Obtainium: `https://github.com/Catfriend1/syncthing-android`
 
 Pair with the remote hub:
 

@@ -39,7 +39,7 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 | **Fleeting** | `0-inbox/` | Quick captures, half-formed ideas | Temporary; process into permanent notes or discard |
 | **Daily** | `1-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Permanent chronological record |
 | **Literature** | `2-sources/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
-| **Permanent** | `3-zettelkasten/` | Your own refined ideas, one atomic concept per note | Permanent, the core of the Zettelkasten |
+| **Permanent** | `3-zettelkasten/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
 | **Draft** | `4-drafts/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
 | **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
 | **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Permanent record |
