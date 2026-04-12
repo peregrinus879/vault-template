@@ -5,6 +5,8 @@ tags:
 type:
 source:
 author:
+url:
+year:
 status: in-progress
 ---
 
@@ -18,5 +20,5 @@ status: in-progress
 ## Quotes
 -
 
-## Application
+## Connections
 -

@@ -18,12 +18,20 @@ tags:
 - What am I reading/watching? What is worth finishing?
 -
 
+## Drafts
+- What drafts need attention? Any ready to publish?
+-
+
 ## MOCs
 - Are any note clusters forming that need a MOC?
 -
 
 ## Projects
 - What moved forward? What is blocked?
+-
+
+## Connections
+- What unexpected links emerged this week?
 -
 
 ## Next Week

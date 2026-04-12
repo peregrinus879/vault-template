@@ -4,6 +4,7 @@ tags:
   - meeting
 attendees:
   -
+project:
 ---
 
 # Meeting: {{title}}
@@ -15,7 +16,7 @@ attendees:
 -
 
 ## Action Items
-- [ ]
+- [ ] Owner: task (by YYYY-MM-DD)
 
 ## Decisions
 -

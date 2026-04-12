@@ -3,11 +3,16 @@ date: "{{date}}"
 tags:
   - project
 status: active
+deadline:
 ---
 
 # {{title}}
 
 ## Objective
+
+## Scope
+
+## Deliverables
 
 ## Stakeholders
 

@@ -91,7 +91,7 @@ Permanent (3-zettelkasten/)
 | `capture.md` | `0-inbox/` | `:Obsidian new` (default landing) |
 | `daily.md` | `1-daily/` | `:Obsidian today` |
 | `source.md` | `2-sources/` | Insert template after creating note |
-| `note.md` | `3-zettelkasten/` | Insert template after creating note |
+| `permanent.md` | `3-zettelkasten/` | Insert template after creating note |
 | `draft.md` | `4-drafts/` | Insert template after creating note |
 | `project.md` | `5-projects/` | Insert template after creating note |
 | `meeting.md` | `6-meetings/` | Insert template after creating note |
