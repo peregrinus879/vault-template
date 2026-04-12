@@ -118,7 +118,7 @@ WorkingDirectory=%h/vault
 ExecStart=/bin/bash -c '\
   git add -A && \
   if ! git diff --cached --quiet; then \
-    git commit -m "auto: $(date +%%F %%T)"; \
+    git commit -m "auto: $(date +%%FT%%T)"; \
     git push --quiet origin main 2>/dev/null || true; \
   fi'
 ```

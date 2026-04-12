@@ -34,12 +34,12 @@ It does not own:
 0-inbox/          Quick captures, fleeting notes (processing queue)
 1-daily/          Daily journal notes (permanent chronological log)
 2-sources/        Literature notes (books, articles, podcasts, videos)
-3-notes/          Permanent Zettelkasten notes (atomic, linked, tagged)
+3-zettelkasten/   Permanent Zettelkasten notes (atomic, linked, tagged)
 4-drafts/         Long-form compositions from notes (articles, reports)
 5-projects/       Active project notes (time-bound)
   _archive/       Completed or paused projects
 6-meetings/       Meeting notes
-7-maps/           Maps of Content (MOC index notes)
+7-mocs/           Maps of Content (MOC index notes, emergent)
 8-templates/      Note templates
 9-assets/         Images and attachments
 .obsidian/        Obsidian app configuration
@@ -49,12 +49,12 @@ It does not own:
 
 This vault follows the Zettelkasten method:
 
-- **Atomic notes**: each note in `3-notes/` captures one idea
+- **Atomic notes**: each note in `3-zettelkasten/` captures one idea
 - **Links over hierarchy**: `[[wiki-links]]` connect ideas; folders are just storage
 - **Tags for retrieval, links for connection**: tags help find notes; links express relationships
-- **Processing workflow**: capture in `0-inbox/`, refine into `2-sources/` or `3-notes/`, compose in `4-drafts/`, connect via `7-maps/`
+- **Processing workflow**: capture in `0-inbox/`, refine into `2-sources/` or `3-zettelkasten/`, compose in `4-drafts/`, connect via `7-mocs/`
 - **Numbered directories**: prefixes (0-9) enforce a logical display order across all tools
-- **MOCs are emergent**: create index notes in `7-maps/` when clusters of 5-10 related notes form naturally
+- **MOCs are emergent**: create index notes in `7-mocs/` when clusters of 5-10 related notes form naturally
 
 ## Templates
 
@@ -63,7 +63,7 @@ This vault follows the Zettelkasten method:
 | `capture.md` | `0-inbox/` | `:Obsidian new` (default landing) |
 | `daily.md` | `1-daily/` | `:Obsidian today` |
 | `source.md` | `2-sources/` | Manual: insert template after creating note |
-| `note.md` | `3-notes/` | Manual: insert template after creating note |
+| `note.md` | `3-zettelkasten/` | Manual: insert template after creating note |
 | `draft.md` | `4-drafts/` | Manual: insert template after creating note |
 | `project.md` | `5-projects/` | Manual |
 | `meeting.md` | `6-meetings/` | Manual |
@@ -81,7 +81,7 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 ## Security
 
 - Content directories are encrypted with [git-crypt](https://github.com/AGWA/git-crypt) (AES-256)
-- Encrypted: `0-inbox/`, `1-daily/`, `2-sources/`, `3-notes/`, `4-drafts/`, `5-projects/`, `6-meetings/`, `7-maps/`, `9-assets/`
+- Encrypted: `0-inbox/`, `1-daily/`, `2-sources/`, `3-zettelkasten/`, `4-drafts/`, `5-projects/`, `6-meetings/`, `7-mocs/`, `9-assets/`
 - Unencrypted: `8-templates/`, `.obsidian/`, repo docs (`.gitignore`, `.stignore`, `.gitattributes`, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`)
 - Encryption is transparent locally; files appear as plaintext in the working directory
 - GitHub sees ciphertext for encrypted paths; filenames remain visible
@@ -100,9 +100,9 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 ## Workflow
 
 - Capture quickly in `0-inbox/` without overthinking structure
-- Process daily: review captures, promote to `3-notes/` or `2-sources/` if worth keeping
+- Process daily: review captures, promote to `3-zettelkasten/` or `2-sources/` if worth keeping
 - Process weekly: write permanent notes, update MOCs if clusters emerge
-- Always link: when writing in `3-notes/`, ask "what existing notes does this connect to?"
+- Always link: when writing in `3-zettelkasten/`, ask "what existing notes does this connect to?"
 - Do not create MOCs preemptively; let them emerge from linked note clusters
 - Move or rename notes only via neo-tree (nvim) or Obsidian's file explorer; both update `[[wiki-links]]` automatically. Do not use terminal `mv` or OS file managers as links will break.
 
