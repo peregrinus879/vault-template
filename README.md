@@ -143,7 +143,7 @@ A git post-commit hook syncs public-facing files via rsync after every commit (i
 
 **Excluded**: `1-inbox/`, `2-daily/`, `3-notes/`, `4-references/`, `5-projects/`, `6-meetings/`, `7-maps/`, `9-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 
-If a new content directory is added to the vault, a matching `--exclude` rule must be added to the hook (`.git/hooks/post-commit`).
+Content directories are derived from `.gitattributes` automatically. Adding a new content directory only requires updating `.gitattributes`.
 
 ## Setup
 

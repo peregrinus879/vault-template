@@ -93,7 +93,7 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 - Syncthing provides real-time sync; git provides version history and off-site backup
 - Local commits succeed even if push fails (network down); push retries next hour
 - Post-commit hook syncs public-facing files (templates, config, docs) to the public template repo via rsync
-- Content directories are excluded from sync; if a new content directory is added, update the hook's exclude list in `.git/hooks/post-commit`
+- Content directories are derived from `.gitattributes`; adding a new content directory only requires updating `.gitattributes`
 
 ## Workflow
 

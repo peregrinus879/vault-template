@@ -195,39 +195,64 @@ Create `~/vault/.git/hooks/post-commit`:
 # Runs after every commit in ~/vault (including auto-commits).
 #
 # SAFETY: Content directories are excluded by rsync. Only structure
-# (empty dirs), templates, config, and docs are copied. Private
-# notes never leave this repo.
+# (empty dirs via .gitkeep), templates, config, and docs are copied.
+# Private notes never leave this repo.
 #
-# UPDATE REQUIRED: If you add a new content directory to the vault
-# (e.g., drafts/), add a matching --exclude='drafts/**' line below.
+# Content directories are derived from .gitattributes (git-crypt rules).
+# Adding a new content directory only requires updating .gitattributes.
 
 set -euo pipefail
 
+VAULT="$HOME/vault"
 PUBLIC="$HOME/projects/repos/templates/vault-template"
 
 # Bail if the public repo isn't cloned on this machine
 [ -d "$PUBLIC/.git" ] || exit 0
 
+# Derive content directories from .gitattributes
+EXCLUDE_ARGS=()
+CONTENT_DIRS=()
+while IFS= read -r line; do
+  dir="${line%%/**}"
+  CONTENT_DIRS+=("$dir")
+  EXCLUDE_ARGS+=(--exclude="${dir}/**")
+done < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes")
+
+# Sync: templates, config, and docs only
 rsync -a --delete \
-  --filter='P .gitkeep' \
   --filter='P LICENSE' \
-  --exclude='1-inbox/**' \
-  --exclude='2-daily/**' \
-  --exclude='3-notes/**' \
-  --exclude='4-references/**' \
-  --exclude='5-projects/**' \
-  --exclude='6-meetings/**' \
-  --exclude='7-maps/**' \
-  --exclude='9-assets/**' \
+  "${EXCLUDE_ARGS[@]}" \
   --exclude='.git/' \
   --exclude='.gitattributes' \
   --exclude='.stignore' \
   --exclude='.stfolder/' \
+  --exclude='.trash/' \
   --exclude='.claude/' \
   --exclude='.obsidian/workspace.json' \
   --exclude='.obsidian/workspace-mobile.json' \
   --exclude='.obsidian/cache' \
-  "$HOME/vault/" "$PUBLIC/"
+  "$VAULT/" "$PUBLIC/"
+
+# Clean orphaned directories (deleted/renamed in vault)
+for dir in "$PUBLIC"/*/; do
+  [ -d "$dir" ] || continue
+  name=$(basename "$dir")
+  [[ "$name" == .* ]] && continue
+  [ -d "$VAULT/$name" ] || rm -rf "$dir"
+done
+
+# Ensure content directories exist with .gitkeep
+for dir in "${CONTENT_DIRS[@]}"; do
+  mkdir -p "$PUBLIC/$dir"
+  [ -f "$PUBLIC/$dir/.gitkeep" ] || touch "$PUBLIC/$dir/.gitkeep"
+done
+
+# Preserve _archive subdirectories
+find "$VAULT" -maxdepth 2 -name '_archive' -type d | while read -r archive; do
+  rel="${archive#"$VAULT/"}"
+  mkdir -p "$PUBLIC/$rel"
+  [ -f "$PUBLIC/$rel/.gitkeep" ] || touch "$PUBLIC/$rel/.gitkeep"
+done
 
 cd "$PUBLIC" || exit 1
 git add -A
@@ -249,13 +274,14 @@ chmod +x ~/vault/.git/hooks/post-commit
 
 | Rule | Effect |
 |------|--------|
-| `--exclude='1-inbox/**'` | Copies `1-inbox/` directory shell but nothing inside it |
-| Same for `2-daily`, `3-notes`, `4-references`, `5-projects`, `6-meetings`, `7-maps`, `9-assets` | All 8 content directories: structure only, zero files |
-| `--filter='P .gitkeep'` | Protects `.gitkeep` placeholder files in the public repo from deletion |
+| Content excludes (from `.gitattributes`) | Directory shells are synced but nothing inside them |
+| Orphan cleanup loop | Removes directories from public repo that no longer exist in vault |
+| `.gitkeep` creation loop | Ensures every content directory has a `.gitkeep` for git tracking |
+| `_archive` discovery | Preserves `_archive` subdirectories with `.gitkeep` |
 | `--filter='P LICENSE'` | Protects `LICENSE` (exists only in public repo) from deletion |
 | `--exclude='.git/'` | Never touches git internals |
 | `--exclude='.gitattributes'` | git-crypt rules stay in private repo only |
-| `--exclude='.stignore'`, `'.stfolder/'`, `'.claude/'` | Syncthing and Claude artifacts stay private |
+| `--exclude='.stignore'`, `'.stfolder/'`, `'.trash/'`, `'.claude/'` | Syncthing, trash, and Claude artifacts stay private |
 | `--exclude='.obsidian/workspace*.json'`, `'.obsidian/cache'` | Machine-specific Obsidian state excluded |
 | `--delete` | Files removed from vault's public-facing set are removed from public repo |
 
