@@ -37,7 +37,7 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
 | **Fleeting** | `0-inbox/` | Quick captures, half-formed ideas | Temporary; process into permanent notes or discard |
-| **Daily** | `1-daily/` | Daily journal, plans, logs, reflections | Permanent chronological record |
+| **Daily** | `1-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Permanent chronological record |
 | **Literature** | `2-sources/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
 | **Permanent** | `3-zettelkasten/` | Your own refined ideas, one atomic concept per note | Permanent, the core of the Zettelkasten |
 | **Draft** | `4-drafts/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
@@ -63,15 +63,19 @@ Some note types use a `status` frontmatter field to drive processing workflows. 
 3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
 4. **MOCs are emergent**: do not pre-plan index notes. Create a MOC in `7-mocs/` when 5-10 related notes naturally cluster. A good MOC reads like a guided tour, not a table of contents.
 5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes summarize; permanent notes synthesize.
+6. **Numbered directories**: prefixes (0-9) enforce a logical display order across all tools. The sequence reflects the knowledge lifecycle: capture, process, synthesize, compose, execute, review, navigate.
 
 ### Processing Workflow
 
 ```text
-Capture (0-inbox/) --> Refine --> Literature (2-sources/)
-                                   Permanent (3-zettelkasten/)
-                    --> Compose --> Drafts (4-drafts/)
-                    --> Connect --> Maps of Content (7-mocs/)
-                    --> Discard
+Capture (0-inbox/)
+    --> Refine  --> Literature (2-sources/)
+                --> Permanent (3-zettelkasten/)
+    --> Discard
+
+Permanent (3-zettelkasten/)
+    --> Compose --> Drafts (4-drafts/)
+    --> Cluster --> Maps of Content (7-mocs/)
 ```
 
 | When | What | Where |
