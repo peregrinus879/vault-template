@@ -59,7 +59,7 @@ Some note types use a `status` frontmatter field to drive processing workflows. 
 ### Principles
 
 1. **Atomic notes**: each note in `3-zettelkasten/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
-2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage.
+2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage. Move or rename notes only via Obsidian or neo-tree (nvim); both update links automatically. Do not use terminal `mv` or OS file managers as links will break.
 3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
 4. **MOCs are emergent**: do not pre-plan index notes. Create a MOC in `7-mocs/` when 5-10 related notes naturally cluster. A good MOC reads like a guided tour, not a table of contents.
 5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes summarize; permanent notes synthesize.
