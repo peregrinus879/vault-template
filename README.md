@@ -80,6 +80,7 @@ Capture (0-inbox/) --> Refine --> Literature (2-sources/)
 | `draft.md` | `4-drafts/` | Insert template after creating note |
 | `project.md` | `5-projects/` | Insert template after creating note |
 | `meeting.md` | `6-meetings/` | Insert template after creating note |
+| `review.md` | `1-daily/` | Manual (weekly cadence) |
 
 Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). In Obsidian GUI: use the Daily notes core plugin for `daily.md`, and Ctrl/Cmd+P > Insert template for others.
 

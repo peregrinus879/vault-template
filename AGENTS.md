@@ -67,6 +67,7 @@ This vault follows the Zettelkasten method:
 | `draft.md` | `4-drafts/` | Manual: insert template after creating note |
 | `project.md` | `5-projects/` | Manual |
 | `meeting.md` | `6-meetings/` | Manual |
+| `review.md` | `1-daily/` | Manual (weekly cadence) |
 
 ## Sync Topology
 
