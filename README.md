@@ -45,6 +45,17 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 | **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Permanent record |
 | **Index (MOC)** | `7-mocs/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
+### Status Lifecycle
+
+Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, meeting, permanent, MOC) are records with no lifecycle transitions.
+
+| Type | Values | Flow |
+|------|--------|------|
+| Capture | `inbox` | inbox → promote or discard |
+| Source | `in-progress`, `done`, `abandoned` | in-progress → done or abandoned |
+| Draft | `draft`, `published`, `abandoned` | draft → published or abandoned |
+| Project | `active`, `completed`, `paused` | active → completed or paused |
+
 ### Principles
 
 1. **Atomic notes**: each note in `3-zettelkasten/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
