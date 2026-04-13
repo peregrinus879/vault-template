@@ -522,7 +522,7 @@ Install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) fr
 2. Choose **Open folder as vault** (not "Create new vault")
 3. Select **Device storage** (not app storage)
 4. Navigate to the Syncthing vault folder
-5. Use `1-fleeting/` for quick captures; they sync to the hub within seconds
+5. Use `1-fleeting/` for fleeting notes; they sync to the hub within seconds
 
 ### 4.4 Resolving Sync Conflicts
 

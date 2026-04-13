@@ -37,7 +37,7 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
 | **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Ongoing chronological record |
-| **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into literature or permanent notes, or discard |
+| **Fleeting** | `1-fleeting/` | Half-formed ideas, quick thoughts | Temporary; process into literature or permanent notes, or discard |
 | **Literature** | `2-literature/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
 | **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
 | **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
