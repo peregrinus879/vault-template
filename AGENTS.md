@@ -8,10 +8,10 @@ This repo is a knowledge base, not a code project. It holds notes, not source co
 
 It owns:
 
-- Zettelkasten permanent notes, daily journals, fleeting captures, project notes, meeting notes, and source notes
+- Zettelkasten permanent notes, daily journals, fleeting captures, project notes, meeting notes, and literature notes
 - Obsidian app configuration (`.obsidian/`)
 - Note templates
-- Maps of Content (MOC index notes)
+- Index notes (curated entry points into note clusters)
 
 It does not own:
 
@@ -34,11 +34,11 @@ For vault structure, directory layout, methodology, templates, sync topology, se
 
 ## Workflow
 
-- Capture quickly in `0-inbox/` without overthinking structure
-- Process daily: review captures, promote to `3-zettelkasten/` or `2-sources/` if worth keeping
-- Process weekly: write permanent notes, update MOCs if clusters emerge
-- Always link: when writing in `3-zettelkasten/`, ask "what existing notes does this connect to?"
-- Do not create MOCs preemptively; let them emerge from linked note clusters
+- Capture quickly in `1-fleeting/` without overthinking structure
+- Process daily: review captures, promote to `3-permanent/` or `2-literature/` if worth keeping
+- Process weekly: write permanent notes, update index notes if clusters emerge
+- Always link: when writing in `3-permanent/`, ask "what existing notes does this connect to?"
+- Do not create index notes preemptively; let them emerge from linked note clusters
 - Move or rename notes only via neo-tree (nvim) or Obsidian's file explorer; both update `[[wiki-links]]` automatically. Do not use terminal `mv` or OS file managers as links will break.
 
 ## Known Limitations
@@ -49,12 +49,12 @@ For vault structure, directory layout, methodology, templates, sync topology, se
 
 *This section applies to users of [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). Skip if using Obsidian GUI only.*
 
-obsidian.nvim only loads when a markdown file inside `~/vault/` is opened. Keybindings are not available until then. Start a vault session with `nvim ~/vault/0-inbox/` or use `<leader>od` to open today's daily note.
+obsidian.nvim only loads when a markdown file inside `~/vault/` is opened. Keybindings are not available until then. Start a vault session with `nvim ~/vault/0-daily/` or use `<leader>od` to open today's daily note.
 
 | Keys | Action |
 |------|--------|
 | `<leader>od` | Open/create daily note |
-| `<leader>on` | New note (lands in `0-inbox/`) |
+| `<leader>on` | New note (lands in `1-fleeting/`) |
 | `<leader>oo` | Find note (fuzzy search) |
 | `<leader>os` | Search vault content |
 | `<leader>ob` | Show backlinks |

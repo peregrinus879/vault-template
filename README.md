@@ -14,15 +14,15 @@ Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [Neovim](ht
 ## Structure
 
 ```text
-0-inbox/          Quick captures, fleeting notes (processing queue)
-1-daily/          Daily journal notes (permanent chronological log)
-2-sources/        Literature notes (books, articles, podcasts, videos)
-3-zettelkasten/   Permanent Zettelkasten notes (atomic, linked, tagged)
-4-drafts/         Long-form compositions from notes (articles, reports)
+0-daily/          Daily journal notes (permanent chronological log, vault entry point)
+1-fleeting/       Quick captures, fleeting notes (processing queue)
+2-literature/     Literature notes (books, articles, podcasts, videos)
+3-permanent/      Permanent notes (atomic, linked, tagged)
+4-writing/        Long-form compositions (drafts, published, abandoned)
 5-projects/       Active project notes (time-bound)
   _archive/       Completed or paused projects
 6-meetings/       Meeting notes
-7-mocs/           Maps of Content (MOC index notes, emergent)
+7-index/          Index notes (curated entry points, emergent)
 8-templates/      Note templates
 9-assets/         Images and attachments
 .obsidian/        Obsidian app configuration
@@ -36,66 +36,67 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
-| **Fleeting** | `0-inbox/` | Quick captures, half-formed ideas | Temporary; process into permanent notes or discard |
-| **Daily** | `1-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Permanent chronological record |
-| **Literature** | `2-sources/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
-| **Permanent** | `3-zettelkasten/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
-| **Draft** | `4-drafts/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
+| **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Permanent chronological record |
+| **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into permanent notes or discard |
+| **Literature** | `2-literature/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
+| **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
+| **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
 | **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
 | **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Permanent record |
-| **Index (MOC)** | `7-mocs/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
+| **Index** | `7-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
 ### Status Lifecycle
 
-Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, meeting, permanent, MOC) are records with no lifecycle transitions.
+Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, meeting, permanent, index) are records with no lifecycle transitions.
 
 | Type | Values | Flow |
 |------|--------|------|
-| Capture | `inbox` | inbox → promote or discard |
-| Source | `in-progress`, `done`, `abandoned` | in-progress → done or abandoned |
-| Draft | `draft`, `published`, `abandoned` | draft → published or abandoned |
+| Fleeting | `inbox` | inbox → promote or discard |
+| Literature | `in-progress`, `done`, `abandoned` | in-progress → done or abandoned |
+| Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
 | Project | `active`, `completed`, `paused` | active → completed or paused |
 
 ### Principles
 
-1. **Atomic notes**: each note in `3-zettelkasten/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
+1. **Atomic notes**: each note in `3-permanent/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
 2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage. Move or rename notes only via Obsidian or neo-tree (nvim); both update links automatically. Do not use terminal `mv` or OS file managers as links will break.
 3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
-4. **MOCs are emergent**: do not pre-plan index notes. Create a MOC in `7-mocs/` when 5-10 related notes naturally cluster. A good MOC reads like a guided tour, not a table of contents.
+4. **Index notes are emergent**: do not pre-plan index notes. Create an index note in `7-index/` when 5-10 related notes naturally cluster. A good index note reads like a guided tour, not a table of contents.
 5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes summarize; permanent notes synthesize.
-6. **Numbered directories**: prefixes (0-9) enforce a logical display order across all tools. The sequence reflects the knowledge lifecycle: capture, process, synthesize, compose, execute, review, navigate.
+6. **Numbered directories**: prefixes (0-9) enforce a logical display order across all tools. The sequence reflects the knowledge lifecycle: anchor, capture, process, synthesize, compose, execute, review, navigate.
 
 ### Processing Workflow
 
 ```text
-Capture (0-inbox/)
-    --> Refine  --> Literature (2-sources/)
-                --> Permanent (3-zettelkasten/)
+Capture (1-fleeting/)
+    --> Refine  --> Literature (2-literature/)
+                --> Permanent (3-permanent/)
     --> Discard
 
-Permanent (3-zettelkasten/)
-    --> Compose --> Drafts (4-drafts/)
-    --> Cluster --> Maps of Content (7-mocs/)
+Permanent (3-permanent/)
+    --> Compose --> Writing (4-writing/)
+    --> Cluster --> Index notes (7-index/)
 ```
 
 | When | What | Where |
 |------|------|-------|
-| Anytime | Capture quickly, do not overthink | `0-inbox/` |
-| Daily (2-5 min) | Review captures, promote or discard | `0-inbox/` to `3-zettelkasten/` or `2-sources/` |
-| Weekly (15-30 min) | Write permanent notes, link, update MOCs if clusters emerge | All folders |
+| Anytime | Capture quickly, do not overthink | `1-fleeting/` |
+| Daily (2-5 min) | Review captures, promote or discard | `1-fleeting/` to `3-permanent/` or `2-literature/` |
+| Weekly (15-30 min) | Write permanent notes, link, update index notes if clusters emerge | All folders |
 
 ### Templates
 
 | Template | Target folder | Trigger |
 |----------|--------------|---------|
-| `capture.md` | `0-inbox/` | `:Obsidian new` (default landing) |
-| `daily.md` | `1-daily/` | `:Obsidian today` |
-| `source.md` | `2-sources/` | Insert template after creating note |
-| `permanent.md` | `3-zettelkasten/` | Insert template after creating note |
-| `draft.md` | `4-drafts/` | Insert template after creating note |
+| `daily.md` | `0-daily/` | `:Obsidian today` |
+| `fleeting.md` | `1-fleeting/` | `:Obsidian new` (default landing) |
+| `literature.md` | `2-literature/` | Insert template after creating note |
+| `permanent.md` | `3-permanent/` | Insert template after creating note |
+| `writing.md` | `4-writing/` | Insert template after creating note |
 | `project.md` | `5-projects/` | Insert template after creating note |
 | `meeting.md` | `6-meetings/` | Insert template after creating note |
-| `review.md` | `1-daily/` | Manual (weekly cadence) |
+| `index.md` | `7-index/` | Insert template after creating note |
+| `review.md` | `0-daily/` | Manual (weekly cadence) |
 
 Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). In Obsidian GUI: use the Daily notes core plugin for `daily.md`, and Ctrl/Cmd+P > Insert template for others.
 
@@ -119,7 +120,7 @@ Local machines ---- Syncthing over Tailscale ---- Remote hub (headless Linux) --
 
 Vault content is encrypted with [git-crypt](https://github.com/AGWA/git-crypt) before being pushed to GitHub. Files appear as plaintext locally; GitHub sees ciphertext.
 
-**Encrypted**: `0-inbox/`, `1-daily/`, `2-sources/`, `3-zettelkasten/`, `4-drafts/`, `5-projects/`, `6-meetings/`, `7-mocs/`, `9-assets/`
+**Encrypted**: `0-daily/`, `1-fleeting/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-projects/`, `6-meetings/`, `7-index/`, `9-assets/`
 
 **Unencrypted**: `8-templates/`, `.obsidian/`, repo documentation files
 
@@ -161,7 +162,7 @@ A git post-commit hook syncs public-facing files via rsync after every commit (i
 
 **Synced**: `8-templates/`, `.obsidian/` config, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
 
-**Excluded**: `0-inbox/`, `1-daily/`, `2-sources/`, `3-zettelkasten/`, `4-drafts/`, `5-projects/`, `6-meetings/`, `7-mocs/`, `9-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
+**Excluded**: `0-daily/`, `1-fleeting/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-projects/`, `6-meetings/`, `7-index/`, `9-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 
 Content directories are derived from `.gitattributes` automatically. Adding a new content directory only requires updating `.gitattributes`.
 
