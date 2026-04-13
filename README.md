@@ -1,6 +1,6 @@
 # vault
 
-Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [Neovim](https://github.com/neovim/neovim) ([obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim)).
+Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim): Syncthing sync, git-crypt encryption, and systemd auto-commit.
 
 ## Stack
 

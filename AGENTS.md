@@ -1,6 +1,6 @@
 # AGENTS.md - vault
 
-Zettelkasten knowledge vault for Obsidian and Neovim (obsidian.nvim). Synced via Syncthing over Tailscale with a headless Linux server as the always-on hub. Backed up to GitHub via systemd auto-commit timer.
+Zettelkasten knowledge vault for Obsidian and obsidian.nvim: Syncthing sync, git-crypt encryption, and systemd auto-commit. Syncthing runs over Tailscale with a headless Linux server as the always-on hub. Encrypted content backed up to GitHub via the auto-commit timer.
 
 ## Scope
 
