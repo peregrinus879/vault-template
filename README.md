@@ -51,9 +51,9 @@ Some note types use a `status` frontmatter field to drive processing workflows. 
 
 | Type | Values | Flow |
 |------|--------|------|
-| Meeting | `planned`, `held`, `cancelled` | planned → held or cancelled |
 | Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
 | Project | `planned`, `in-progress`, `completed`, `paused` | planned → in-progress → completed or paused |
+| Meeting | `planned`, `held`, `cancelled` | planned → held or cancelled |
 
 ### Principles
 
