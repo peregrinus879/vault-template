@@ -41,6 +41,25 @@ For vault structure, directory layout, methodology, templates, sync topology, se
 - Do not create index notes preemptively; let them emerge from linked note clusters
 - Move or rename notes only via neo-tree (nvim) or Obsidian's file explorer; both update `[[wiki-links]]` automatically. Do not use terminal `mv` or OS file managers as links will break.
 
+## Post-Change Verification
+
+After any change that adds, renames, or moves content directories, modifies `.gitattributes`, or edits the post-commit hook, you **must** verify no private content can leak. Not every change requires this; routine note edits and template tweaks do not. Use judgment: if the change could affect what gets encrypted or what gets synced to the public repo, run the checks.
+
+### When to verify
+
+- Adding, renaming, or removing a content directory
+- Editing `.gitattributes` (encryption rules)
+- Editing `.git/hooks/post-commit` (public repo sync logic)
+- Editing `.obsidian/daily-notes.json` or `.obsidian/templates.json` (folder paths)
+- Any change that references directory paths in templates, docs, or config
+
+### What to check
+
+1. **git-crypt encryption**: `git-crypt status` must show all files in content directories as `encrypted`. If any content file shows `not encrypted`, stop and fix `.gitattributes` before pushing.
+2. **Public template repo**: `ls ~/projects/repos/templates/vault-template/` must show only empty content directories (with `.gitkeep`), templates, config, and docs. No note content. Grep for any content that should not be there.
+3. **Stale references**: `grep -rn '<old-name>' --include='*.md' --include='*.json' . --exclude-dir=.git` must return no hits outside `.obsidian/workspace-mobile.json` (which Obsidian regenerates).
+4. **obsidian.nvim config**: if directory paths changed, verify `~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua` has the correct `notes_subdir` and `daily_notes.folder` values. This file lives in a separate repo and must be updated and committed independently.
+
 ## Known Limitations
 
 - **Obsidian file explorer**: repo docs (README.md, AGENTS.md, CLAUDE.md, SETUP.md) appear in the Obsidian sidebar. The `userIgnoreFilters` setting in `.obsidian/app.json` only hides files from search, graph, and link suggestions, not from the file explorer. No native fix exists as of 2026-04. Revisit if Obsidian adds explorer-level exclusion.
