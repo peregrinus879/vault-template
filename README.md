@@ -42,16 +42,16 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 | **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
 | **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
 | **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
-| **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Ongoing record |
+| **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Planned → held or cancelled |
 | **Index** | `7-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
 ### Status Lifecycle
 
-Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, literature, meeting, permanent, index) are records with no lifecycle transitions.
+Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, fleeting, literature, permanent, index) exist or are deleted; they have no lifecycle transitions.
 
 | Type | Values | Flow |
 |------|--------|------|
-| Fleeting | `inbox` | inbox → promote or discard |
+| Meeting | `planned`, `held`, `cancelled` | planned → held or cancelled |
 | Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
 | Project | `planned`, `in-progress`, `completed`, `paused` | planned → in-progress → completed or paused |
 

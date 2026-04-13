@@ -3,6 +3,7 @@ date: "{{date}}"
 tags:
   -
 type: meeting
+status: planned
 attendees:
   -
 project:
