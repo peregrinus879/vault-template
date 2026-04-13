@@ -14,8 +14,8 @@ Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [Neovim](ht
 ## Structure
 
 ```text
-0-daily/          Daily journal notes (permanent chronological log, vault entry point)
-1-fleeting/       Quick captures, fleeting notes (processing queue)
+0-daily/          Daily journal notes (ongoing chronological log, vault entry point)
+1-fleeting/       Fleeting notes (processing queue)
 2-literature/     Literature notes (books, articles, podcasts, videos)
 3-permanent/      Permanent notes (atomic, linked, tagged)
 4-writing/        Long-form compositions (drafts, published, abandoned)
@@ -36,13 +36,13 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
-| **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Permanent chronological record |
-| **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into permanent notes or discard |
+| **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Ongoing chronological record |
+| **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into literature or permanent notes, or discard |
 | **Literature** | `2-literature/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
 | **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
 | **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
 | **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
-| **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Permanent record |
+| **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Ongoing record |
 | **Index** | `7-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
 ### Status Lifecycle
@@ -51,14 +51,14 @@ Some note types use a `status` frontmatter field to drive processing workflows. 
 
 | Type | Values | Flow |
 |------|--------|------|
-| Fleeting | `inbox` | inbox → promote or discard |
+| Fleeting | `new` | new → promote or discard |
 | Literature | `in-progress`, `done`, `abandoned` | in-progress → done or abandoned |
 | Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
 | Project | `active`, `completed`, `paused` | active → completed or paused |
 
 ### Principles
 
-1. **Atomic notes**: each note in `3-permanent/` captures one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
+1. **Atomic notes**: each note in `3-permanent/` expresses one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
 2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage. Move or rename notes only via Obsidian or neo-tree (nvim); both update links automatically. Do not use terminal `mv` or OS file managers as links will break.
 3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
 4. **Index notes are emergent**: do not pre-plan index notes. Create an index note in `7-index/` when 5-10 related notes naturally cluster. A good index note reads like a guided tour, not a table of contents.
@@ -81,7 +81,7 @@ Permanent (3-permanent/)
 | When | What | Where |
 |------|------|-------|
 | Anytime | Capture quickly, do not overthink | `1-fleeting/` |
-| Daily (2-5 min) | Review captures, promote or discard | `1-fleeting/` to `3-permanent/` or `2-literature/` |
+| Daily (2-5 min) | Review fleeting notes, promote or discard | `1-fleeting/` to `3-permanent/` or `2-literature/` |
 | Weekly (15-30 min) | Write permanent notes, link, update index notes if clusters emerge | All folders |
 
 ### Templates

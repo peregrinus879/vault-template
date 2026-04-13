@@ -3,7 +3,7 @@ date: "{{date}}"
 tags:
   -
 type: fleeting
-status: inbox
+status: new
 ---
 
 # {{title}}

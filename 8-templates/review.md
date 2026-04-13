@@ -7,8 +7,8 @@ type: review
 
 # Weekly Review - {{date}}
 
-## Inbox Triage
-- [ ] Review all captures in `1-fleeting/`
+## Triage
+- [ ] Review all notes in `1-fleeting/`
 - [ ] Promote, link, or discard each item
 
 ## Permanent Notes
