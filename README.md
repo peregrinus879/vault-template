@@ -38,7 +38,7 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 |------|--------|---------|----------|
 | **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Ongoing chronological record |
 | **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into literature or permanent notes, or discard |
-| **Literature** | `2-literature/` | Summaries of external sources (books, articles, podcasts, videos) | Permanent, tied to a source |
+| **Literature** | `2-literature/` | Summaries of external sources (books, articles, podcasts, videos) | Lasting; tied to a source |
 | **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
 | **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
 | **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
@@ -81,7 +81,7 @@ Permanent (3-permanent/)
 | When | What | Where |
 |------|------|-------|
 | Anytime | Capture quickly, do not overthink | `1-fleeting/` |
-| Daily (2-5 min) | Review fleeting notes, promote or discard | `1-fleeting/` to `3-permanent/` or `2-literature/` |
+| Daily (2-5 min) | Review fleeting notes, promote or discard | `1-fleeting/` to `2-literature/` or `3-permanent/` |
 | Weekly (15-30 min) | Write permanent notes, link, update index notes if clusters emerge | All folders |
 
 ### Templates

@@ -35,7 +35,7 @@ For vault structure, directory layout, methodology, templates, sync topology, se
 ## Workflow
 
 - Capture quickly in `1-fleeting/` without overthinking structure
-- Process daily: review fleeting notes, promote to `3-permanent/` or `2-literature/` if worth keeping
+- Process daily: review fleeting notes, promote to `2-literature/` or `3-permanent/` if worth keeping
 - Process weekly: write permanent notes, update index notes if clusters emerge
 - Always link: when writing in `3-permanent/`, ask "what existing notes does this connect to?"
 - Do not create index notes preemptively; let them emerge from linked note clusters

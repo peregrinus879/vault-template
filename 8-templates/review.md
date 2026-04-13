@@ -15,7 +15,7 @@ type: review
 - What new permanent notes emerged this week?
 -
 
-## Sources
+## Literature
 - What am I reading/watching? What is worth finishing?
 -
 
