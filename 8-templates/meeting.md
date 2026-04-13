@@ -1,7 +1,8 @@
 ---
 date: "{{date}}"
 tags:
-  - meeting
+  -
+type: meeting
 attendees:
   -
 project:
@@ -19,4 +20,8 @@ project:
 - [ ] Owner: task (by YYYY-MM-DD)
 
 ## Decisions
+-
+
+## Permanent Note Candidates
+<!-- Any ideas from this meeting worth capturing as permanent notes? -->
 -

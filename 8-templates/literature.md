@@ -1,24 +1,36 @@
 ---
 date: "{{date}}"
 tags:
-  - source
-type:
+  -
+type: literature
 source:
 author:
-url:
 year:
+url:
 status: in-progress
 ---
 
 # {{title}}
 
+<!-- Write selectively and in your own words. This note should generate permanent notes, not replace them. -->
+
 ## Summary
 
-## Key Ideas
+
+## Key Arguments
 -
 
-## Quotes
+## Notable Passages
+<!-- Paraphrase or note why each passage matters, not just the quote. -->
+-
+
+## My Response
+
+
+## Permanent Note Candidates
+<!-- What claims or ideas from this source deserve their own permanent note? -->
 -
 
 ## Connections
+<!-- Link to existing notes. Use "because" to articulate the relationship. -->
 -

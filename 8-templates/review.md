@@ -1,13 +1,14 @@
 ---
 date: "{{date}}"
 tags:
-  - review
+  -
+type: review
 ---
 
 # Weekly Review - {{date}}
 
 ## Inbox Triage
-- [ ] Review all captures in `0-inbox/`
+- [ ] Review all captures in `1-fleeting/`
 - [ ] Promote, link, or discard each item
 
 ## Permanent Notes
@@ -18,12 +19,12 @@ tags:
 - What am I reading/watching? What is worth finishing?
 -
 
-## Drafts
+## Writing
 - What drafts need attention? Any ready to publish?
 -
 
-## MOCs
-- Are any note clusters forming that need a MOC?
+## Index Notes
+- Are any note clusters forming that need an index note?
 -
 
 ## Projects

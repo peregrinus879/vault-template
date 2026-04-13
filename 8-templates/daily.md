@@ -1,7 +1,8 @@
 ---
 date: "{{date}}"
 tags:
-  - daily
+  -
+type: daily
 ---
 
 # {{date}}
@@ -16,4 +17,5 @@ tags:
 -
 
 ## Connections
+<!-- Any ideas worth a permanent note? Any links to existing notes? -->
 -

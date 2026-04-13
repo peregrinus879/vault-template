@@ -1,7 +1,8 @@
 ---
 date: "{{date}}"
 tags:
-  - draft
+  -
+type: writing
 status: draft
 ---
 

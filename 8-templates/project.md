@@ -1,7 +1,8 @@
 ---
 date: "{{date}}"
 tags:
-  - project
+  -
+type: project
 status: active
 deadline:
 ---
@@ -30,4 +31,8 @@ deadline:
 -
 
 ## Notes
+-
+
+## Permanent Note Candidates
+<!-- What reusable insights emerged from this project? -->
 -
