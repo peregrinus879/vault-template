@@ -373,13 +373,16 @@ syncthing cli config options relays-enabled set false
 
 *Skip this section if you don't use Neovim.*
 
-If the machine uses `dotfiles-arch` via GNU Stow:
+If the machine uses `dotfiles-arch` or `dotfiles-omarchy` via GNU Stow:
 
 ```bash
+# dotfiles-arch
 cd ~/projects/repos/dotfiles/dotfiles-arch && git pull && stow -R -v -t ~ nvim
+# or dotfiles-omarchy
+cd ~/projects/repos/dotfiles/dotfiles-omarchy && git pull && stow -R -v -t ~ nvim
 ```
 
-If the machine uses a separate nvim config (e.g., Omarchy default):
+If the machine uses a separate nvim config:
 
 ```bash
 cp ~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua \

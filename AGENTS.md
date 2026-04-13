@@ -15,7 +15,7 @@ It owns:
 
 It does not own:
 
-- Neovim plugin configuration (lives in `dotfiles-arch`)
+- Neovim plugin configuration (lives in `dotfiles-arch` and `dotfiles-omarchy`)
 - Syncthing configuration (system service on the remote hub)
 - Git auto-commit timer (systemd user unit on the remote hub)
 - Public template repo (`vault-template`); synced automatically via post-commit hook
@@ -60,7 +60,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 1. **git-crypt encryption**: `git-crypt status` must show all files in content directories as `encrypted`. If any content file shows `not encrypted`, stop and fix `.gitattributes` before pushing.
 2. **Public template repo**: `ls ~/projects/repos/templates/vault-template/` must show only empty content directories (with `.gitkeep`), templates, config, and docs. No note content. Grep for any content that should not be there.
 3. **Stale references**: `grep -rn '<old-name>' --include='*.md' --include='*.json' . --exclude-dir=.git` must return no hits outside `.obsidian/workspace-mobile.json` (which Obsidian regenerates).
-4. **obsidian.nvim config**: if directory paths changed, verify `~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua` has the correct `notes_subdir` and `daily_notes.folder` values. This file lives in a separate repo and must be updated and committed independently.
+4. **obsidian.nvim config**: if directory paths changed, verify `~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua` and `~/projects/repos/dotfiles/dotfiles-omarchy/nvim/.config/nvim/lua/plugins/obsidian.lua` have the correct `notes_subdir` and `daily_notes.folder` values. These files live in separate repos and must be updated and committed independently.
 
 ## Known Limitations
 
