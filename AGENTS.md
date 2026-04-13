@@ -23,6 +23,7 @@ It does not own:
 ## Key Files
 
 - `README.md` - structure, methodology, and overview
+- `WORKFLOW.md` - vault workflow tutorial and naming conventions
 - `SETUP.md` - full setup guide with commands and app links for all devices
 - `AGENTS.md` - canonical assistant context
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
@@ -34,6 +35,7 @@ For vault structure, directory layout, methodology, templates, sync topology, se
 
 ## Workflow
 
+- Title permanent notes as declarative claims, not topics. See `WORKFLOW.md` for the full naming convention.
 - Capture quickly in `1-fleeting/` without overthinking structure
 - Process daily: review fleeting notes, promote to `2-literature/` or `3-permanent/` if worth keeping
 - Process weekly: write permanent notes, update index notes if clusters emerge
@@ -62,7 +64,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 
 ## Known Limitations
 
-- **Obsidian file explorer**: repo docs (README.md, AGENTS.md, CLAUDE.md, SETUP.md) appear in the Obsidian sidebar. The `userIgnoreFilters` setting in `.obsidian/app.json` only hides files from search, graph, and link suggestions, not from the file explorer. No native fix exists as of 2026-04. Revisit if Obsidian adds explorer-level exclusion.
+- **Obsidian file explorer**: repo docs (README.md, WORKFLOW.md, AGENTS.md, CLAUDE.md, SETUP.md) appear in the Obsidian sidebar. The `userIgnoreFilters` setting in `.obsidian/app.json` only hides files from search, graph, and link suggestions, not from the file explorer. No native fix exists as of 2026-04. Revisit if Obsidian adds explorer-level exclusion.
 
 ## Neovim Usage
 

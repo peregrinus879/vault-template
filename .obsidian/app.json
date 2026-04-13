@@ -4,6 +4,7 @@
     "CLAUDE.md",
     "README.md",
     "SETUP.md",
+    "WORKFLOW.md",
     "LICENSE"
   ],
   "mobilePullAction": "insert-template"

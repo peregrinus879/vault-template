@@ -83,6 +83,8 @@ Permanent (3-permanent/)
 | Daily (2-5 min) | Review fleeting notes, promote or discard | `1-fleeting/` to `2-literature/` or `3-permanent/` |
 | Weekly (15-30 min) | Write permanent notes, link, update index notes if clusters emerge | All folders |
 
+For a step-by-step walkthrough of this workflow, naming conventions, and keybindings, see [WORKFLOW.md](WORKFLOW.md).
+
 ### Templates
 
 | Template | Target folder | Trigger |
@@ -159,7 +161,7 @@ A public template repo ([vault-template](https://github.com/peregrinus879/vault-
 
 A git post-commit hook syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, and documentation are copied. The public repo has its own deploy key for unattended push.
 
-**Synced**: `8-templates/`, `.obsidian/` config, `README.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
+**Synced**: `8-templates/`, `.obsidian/` config, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
 
 **Excluded**: `0-daily/`, `1-fleeting/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-projects/`, `6-meetings/`, `7-index/`, `9-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 
@@ -178,6 +180,7 @@ See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
 ## References
 
 - `README.md` - structure, methodology, and overview
+- `WORKFLOW.md` - vault workflow tutorial and naming conventions
 - `SETUP.md` - full setup guide with commands and app links
 - `AGENTS.md` - canonical assistant context
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`

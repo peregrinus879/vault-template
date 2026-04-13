@@ -226,6 +226,7 @@ rsync -a --delete \
   --exclude='.gitattributes' \
   --exclude='.stignore' \
   --exclude='.stfolder/' \
+  --exclude='.stversions/' \
   --exclude='.trash/' \
   --exclude='.claude/' \
   --exclude='.obsidian/workspace.json' \
@@ -282,7 +283,7 @@ chmod +x ~/vault/.git/hooks/post-commit
 | `--filter='P LICENSE'` | Protects `LICENSE` (exists only in public repo) from deletion |
 | `--exclude='.git/'` | Never touches git internals |
 | `--exclude='.gitattributes'` | git-crypt rules stay in private repo only |
-| `--exclude='.stignore'`, `'.stfolder/'`, `'.trash/'`, `'.claude/'` | Syncthing, trash, and Claude artifacts stay private |
+| `--exclude='.stignore'`, `'.stfolder/'`, `'.stversions/'`, `'.trash/'`, `'.claude/'` | Syncthing, trash, and Claude artifacts stay private |
 | `--exclude='.obsidian/workspace*.json'`, `'.obsidian/cache'` | Machine-specific Obsidian state excluded |
 | `--delete` | Files removed from vault's public-facing set are removed from public repo |
 
