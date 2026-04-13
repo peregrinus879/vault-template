@@ -3,7 +3,7 @@ date: "{{date}}"
 tags:
   -
 type: project
-status: active
+status: planned
 deadline:
 ---
 

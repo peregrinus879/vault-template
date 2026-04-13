@@ -20,7 +20,7 @@ Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [Neovim](ht
 3-permanent/      Permanent notes (atomic, linked, tagged)
 4-writing/        Long-form compositions (drafts, published, abandoned)
 5-projects/       Active project notes (time-bound)
-  _archive/       Completed or paused projects
+  _archive/       Completed projects (spatial declutter, not a status)
 6-meetings/       Meeting notes
 7-index/          Index notes (curated entry points, emergent)
 8-templates/      Note templates
@@ -47,14 +47,13 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 
 ### Status Lifecycle
 
-Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, meeting, permanent, index) are records with no lifecycle transitions.
+Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, literature, meeting, permanent, index) are records with no lifecycle transitions.
 
 | Type | Values | Flow |
 |------|--------|------|
-| Fleeting | `new` | new → promote or discard |
-| Literature | `in-progress`, `done`, `abandoned` | in-progress → done or abandoned |
+| Fleeting | `inbox` | inbox → promote or discard |
 | Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
-| Project | `active`, `completed`, `paused` | active → completed or paused |
+| Project | `planned`, `in-progress`, `completed`, `paused` | planned → in-progress → completed or paused |
 
 ### Principles
 

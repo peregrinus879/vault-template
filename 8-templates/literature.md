@@ -7,7 +7,6 @@ source:
 author:
 year:
 url:
-status: in-progress
 ---
 
 # {{title}}
