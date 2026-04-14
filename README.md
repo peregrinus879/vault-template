@@ -90,7 +90,6 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 | Template | Target folder | Trigger |
 |----------|--------------|---------|
 | `daily.md` | `0-daily/` | `<leader>od` (`:Obsidian today`) |
-| `review.md` | `0-daily/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `fleeting.md` | `1-fleeting/` | `<leader>on` (`:Obsidian new`) |
 | `literature.md` | `2-literature/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `permanent.md` | `3-permanent/` | `<leader>oN` (`:Obsidian new_from_template`) |
@@ -98,6 +97,7 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 | `project.md` | `5-projects/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `meeting.md` | `6-meetings/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `index.md` | `7-index/` | `<leader>oN` (`:Obsidian new_from_template`) |
+| `review.md` | `0-daily/` | `<leader>oN` (`:Obsidian new_from_template`) |
 
 Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). `<leader>oN` picks a template from a list and routes the note to the correct folder. In Obsidian GUI: use the Daily notes core plugin for `daily.md`, and Ctrl/Cmd+P > Insert template for others.
 

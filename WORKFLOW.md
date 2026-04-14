@@ -71,7 +71,6 @@ The "title" column is what you type when creating a note. obsidian.nvim converts
 | Type | Title you type | Slug filename |
 |------|---------------|---------------|
 | Daily | (auto, via `<leader>od`) | `2026-04-13.md` |
-| Review | `2026-04-19 Weekly Review` | `2026-04-19-weekly-review.md` |
 | Fleeting | `Contingency is not a buffer` | `contingency-is-not-a-buffer.md` |
 | Literature | `Ahrens 2017 - How to Take Smart Notes` | `ahrens-2017---how-to-take-smart-notes.md` |
 | Permanent | `Risk appetite is a board-level choice, not a risk-team calculation` | `risk-appetite-is-a-board-level-choice-not-a-risk-team-calculation.md` |
@@ -79,6 +78,7 @@ The "title" column is what you type when creating a note. obsidian.nvim converts
 | Project | `Line 3 upgrade - baseline schedule` | `line-3-upgrade---baseline-schedule.md` |
 | Meeting | `2026-04-13 Sponsor - gate 2 review` | `2026-04-13-sponsor---gate-2-review.md` |
 | Index | `How controls fail in capital projects` | `how-controls-fail-in-capital-projects.md` |
+| Review | `2026-04-19 Weekly Review` | `2026-04-19-weekly-review.md` |
 
 ### Rules
 
