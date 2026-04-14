@@ -63,10 +63,10 @@ A naming system drawn from Ahrens' *How to Take Smart Notes*, adapted for this v
 | Fleeting | `Short phrase, sentence case.md` | `Contingency is not a buffer.md` |
 | Literature | `Author YYYY - Short source title.md` | `Ahrens 2017 - How to Take Smart Notes.md` |
 | Permanent | `Full claim as a sentence, sentence case, no trailing period.md` | `Risk appetite is a board-level choice, not a risk-team calculation.md` |
-| Index | `Theme or question, sentence case.md` | `How controls fail in capital projects.md` |
+| Writing | `Working title, sentence case.md` | `The case against stage-gate theatre.md` |
 | Project | `Project shortname - purpose.md` | `Line 3 upgrade - baseline schedule.md` |
 | Meeting | `YYYY-MM-DD Counterparty - topic.md` | `2026-04-13 Sponsor - gate 2 review.md` |
-| Writing | `Working title, sentence case.md` | `The case against stage-gate theatre.md` |
+| Index | `Theme or question, sentence case.md` | `How controls fail in capital projects.md` |
 
 ### Rules
 

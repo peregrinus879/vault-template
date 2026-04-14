@@ -90,6 +90,7 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 | Template | Target folder | Trigger |
 |----------|--------------|---------|
 | `daily.md` | `0-daily/` | `:Obsidian today` |
+| `review.md` | `0-daily/` | Manual (weekly cadence) |
 | `fleeting.md` | `1-fleeting/` | `:Obsidian new` (default landing) |
 | `literature.md` | `2-literature/` | Insert template after creating note |
 | `permanent.md` | `3-permanent/` | Insert template after creating note |
@@ -97,7 +98,6 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 | `project.md` | `5-projects/` | Insert template after creating note |
 | `meeting.md` | `6-meetings/` | Insert template after creating note |
 | `index.md` | `7-index/` | Insert template after creating note |
-| `review.md` | `0-daily/` | Manual (weekly cadence) |
 
 Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). In Obsidian GUI: use the Daily notes core plugin for `daily.md`, and Ctrl/Cmd+P > Insert template for others.
 
