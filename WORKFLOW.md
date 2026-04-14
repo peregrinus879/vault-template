@@ -293,9 +293,11 @@ Obsidian mobile is for capture, not composition.
 4. Type the thought. Save.
 5. Syncthing pushes it to the hub within seconds to minutes.
 
+**Insert template on mobile:** swipe down (pull) on an open note to trigger the template picker. This is configured via `mobilePullAction` in `.obsidian/app.json`.
+
 **Limitations:**
 
-- Templates are not auto-applied on new notes. Mobile fleeting notes will be rawer. Process them during triage on desktop or terminal.
+- Templates are not auto-applied when creating a new note. Use the pull-down gesture or the command palette to insert one. Mobile fleeting notes will be rawer regardless. Process them during triage on desktop or terminal.
 - Syncthing on Android pauses on battery saver. If captures are not syncing, check Syncthing-Fork is running and not throttled.
 - Do not rename or move notes from the Android Files app. Use Obsidian's file explorer only; it updates wiki-links on rename and move.
 
@@ -324,7 +326,7 @@ This opens the `0-daily/` directory listing in Neovim. obsidian.nvim loads autom
 
 All obsidian.nvim keybindings (`<leader>od`, `<leader>on`, etc.) work from Normal mode.
 
-**Leader key.** In LazyVim, the leader key is `Space`. When this document says `<leader>od`, press Space, then `o`, then `d`. Press Space and wait; [which-key](https://github.com/folke/which-key.nvim) shows all available bindings.
+**Leader key.** In LazyVim, the leader key is `Space`. When this document says `<leader>od`, press Space, then `o`, then `d`. Press Space and wait; [which-key](https://github.com/folke/which-key.nvim) shows all available bindings grouped by category. If you forget any keybinding, press Space and read the menu.
 
 **Navigation:**
 
@@ -332,9 +334,15 @@ All obsidian.nvim keybindings (`<leader>od`, `<leader>on`, etc.) work from Norma
 |---|---|
 | `h` `j` `k` `l` | Move left, down, up, right (arrow keys also work) |
 | `w` / `b` | Jump forward / backward by word |
+| `e` | Jump to end of current word |
+| `0` / `$` | Jump to beginning / end of line |
 | `gg` / `G` | Jump to top / bottom of file |
 | `Ctrl+d` / `Ctrl+u` | Scroll half-page down / up |
+| `{` / `}` | Jump to previous / next blank line (paragraph) |
 | `/text` then `Enter` | Search for "text" in the file. `n` / `N` for next / previous match. |
+| `s` | Flash jump: type 2 characters, then a label to jump anywhere visible |
+
+Flash (`s`) is a LazyVim plugin that lets you jump to any visible text. Press `s`, type the first two characters of where you want to land, then press the highlighted label. Faster than scrolling for long notes.
 
 **Editing:**
 
@@ -344,24 +352,90 @@ All obsidian.nvim keybindings (`<leader>od`, `<leader>on`, etc.) work from Norma
 | `a` | Insert text after cursor |
 | `o` | Open new line below and enter Insert mode |
 | `O` | Open new line above and enter Insert mode |
+| `A` | Insert text at end of line |
 | `dd` | Delete current line |
+| `cc` | Delete current line and enter Insert mode |
+| `ciw` | Delete the word under cursor and enter Insert mode |
 | `u` | Undo |
 | `Ctrl+r` | Redo |
 | `yy` | Copy (yank) current line |
 | `p` | Paste below cursor |
+| `Alt+j` / `Alt+k` | Move current line (or selection) down / up |
+| `gcc` | Toggle comment on current line |
+| `>` / `<` | Indent / dedent (in Visual mode, stays selected) |
+
+`ciw` ("change inner word") is useful for fixing typos: place the cursor on a word, press `ciw`, type the replacement. Similarly, `ci"` changes text inside quotes, `ci(` inside parentheses, `ci[` inside brackets.
 
 **Saving and quitting:**
 
 | Keys | Action |
 |---|---|
+| `Ctrl+s` | Save (works in Normal and Insert mode) |
 | `:w` | Save |
 | `:q` | Quit (fails if unsaved changes exist) |
 | `:wq` or `ZZ` | Save and quit |
 | `:q!` | Quit without saving (discards changes) |
+| `<leader>qq` | Quit all open windows |
+
+### Working with Multiple Files
+
+When working in the vault, you will often have several notes open at once: a daily note, a fleeting note you are triaging, and the permanent note you are writing. LazyVim manages these as **buffers** shown in a tab bar at the top of the screen.
+
+**Switching between open files:**
+
+| Keys | Action |
+|---|---|
+| `Shift+l` | Next buffer (tab) |
+| `Shift+h` | Previous buffer (tab) |
+| `<leader>bb` | Switch to last-used buffer (toggle between two files) |
+| `<leader>,` | Browse all open buffers in a picker |
+
+**Closing files:**
+
+| Keys | Action |
+|---|---|
+| `<leader>bd` | Close the current buffer |
+| `<leader>bo` | Close all buffers except the current one |
+
+**Finding files across the vault:**
+
+| Keys | Action |
+|---|---|
+| `<leader><space>` | Find file by name (fuzzy search across the vault) |
+| `<leader>/` | Search file contents (grep across the vault) |
+| `<leader>fr` | Recent files (files you opened recently) |
+
+These pickers let you type a few characters and instantly narrow results. Press `Enter` to open the selected file. Press `Esc` to cancel.
+
+Note: obsidian.nvim has its own pickers (`<leader>oo` for notes by name, `<leader>os` for content search) that are scoped to the vault and aware of note metadata. Use whichever feels faster; they open the same files.
+
+**Side-by-side editing (splits):**
+
+When writing a permanent note, you may want a literature note open beside it for reference.
+
+| Keys | Action |
+|---|---|
+| `<leader>\|` | Split window vertically (side by side) |
+| `<leader>-` | Split window horizontally (stacked) |
+| `Ctrl+h` / `Ctrl+l` | Move focus to left / right window |
+| `Ctrl+j` / `Ctrl+k` | Move focus to lower / upper window |
+| `<leader>wd` | Close the current window (buffer stays open) |
+| `<leader>wm` | Zoom: maximize the current window (toggle) |
+
+To open a literature note beside your permanent note: press `<leader>|` to split, then `<leader><space>` or `<leader>oo` to find and open the reference file in the new pane. Press `Ctrl+h` / `Ctrl+l` to move between the two panes.
+
+**Focused writing:**
+
+| Keys | Action |
+|---|---|
+| `<leader>uz` | Toggle zen mode (hides UI, centers text) |
+| `<leader>uw` | Toggle word wrap (useful for long markdown lines) |
+| `<leader>us` | Toggle spell checking |
+| `<leader>um` | Toggle rendered markdown (preview headers, lists, links inline) |
 
 ### Neo-tree
 
-Neo-tree is the file explorer sidebar. It is the primary tool for creating, renaming, moving, and deleting notes in Neovim.
+Neo-tree is the file explorer sidebar. It is the primary tool for browsing, creating, renaming, moving, and deleting notes in Neovim.
 
 **Toggle:** `<leader>e`
 
@@ -373,6 +447,9 @@ Neo-tree is the file explorer sidebar. It is the primary tool for creating, rena
 | `Enter` or `l` | Open file or expand directory |
 | `h` | Collapse directory or go to parent |
 | `Backspace` | Go to parent directory |
+| `.` | Set the selected directory as the tree root |
+| `H` | Toggle hidden files (dotfiles) |
+| `z` | Close all expanded directories (reset the tree) |
 | `?` | Show all neo-tree keybindings |
 
 **File operations:**
@@ -380,11 +457,30 @@ Neo-tree is the file explorer sidebar. It is the primary tool for creating, rena
 | Keys | Action |
 |---|---|
 | `a` | Create new file. Type the name, press Enter. Add a trailing `/` to create a directory instead. |
+| `A` | Create new directory. |
 | `r` | Rename file. obsidian.nvim rewrites all `[[wiki-links]]` across the vault. |
+| `b` | Rename only the base name (filename without extension). |
 | `d` | Delete file (confirms before deleting). |
 | `m` | Move file (prompts for destination path). |
-| `c` | Copy file. |
-| `y` | Copy file name or path. |
+| `c` | Copy file (prompts for destination). |
+| `x` | Cut file to clipboard (for pasting with `p`). |
+| `p` | Paste file from clipboard. |
+| `y` | Copy file name or path to clipboard. |
+| `Y` | Copy full file path to system clipboard. |
+| `i` | Show file details (size, modified date). |
+
+**Opening files from neo-tree:**
+
+| Keys | Action |
+|---|---|
+| `Enter` or `l` | Open in the current window |
+| `s` | Open in a vertical split (side by side) |
+| `S` | Open in a horizontal split (stacked) |
+| `t` | Open in a new tab |
+| `P` | Preview file in a floating window (press again or `Esc` to close) |
+| `w` | Open with window picker (choose which split to open in) |
+
+**Searching in neo-tree:** press `/` inside neo-tree to fuzzy-filter the visible tree. Type part of a filename; matching entries are highlighted and non-matches are hidden. Press `Enter` to jump to the match. Press `Esc` to clear the filter.
 
 **Creating a note in a specific folder:** navigate to the target folder in neo-tree, press `a`, type the full filename including `.md` (e.g., `Ahrens 2017 - How to Take Smart Notes.md`), press Enter. The file is created inside that folder. This is the recommended way to create literature and permanent notes, because the filename is used exactly as typed, following the [naming conventions](#naming-conventions).
 
@@ -490,9 +586,32 @@ If you find yourself writing "see also" followed by 30 bullets, you are making a
 | `<leader>e` | Toggle file explorer |
 | `a` | Create file (or directory with trailing `/`) |
 | `r` | Rename (updates wiki-links) |
+| `b` | Rename base name only |
 | `m` | Move |
 | `d` | Delete |
+| `s` / `S` | Open in vertical / horizontal split |
+| `P` | Preview in floating window |
+| `/` | Fuzzy filter the tree |
+| `H` | Toggle hidden files |
+| `z` | Close all expanded directories |
 | `?` | Show all keybindings |
+
+### Files and Windows
+
+| Keys | Action |
+|------|--------|
+| `Shift+h` / `Shift+l` | Previous / next buffer |
+| `<leader>bb` | Switch to last-used buffer |
+| `<leader>,` | Browse open buffers |
+| `<leader>bd` | Close current buffer |
+| `<leader>bo` | Close all other buffers |
+| `<leader><space>` | Find file by name |
+| `<leader>/` | Grep across vault |
+| `<leader>fr` | Recent files |
+| `<leader>\|` / `<leader>-` | Split vertical / horizontal |
+| `Ctrl+h` `Ctrl+j` `Ctrl+k` `Ctrl+l` | Move focus between windows |
+| `<leader>wd` | Close current window |
+| `<leader>wm` | Zoom (maximize window) |
 
 ### Obsidian Desktop
 
@@ -511,9 +630,15 @@ If you find yourself writing "see also" followed by 30 bullets, you are making a
 | `i` / `a` / `o` | Enter Insert mode (before cursor / after cursor / new line below) |
 | `Esc` | Return to Normal mode |
 | `<leader>` (Space) | Open which-key menu (shows all bindings) |
-| `:w` | Save |
+| `Ctrl+s` | Save |
 | `:wq` or `ZZ` | Save and quit |
 | `u` / `Ctrl+r` | Undo / Redo |
+| `s` | Flash jump (type 2 chars, then label) |
+| `Alt+j` / `Alt+k` | Move line down / up |
+| `gcc` | Toggle comment |
+| `<leader>uz` | Zen mode |
+| `<leader>uw` | Toggle word wrap |
+| `<leader>um` | Toggle rendered markdown |
 
 ## The Minimum Viable Habit
 
