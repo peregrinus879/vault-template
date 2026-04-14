@@ -1,11 +1,11 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: daily
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 ---
 
-# {{date}}
+# {{title}}
 
 ## Plan
 -

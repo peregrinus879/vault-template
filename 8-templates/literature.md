@@ -1,12 +1,9 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: literature
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 source:
-author:
-year:
-url:
 ---
 
 # {{title}}
@@ -16,7 +13,7 @@ url:
 ## Summary
 
 
-## Key Arguments
+## Key Ideas
 -
 
 ## Notable Passages

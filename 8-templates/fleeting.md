@@ -1,8 +1,8 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: fleeting
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 ---
 
 # {{title}}

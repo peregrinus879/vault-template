@@ -1,11 +1,11 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: review
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 ---
 
-# Weekly Review - {{date}}
+# {{title}}
 
 ## Triage
 - [ ] Review all notes in `1-fleeting/`

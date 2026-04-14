@@ -1,8 +1,8 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: writing
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 status: draft
 ---
 

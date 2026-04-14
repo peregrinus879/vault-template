@@ -75,7 +75,8 @@ obsidian.nvim only loads when a markdown file inside `~/vault/` is opened. Keybi
 | Keys | Action |
 |------|--------|
 | `<leader>od` | Open/create daily note |
-| `<leader>on` | New note (lands in `1-fleeting/`) |
+| `<leader>on` | New fleeting note |
+| `<leader>oN` | New note from template (picks template, routes to folder) |
 | `<leader>oo` | Find note (fuzzy search) |
 | `<leader>os` | Search vault content |
 | `<leader>ob` | Show backlinks |

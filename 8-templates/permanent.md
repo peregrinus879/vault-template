@@ -1,8 +1,8 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: permanent
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 source:
 ---
 

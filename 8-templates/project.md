@@ -1,10 +1,10 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: project
-status: planned
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 deadline:
+status: planned
 ---
 
 # {{title}}

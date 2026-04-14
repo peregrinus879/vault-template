@@ -36,7 +36,7 @@ Literature notes persist. They are a lasting record of what a source said, in yo
 
 Permanent notes are the core of the Zettelkasten. Each one states a single claim, links to at least one other note, and is written in your own words. They grow in value as the link network grows.
 
-**Why there is no separate "reference" step.** Some Zettelkasten descriptions separate "reference notes" (bibliographic metadata) from "literature notes" (paraphrased content). In this vault, the literature note template merges both: frontmatter holds the source metadata (`author`, `year`, `url`), and the body holds the paraphrased content. Splitting them only pays off if you routinely write multiple literature notes about different chapters of the same source. For most material, one literature note per source is sufficient.
+**Why there is no separate "reference" step.** Some Zettelkasten descriptions separate "reference notes" (bibliographic metadata) from "literature notes" (paraphrased content). In this vault, the literature note template merges both: frontmatter holds the `source` field, and the body holds the paraphrased content. Splitting them only pays off if you routinely write multiple literature notes about different chapters of the same source. For most material, one literature note per source is sufficient.
 
 ### Why Linking Matters
 
@@ -46,45 +46,54 @@ The value of a Zettelkasten is in the links, not the notes. An unlinked permanen
 
 A naming system drawn from Ahrens' *How to Take Smart Notes*, adapted for this vault. No Folgezettel numbering; `[[wiki-links]]` replace numeric hierarchy.
 
+### How It Works
+
+obsidian.nvim auto-generates filenames and aliases from the title you type:
+
+1. You type a title (e.g., "Risk appetite is a board-level choice")
+2. `note_id_func` creates a slug filename: `risk-appetite-is-a-board-level-choice.md`
+3. The `aliases` frontmatter field preserves your original title for search and `[[link]]` autocomplete
+
+You never need to think about the filename. Type the title naturally; the slug is generated for you.
+
 ### Design Principles
 
 - **Title as claim**: a permanent note's title is its assertion, written as a full declarative sentence. Literature titles point to the source. Fleeting titles are disposable.
 - **Picker-first**: titles are the primary search key in `<leader>oo` and `[[` autocomplete. Start with the content-bearing word, not a date or tag.
-- **Spaces for content, kebab for structure**: content notes use spaces because they are claims written as prose, not code identifiers. Spaces preserve readability inside `[[wiki-links]]` embedded in flowing text. Structural files (templates, daily notes) keep their existing lowercase conventions.
-- **Cross-platform safety**: Syncthing moves files across Linux, Windows (WSL), and Android. Forbidden characters across that set: `: / \ ? * | < > "`. Avoid leading dots, trailing spaces, and trailing periods.
-- **Filename is the single source of truth**: no separate `title:` frontmatter field or Folgezettel IDs needed. `obsidian.nvim` and Obsidian both rewrite every `[[link]]` on rename, so titles can evolve freely.
+- **Slug filenames, readable aliases**: all notes get auto-generated lowercase-hyphenated filenames. The human-readable title lives in the `aliases` frontmatter field, which powers search and link autocomplete. You see the readable title in pickers; the filesystem sees the slug.
+- **Cross-platform safety**: Syncthing moves files across Linux, Windows (WSL), and Android. Slug filenames avoid all platform-specific character issues by design (lowercase, hyphens, alphanumeric only).
+- **Aliases are the single source of truth for display**: the `aliases` field is what appears in search, autocomplete, and link resolution. Both obsidian.nvim and Obsidian rewrite every `[[link]]` on rename, so titles can evolve freely.
 
 ### Convention per Note Type
 
-| Type | Pattern | Example |
-|------|---------|---------|
-| Daily | `YYYY-MM-DD.md` | `2026-04-13.md` |
-| Review | `YYYY-MM-DD Weekly Review.md` | `2026-04-19 Weekly Review.md` |
-| Fleeting | `Short phrase, sentence case.md` | `Contingency is not a buffer.md` |
-| Literature | `Author YYYY - Short source title.md` | `Ahrens 2017 - How to Take Smart Notes.md` |
-| Permanent | `Full claim as a sentence, sentence case, no trailing period.md` | `Risk appetite is a board-level choice, not a risk-team calculation.md` |
-| Writing | `Working title, sentence case.md` | `The case against stage-gate theatre.md` |
-| Project | `Project shortname - purpose.md` | `Line 3 upgrade - baseline schedule.md` |
-| Meeting | `YYYY-MM-DD Counterparty - topic.md` | `2026-04-13 Sponsor - gate 2 review.md` |
-| Index | `Theme or question, sentence case.md` | `How controls fail in capital projects.md` |
+The "title" column is what you type when creating a note. obsidian.nvim converts it to a slug filename and stores the original as an alias.
+
+| Type | Title you type | Slug filename |
+|------|---------------|---------------|
+| Daily | (auto, via `<leader>od`) | `2026-04-13.md` |
+| Review | `2026-04-19 Weekly Review` | `2026-04-19-weekly-review.md` |
+| Fleeting | `Contingency is not a buffer` | `contingency-is-not-a-buffer.md` |
+| Literature | `Ahrens 2017 - How to Take Smart Notes` | `ahrens-2017---how-to-take-smart-notes.md` |
+| Permanent | `Risk appetite is a board-level choice, not a risk-team calculation` | `risk-appetite-is-a-board-level-choice-not-a-risk-team-calculation.md` |
+| Writing | `The case against stage-gate theatre` | `the-case-against-stage-gate-theatre.md` |
+| Project | `Line 3 upgrade - baseline schedule` | `line-3-upgrade---baseline-schedule.md` |
+| Meeting | `2026-04-13 Sponsor - gate 2 review` | `2026-04-13-sponsor---gate-2-review.md` |
+| Index | `How controls fail in capital projects` | `how-controls-fail-in-capital-projects.md` |
 
 ### Rules
 
 1. **Sentence case, always.** Easier to scan; avoids Title Case tax on every new note.
-2. **No ending punctuation** in the filename (no `.`, `?`, `!`). Keeps filenames legal on Windows and clean in the picker.
-3. **Use a hyphen with spaces around it** (` - `) as the only separator. Reads like a colon, filesystem-safe.
-4. **Permanent titles must be declarative claims.** If the title reads as a topic ("risk appetite"), it is wrong. Rewrite as a sentence that asserts something.
-5. **Literature prefix `Author YYYY`** for stable sort and instant disambiguation between two works by the same author.
-6. **ASCII only**: no em dash, no smart quotes, no slashes. Unicode works on Linux and Android but has caused issues on Windows-side Syncthing.
-7. **Rename freely.** `obsidian.nvim` and Obsidian both update every `[[link]]` on rename. The filename is not a commitment; the claim is.
-8. **Fleeting titles are disposable.** Do not invest effort. They die within 48 hours.
-9. **Structural files stay lowercase**: daily notes (`YYYY-MM-DD.md`), templates (`fleeting.md`), repo docs. Only content notes use spaces and sentence case.
+2. **Permanent titles must be declarative claims.** If the title reads as a topic ("risk appetite"), it is wrong. Rewrite as a sentence that asserts something.
+3. **ASCII only in titles**: no em dash, no smart quotes, no slashes. The slug function strips non-alphanumeric characters.
+4. **Rename freely.** obsidian.nvim and Obsidian both update every `[[link]]` on rename. The title is not a commitment; the claim is.
+5. **Fleeting titles are disposable.** Do not invest effort. They die within 48 hours.
+6. **Type the title naturally.** Do not think about filenames. The slug is generated automatically.
 
 ### Trade-offs
 
-**Long filenames.** Permanent notes will routinely be 60 to 100 characters. That is a feature: it forces you to articulate the claim before writing. If the title will not fit in a sentence, the note is not atomic yet.
+**Long slug filenames.** Permanent notes produce long filenames (60-100+ characters after slugification). This is fine; you never type or read the slug. The alias carries the readable title. The long slug is a side effect of long, claim-style titles, which force atomicity.
 
-**Not kebab-case.** Kebab-case serves shell hygiene, URL-safety, and identifier discipline, none of which apply here. It also degrades the readability of `[[wiki-links]]` embedded in prose (`[[risk-appetite-is-a-board-level-choice]]` reads as a slug, not a claim). Kebab-case is retained for structural files only.
+**Aliases in links.** Wiki-links display the alias, not the slug. When you type `[[` and select a note, the link resolves through the alias. If a link renders as a slug in some context, you can add a display name: `[[slug-filename|Readable title]]`.
 
 ## The Daily Loop
 
@@ -115,9 +124,9 @@ When a thought appears that is not tied to your current task, capture it immedia
 <leader>on
 ```
 
-Type a short title, press Enter. The note lands in `1-fleeting/` with auto-generated frontmatter (see [Note Anatomy](#note-anatomy)). The cursor is in the body. Press `<leader>ot`, type `fleeting`, press Enter to insert the template. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
+Type a short title, press Enter. The note lands in `1-fleeting/` with the fleeting template applied automatically: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
 
-Note: `<leader>on` converts the title to lowercase kebab-case for the filename (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). This is fine for fleeting notes, whose titles are disposable. When promoting to literature or permanent, rename the file to follow the [naming conventions](#naming-conventions).
+The filename is a slug (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). Your original title is preserved in the `aliases` field for search and link autocomplete.
 
 **In Obsidian desktop:** press `Ctrl+N` to create a new note. It lands in `1-fleeting/` (configured in Settings > Files and links > Default location). Type the thought.
 
@@ -151,22 +160,22 @@ After triage, return to the daily note and fill in **Log**, **Reflections**, and
 
 Every note has two parts separated by `---` fences:
 
-1. **Frontmatter** (between the `---` lines): metadata like date, tags, and type. Do not write content here.
+1. **Frontmatter** (between the `---` lines): metadata like `id`, `aliases`, and `tags`. Do not write content here.
 2. **Body** (everything after the closing `---`): your actual content. The title heading, template sections, and your writing live here.
 
-When you create a note with `<leader>on`, obsidian.nvim generates frontmatter automatically:
+When you create a note with `<leader>on`, the fleeting template is applied automatically. When you create a note with `<leader>oN`, you pick a template and the note is routed to the correct folder. In both cases, obsidian.nvim generates the base frontmatter:
 
 - **`id`**: the slugified filename (e.g., `quis-custodiet-ipsos-custodes`). Used internally for linking.
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
 - **`tags`**: empty by default. Add tags as needed.
 
-When you insert a template with `<leader>ot`, it merges additional frontmatter fields and adds body sections. Write your content in the body, below any instructional comments.
+Some templates add type-specific fields (e.g., `source` for literature notes, `status` for project notes). Write your content in the body, below any instructional comments.
 
 ### Fleeting Notes
 
 Fleeting notes exist to get thoughts out of your head. They have no quality bar.
 
-The template (`8-templates/fleeting.md`) has minimal structure: a date, tags, type, and a title. The comment reminds you to process within 1-2 days.
+The template (`8-templates/fleeting.md`) has minimal structure: `id`, `aliases`, `tags`, and a title heading. The comment reminds you to process within 1-2 days.
 
 Write fast. Do not format, link, or title carefully. The note dies within 48 hours: it either becomes a literature or permanent note, or it gets deleted.
 
@@ -176,17 +185,17 @@ A literature note answers: **what did this source say, in my words, that I might
 
 **Creating the note:**
 
-*In Neovim:* open neo-tree (`<leader>e`), navigate to `2-literature/`, press `a` to create a new file. Name it as `Author YYYY - Short source title.md`. Open the file. It will be empty (no auto-frontmatter, unlike `<leader>on`). Press `<leader>ot`, type `literature`, press Enter. The template inserts the full frontmatter and all body sections.
+*In Neovim:* press `<leader>oN`. Pick the `literature` template from the picker. Type the title (e.g., "Ahrens 2017 - How to Take Smart Notes"). The note is created in `2-literature/` with a slug filename and the literature template applied.
 
-*In Obsidian:* right-click `2-literature/` in the file explorer, select **New note**. Name it following the same convention. Press `Ctrl+P`, type "Insert template", choose `literature`.
+*In Obsidian:* right-click `2-literature/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `literature`.
 
 **Filling in the template:**
 
 | Section | What to write |
 |---|---|
-| **Frontmatter** | `source`: full title. `author`: name. `year`: publication year. `url`: link if applicable. |
+| **Frontmatter** | `source`: full reference (title, author, year, URL as applicable). |
 | **Summary** | 3-5 sentences. What is this source fundamentally arguing? |
-| **Key Arguments** | Bullets. The author's main claims, not yours. |
+| **Key Ideas** | Bullets. The author's main claims, not yours. |
 | **Notable Passages** | Paraphrase or quote, but each must be followed by *why it matters to you*. A quote without your reaction is decoration. |
 | **My Response** | Where you disagree, where you are convinced, what it connects to in your existing thinking. |
 | **Permanent Note Candidates** | Bullets. Each bullet is a seed for a separate permanent note. This is the most important section; it drives future permanent notes. |
@@ -205,7 +214,7 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 
 **Creating the note:**
 
-*In Neovim:* in neo-tree, navigate to `3-permanent/`, press `a`. Title as a full declarative sentence, sentence case. Open the file. It will be empty. Press `<leader>ot`, type `permanent`, press Enter. The template inserts the full frontmatter and all body sections.
+*In Neovim:* press `<leader>oN`. Pick the `permanent` template from the picker. Type the title as a full declarative sentence, sentence case. The note is created in `3-permanent/` with a slug filename and the permanent template applied.
 
 *In Obsidian:* right-click `3-permanent/` in the file explorer, select **New note**. Title as a claim. Press `Ctrl+P`, type "Insert template", choose `permanent`.
 
@@ -232,7 +241,7 @@ If your note title contains "and" or "also" at the top level, split it.
 
 ### Other Note Types
 
-Writing, project, and meeting notes follow the same pattern: create the file in the target folder, insert the template, fill in the sections. Each template is self-documenting with comments explaining what goes where.
+Writing, project, and meeting notes follow the same pattern: press `<leader>oN`, pick the template, type a title. The note is created in the correct folder with the template applied. Each template is self-documenting with comments explaining what goes where.
 
 | Type | Folder | Template | Key sections |
 |---|---|---|---|
@@ -531,7 +540,7 @@ Neo-tree is the file explorer sidebar. It is the primary tool for browsing, crea
 
 **Searching in neo-tree:** press `/` inside neo-tree to fuzzy-filter the visible tree. Type part of a filename; matching entries are highlighted and non-matches are hidden. Press `Enter` to jump to the match. Press `Esc` to clear the filter.
 
-**Creating a note in a specific folder:** navigate to the target folder in neo-tree, press `a`, type the full filename including `.md` (e.g., `Ahrens 2017 - How to Take Smart Notes.md`), press Enter. The file is created inside that folder. This is the recommended way to create literature and permanent notes, because the filename is used exactly as typed, following the [naming conventions](#naming-conventions).
+**Creating a note in a specific folder:** the recommended way is `<leader>oN`, which picks a template and routes the note to the correct folder automatically. Alternatively, navigate to the target folder in neo-tree, press `a`, type the full filename including `.md`, and press Enter. Notes created via neo-tree `a` do not get auto-generated frontmatter or templates; use `<leader>ot` to insert a template afterward.
 
 ### obsidian.nvim Keybindings
 
@@ -540,7 +549,8 @@ The `<leader>o` keybindings are available from Normal mode as soon as Neovim is 
 | Keys | Action | Command |
 |---|---|---|
 | `<leader>od` | Open or create today's daily note | `:Obsidian today` |
-| `<leader>on` | New note (lands in `1-fleeting/`) | `:Obsidian new` |
+| `<leader>on` | New fleeting note | `:Obsidian new` |
+| `<leader>oN` | New note from template (picks template, routes to folder) | `:Obsidian new_from_template` |
 | `<leader>oo` | Find note by name (fuzzy search) | `:Obsidian quick_switch` |
 | `<leader>os` | Search vault content | `:Obsidian search` |
 | `<leader>ob` | Show backlinks to current note | `:Obsidian backlinks` |
@@ -558,22 +568,21 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 
 **Promoting a fleeting note** (the most common move):
 
-1. In neo-tree (`<leader>e`), navigate to the fleeting note in `1-fleeting/`.
-2. Press `r` to rename. Change the title to a claim-style sentence (see [naming conventions](#naming-conventions)). If the file was created with `<leader>on`, the filename will be in kebab-case; rename it to use spaces.
-3. Press `m` to move. Type the destination path (e.g., `3-permanent/` or `2-literature/`).
-4. Open the note. Clear the body (everything after the closing `---`), then position the cursor below the frontmatter. Press `<leader>ot`, type `permanent` or `literature`, press Enter. The template merges new frontmatter fields and inserts body sections at the cursor.
-5. Write the content. Add at least one `[[link]]` for permanent notes.
+1. Open the fleeting note and read it.
+2. Press `<leader>oN`. Pick the target template (e.g., `permanent` or `literature`).
+3. Type the title (a declarative claim for permanent notes, or "Author YYYY - Title" for literature notes). The new note is created in the correct folder with the template applied.
+4. Write the content in the new note. Add at least one `[[link]]` for permanent notes.
+5. Delete the fleeting note (neo-tree: navigate to it, press `d`).
 
-Alternative: create a fresh note directly in the target folder with `a` in neo-tree, write the content there, and delete the fleeting note. Same result. Fleeting notes rarely have backlinks, so nothing is lost.
+Fleeting notes rarely have backlinks, so nothing is lost by deleting them.
 
 ## The Weekly Review (15-30 minutes)
 
 Do this on Sunday evening or Monday morning.
 
-1. Create `YYYY-MM-DD Weekly Review.md` in `0-daily/`.
-   - *Neovim:* navigate to `0-daily/` in neo-tree, press `a`, type the filename.
-   - *Obsidian:* right-click `0-daily/` > New note.
-2. Insert the `review` template. In Neovim: press `<leader>ot`, type `review`, press Enter. In Obsidian: press `Ctrl+P`, type "Insert template", choose `review`.
+1. Create the review note.
+   - *Neovim:* press `<leader>oN`, pick the `review` template, type the title (e.g., "2026-04-19 Weekly Review"). The note is created in `0-daily/`.
+   - *Obsidian:* right-click `0-daily/` > New note. Press `Ctrl+P`, type "Insert template", choose `review`.
 3. Walk through each template section. Key trigger questions:
    - Any fleeting notes older than 48 hours? Process or delete them now.
    - Any cluster of 5+ permanent notes on one theme? Start an index note in `7-index/`.
@@ -588,8 +597,8 @@ Do this on Sunday evening or Monday morning.
 
 Do not create index notes up front. When you notice 5-10 permanent notes circling the same theme, create one in `7-index/`:
 
-1. Create the file in `7-index/` (neo-tree `a` in Neovim, or right-click in Obsidian's file explorer).
-2. Insert the `index` template. In Neovim: press `<leader>ot`, type `index`, press Enter. In Obsidian: press `Ctrl+P`, type "Insert template", choose `index`.
+1. *Neovim:* press `<leader>oN`, pick the `index` template, type the theme as a title. The note is created in `7-index/`.
+   *Obsidian:* right-click `7-index/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
 3. Write it as a **guided tour**, not a list:
    - **Entry Points**: the 2-3 notes that introduce the theme.
    - **Argument / Path**: arrange notes in a sequence that builds an argument or tells a story.
@@ -609,7 +618,7 @@ If you find yourself writing "see also" followed by 30 bullets, you are making a
 | Renaming files with `mv` in the terminal | Use neo-tree or Obsidian's file explorer. Links break otherwise. |
 | Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. |
 | Waiting for the "right" title before writing | Write the note, title later. Rename is cheap; both editors update links. |
-| Using `<leader>on` for permanent notes without renaming | `<leader>on` creates kebab-case filenames. When promoting, rename to spaces and claim-style title. Or create directly in `3-permanent/` with neo-tree `a`. |
+| Creating permanent notes with `<leader>on` instead of `<leader>oN` | `<leader>on` creates fleeting notes. Use `<leader>oN` to pick the permanent template and route directly to `3-permanent/`. |
 | Ignoring backlinks | Check backlinks (`<leader>ob` or Obsidian's right sidebar) every time you open a permanent note. They surface connections you did not plan. |
 
 ## Quick Reference
@@ -619,7 +628,8 @@ If you find yourself writing "see also" followed by 30 bullets, you are making a
 | Keys | Action |
 |------|--------|
 | `<leader>od` | Open/create daily note |
-| `<leader>on` | New note (lands in `1-fleeting/`) |
+| `<leader>on` | New fleeting note |
+| `<leader>oN` | New note from template (picks template, routes to folder) |
 | `<leader>oo` | Find note by name |
 | `<leader>os` | Search vault content |
 | `<leader>ob` | Show backlinks |

@@ -1,15 +1,16 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: meeting
-status: planned
-attendees:
-  -
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 project:
+status: planned
 ---
 
 # Meeting: {{title}}
+
+## Attendees
+-
 
 ## Agenda
 -

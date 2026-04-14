@@ -1,8 +1,8 @@
 ---
-date: "{{date}}"
-tags:
-  -
-type: index
+id: {{id}}
+aliases:
+  - {{title}}
+tags: []
 ---
 
 # {{title}}
