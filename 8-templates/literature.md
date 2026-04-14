@@ -7,8 +7,7 @@ source:
 ---
 
 # {{title}}
-
-<!-- Write selectively and in your own words. This note should generate permanent notes, not replace them. -->
+<!-- Generates permanent notes, not replaces them. -->
 
 ## Summary
 
@@ -17,16 +16,15 @@ source:
 -
 
 ## Notable Passages
-<!-- Paraphrase or note why each passage matters, not just the quote. -->
+<!-- Paraphrase why it matters, not just the quote. -->
 -
 
 ## My Response
 
 
 ## Permanent Note Candidates
-<!-- What claims or ideas from this source deserve their own permanent note? -->
 -
 
 ## Connections
-<!-- Link to existing notes. Use "because" to articulate the relationship. -->
+<!-- Articulate each link with "because". -->
 -

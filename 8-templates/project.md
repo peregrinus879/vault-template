@@ -34,5 +34,4 @@ status: planned
 -
 
 ## Permanent Note Candidates
-<!-- What reusable insights emerged from this project? -->
 -

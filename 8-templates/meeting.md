@@ -25,5 +25,4 @@ status: planned
 -
 
 ## Permanent Note Candidates
-<!-- Any ideas from this meeting worth capturing as permanent notes? -->
 -
