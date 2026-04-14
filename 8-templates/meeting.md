@@ -3,8 +3,7 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
-project:
-status: planned
+status: scheduled
 ---
 
 # Meeting: {{title}}
@@ -15,14 +14,11 @@ status: planned
 ## Agenda
 -
 
-## Discussion
+## Minutes
 -
 
 ## Action Items
 - [ ] Owner: task (by YYYY-MM-DD)
-
-## Decisions
--
 
 ## Connections
 -

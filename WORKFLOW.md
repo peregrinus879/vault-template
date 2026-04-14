@@ -246,7 +246,7 @@ Writing, project, and meeting notes follow the same pattern: press `<leader>oN`,
 |---|---|---|---|
 | Writing | `4-writing/` | `writing.md` | Outline, Draft, Sources. Status: draft, published, or abandoned. |
 | Project Charter | `5-projects/` | `project-charter.md` | Business Case, Objectives, Sponsors, Scope (Deliverables, Exclusions), Assumptions, Constraints, Stakeholders, Governance, Resources, Schedule, Budget, Risks. |
-| Meeting | `6-meetings/` | `meeting.md` | Attendees, Agenda, Discussion, Action Items, Decisions. Status: planned, held, or cancelled. |
+| Meeting | `6-meetings/` | `meeting.md` | Attendees, Agenda, Minutes, Action Items. Status: scheduled, held, or cancelled. |
 
 All three templates include a **Connections** section. Use it. Reusable insights from projects and meetings should graduate to permanent notes; otherwise they are locked inside a time-bound context.
 
