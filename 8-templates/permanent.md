@@ -8,7 +8,7 @@ source:
 
 # {{title}}
 
-<!-- State one claim, not a topic. If you need "and" or "also", split into two notes. Write in your own words. -->
+<!-- State one claim, not a topic. If you need "and" or "also", split into two notes. Write in your own words below. -->
 
 
 

@@ -7,4 +7,6 @@ type: fleeting
 
 # {{title}}
 
-<!-- Process within 1-2 days: promote to literature/permanent or discard. -->
+<!-- Capture your thought below. Process within 1-2 days: promote, link, or discard. -->
+
+

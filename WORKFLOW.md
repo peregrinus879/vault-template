@@ -115,7 +115,7 @@ When a thought appears that is not tied to your current task, capture it immedia
 <leader>on
 ```
 
-Type a short title, press Enter. The note lands in `1-fleeting/`. Insert the fleeting template with `<leader>ot` and choose `fleeting`. Write the thought in one to three sentences. Do not format, do not link, do not polish.
+Type a short title, press Enter. The note lands in `1-fleeting/` with auto-generated frontmatter (see [Note Anatomy](#note-anatomy)). The cursor is in the body. Press `<leader>ot`, type `fleeting`, press Enter to insert the template. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
 
 Note: `<leader>on` converts the title to lowercase kebab-case for the filename (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). This is fine for fleeting notes, whose titles are disposable. When promoting to literature or permanent, rename the file to follow the [naming conventions](#naming-conventions).
 
@@ -141,11 +141,26 @@ For each note, make one decision:
 | Is your own and worth keeping | Create a permanent note in `3-permanent/`. Delete the fleeting note. |
 | Is noise or redundant | Delete the fleeting note. |
 
-Do not skip. Do not "leave it for tomorrow." An unprocessed fleeting folder is a sign the system is stalling.
+Do not skip. Do not "leave it for tomorrow." An unprocessed fleeting folder is a sign the system is stalling. See [Literature Notes](#literature-notes) and [Permanent Notes](#permanent-notes) for step-by-step creation.
 
 After triage, return to the daily note and fill in **Log**, **Reflections**, and **Connections**.
 
 ## Writing Notes
+
+### Note Anatomy
+
+Every note has two parts separated by `---` fences:
+
+1. **Frontmatter** (between the `---` lines): metadata like date, tags, and type. Do not write content here.
+2. **Body** (everything after the closing `---`): your actual content. The title heading, template sections, and your writing live here.
+
+When you create a note with `<leader>on`, obsidian.nvim generates frontmatter automatically:
+
+- **`id`**: the slugified filename (e.g., `quis-custodiet-ipsos-custodes`). Used internally for linking.
+- **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
+- **`tags`**: empty by default. Add tags as needed.
+
+When you insert a template with `<leader>ot`, it merges additional frontmatter fields and adds body sections. Write your content in the body, below any instructional comments.
 
 ### Fleeting Notes
 
@@ -161,7 +176,7 @@ A literature note answers: **what did this source say, in my words, that I might
 
 **Creating the note:**
 
-*In Neovim:* open neo-tree (`<leader>e`), navigate to `2-literature/`, press `a` to create a new file. Name it as `Author YYYY - Short source title.md`. Open the file, press `<leader>ot`, choose `literature`.
+*In Neovim:* open neo-tree (`<leader>e`), navigate to `2-literature/`, press `a` to create a new file. Name it as `Author YYYY - Short source title.md`. Open the file. It will be empty (no auto-frontmatter, unlike `<leader>on`). Press `<leader>ot`, type `literature`, press Enter. The template inserts the full frontmatter and all body sections.
 
 *In Obsidian:* right-click `2-literature/` in the file explorer, select **New note**. Name it following the same convention. Press `Ctrl+P`, type "Insert template", choose `literature`.
 
@@ -190,9 +205,9 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 
 **Creating the note:**
 
-*In Neovim:* in neo-tree, navigate to `3-permanent/`, press `a`. Title as a full declarative sentence, sentence case. Open the file, press `<leader>ot`, choose `permanent`.
+*In Neovim:* in neo-tree, navigate to `3-permanent/`, press `a`. Title as a full declarative sentence, sentence case. Open the file. It will be empty. Press `<leader>ot`, type `permanent`, press Enter. The template inserts the full frontmatter and all body sections.
 
-*In Obsidian:* right-click `3-permanent/` in the file explorer, select **New note**. Title as a claim. Insert the permanent template via `Ctrl+P` > "Insert template".
+*In Obsidian:* right-click `3-permanent/` in the file explorer, select **New note**. Title as a claim. Press `Ctrl+P`, type "Insert template", choose `permanent`.
 
 **Filling in the template:**
 
@@ -311,7 +326,41 @@ This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the v
 nvim ~/vault/0-daily/
 ```
 
-This opens the `0-daily/` directory listing in Neovim. obsidian.nvim loads automatically when any `.md` file under `~/vault/` is opened. Press `<leader>od` to open today's daily note.
+This opens the `0-daily/` directory listing in neo-tree. The `<leader>o` keybindings (like `<leader>od`) are available immediately; pressing one loads obsidian.nvim and runs the command. Press `<leader>od` to open today's daily note.
+
+### Screen Layout
+
+Neovim is not a conventional editor. There is no menu bar, no toolbar, and no mouse-driven interface. Everything is keyboard-driven. The screen is divided into areas:
+
+```text
+┌──────────┬──────────────────────────────────┐
+│ Neo-tree │  Buffer tab bar                  │
+│ (sidebar)├──────────────────────────────────┤
+│          │                                  │
+│ 0-daily/ │  Editor area                     │
+│ 1-fleeti.│  (your note content goes here)   │
+│ 2-litera.│                                  │
+│ 3-perman.│                                  │
+│ ...      │                                  │
+│          ├──────────────────────────────────┤
+│          │  Status line (mode, filename)    │
+└──────────┴──────────────────────────────────┘
+```
+
+- **Neo-tree** (left sidebar): file explorer. Browse, create, rename, move files.
+- **Editor area** (right): where you read and write notes.
+- **Buffer tab bar** (top of the editor area): each open file is a tab. Switch with `Shift+h` / `Shift+l`.
+- **Status line** (bottom): shows the current mode, filename, and cursor position.
+
+**Moving between areas:**
+
+| Keys | Action |
+|---|---|
+| `<leader>e` | Toggle neo-tree open/closed |
+| `Ctrl+h` | Move focus left (to neo-tree) |
+| `Ctrl+l` | Move focus right (to editor) |
+
+When neo-tree has focus, navigate with `j`/`k` and open files with `Enter`. When the editor has focus, you edit text. The current focus area is highlighted; the unfocused area is dimmed.
 
 ### Neovim Essentials
 
@@ -379,7 +428,7 @@ Flash (`s`) is a LazyVim plugin that lets you jump to any visible text. Press `s
 
 ### Working with Multiple Files
 
-When working in the vault, you will often have several notes open at once: a daily note, a fleeting note you are triaging, and the permanent note you are writing. LazyVim manages these as **buffers** shown in a tab bar at the top of the screen.
+When working in the vault, you will often have several notes open at once: a daily note, a fleeting note you are triaging, and the permanent note you are writing. LazyVim manages these as **buffers** shown in a tab bar at the top of the editor area (see [Screen Layout](#screen-layout)).
 
 **Switching between open files:**
 
@@ -486,7 +535,7 @@ Neo-tree is the file explorer sidebar. It is the primary tool for browsing, crea
 
 ### obsidian.nvim Keybindings
 
-Available in Normal mode when editing any `.md` file under `~/vault/`.
+The `<leader>o` keybindings are available from Normal mode as soon as Neovim is opened inside `~/vault/`. Pressing any of them loads obsidian.nvim automatically.
 
 | Keys | Action | Command |
 |---|---|---|
@@ -512,7 +561,7 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 1. In neo-tree (`<leader>e`), navigate to the fleeting note in `1-fleeting/`.
 2. Press `r` to rename. Change the title to a claim-style sentence (see [naming conventions](#naming-conventions)). If the file was created with `<leader>on`, the filename will be in kebab-case; rename it to use spaces.
 3. Press `m` to move. Type the destination path (e.g., `3-permanent/` or `2-literature/`).
-4. Open the note. Insert the target template (`<leader>ot` > choose `permanent` or `literature`), replacing the fleeting template content.
+4. Open the note. Clear the body (everything after the closing `---`), then position the cursor below the frontmatter. Press `<leader>ot`, type `permanent` or `literature`, press Enter. The template merges new frontmatter fields and inserts body sections at the cursor.
 5. Write the content. Add at least one `[[link]]` for permanent notes.
 
 Alternative: create a fresh note directly in the target folder with `a` in neo-tree, write the content there, and delete the fleeting note. Same result. Fleeting notes rarely have backlinks, so nothing is lost.
@@ -524,7 +573,7 @@ Do this on Sunday evening or Monday morning.
 1. Create `YYYY-MM-DD Weekly Review.md` in `0-daily/`.
    - *Neovim:* navigate to `0-daily/` in neo-tree, press `a`, type the filename.
    - *Obsidian:* right-click `0-daily/` > New note.
-2. Insert the `review` template (`<leader>ot` in Neovim, `Ctrl+P` > "Insert template" in Obsidian).
+2. Insert the `review` template. In Neovim: press `<leader>ot`, type `review`, press Enter. In Obsidian: press `Ctrl+P`, type "Insert template", choose `review`.
 3. Walk through each template section. Key trigger questions:
    - Any fleeting notes older than 48 hours? Process or delete them now.
    - Any cluster of 5+ permanent notes on one theme? Start an index note in `7-index/`.
@@ -540,7 +589,7 @@ Do this on Sunday evening or Monday morning.
 Do not create index notes up front. When you notice 5-10 permanent notes circling the same theme, create one in `7-index/`:
 
 1. Create the file in `7-index/` (neo-tree `a` in Neovim, or right-click in Obsidian's file explorer).
-2. Insert the `index` template.
+2. Insert the `index` template. In Neovim: press `<leader>ot`, type `index`, press Enter. In Obsidian: press `Ctrl+P`, type "Insert template", choose `index`.
 3. Write it as a **guided tour**, not a list:
    - **Entry Points**: the 2-3 notes that introduce the theme.
    - **Argument / Path**: arrange notes in a sequence that builds an argument or tells a story.
