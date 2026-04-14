@@ -22,26 +22,16 @@ It does not own:
 
 ## Key Files
 
-- `README.md` - structure, methodology, and overview
-- `WORKFLOW.md` - vault workflow tutorial and naming conventions
-- `SETUP.md` - full setup guide with commands and app links for all devices
-- `AGENTS.md` - canonical assistant context
+- [README.md](README.md) - vault structure, methodology, templates, sync, security
+- [WORKFLOW.md](WORKFLOW.md) - naming conventions, note creation, processing workflow, keybindings
+- [SETUP.md](SETUP.md) - full setup guide with commands and app links for all devices
+- `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
 - `.git/hooks/post-commit` - auto-sync hook for public template repo
 
-## Reference
+## Commit Policy
 
-For vault structure, directory layout, methodology, templates, sync topology, security, and backup details, see [README.md](README.md).
-
-## Workflow
-
-- Title permanent notes as declarative claims, not topics. See `WORKFLOW.md` for the full naming convention.
-- Capture quickly in `1-fleeting/` without overthinking structure
-- Process daily: review fleeting notes, promote to `2-literature/` or `3-permanent/` if worth keeping
-- Process weekly: write permanent notes, update index notes if clusters emerge
-- Always link: when writing in `3-permanent/`, ask "what existing notes does this connect to?"
-- Do not create index notes preemptively; let them emerge from linked note clusters
-- Move or rename notes only via neo-tree (nvim) or Obsidian's file explorer; both update `[[wiki-links]]` automatically. Do not use terminal `mv` or OS file managers as links will break.
+Only commit `8-templates/`, docs, and config. All other content is captured by the hourly auto-commit timer.
 
 ## Post-Change Verification
 
@@ -65,21 +55,3 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 ## Known Limitations
 
 - **Obsidian file explorer**: repo docs (README.md, WORKFLOW.md, AGENTS.md, CLAUDE.md, SETUP.md) appear in the Obsidian sidebar. The `userIgnoreFilters` setting in `.obsidian/app.json` only hides files from search, graph, and link suggestions, not from the file explorer. No native fix exists as of 2026-04. Revisit if Obsidian adds explorer-level exclusion.
-
-## Neovim Usage
-
-*This section applies to users of [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). Skip if using Obsidian GUI only.*
-
-obsidian.nvim only loads when a markdown file inside `~/vault/` is opened. Keybindings are not available until then. Start a vault session with `nvim ~/vault/0-daily/` or use `<leader>od` to open today's daily note.
-
-| Keys | Action |
-|------|--------|
-| `<leader>od` | Open/create daily note |
-| `<leader>on` | New fleeting note |
-| `<leader>oN` | New note from template (picks template, routes to folder) |
-| `<leader>oo` | Find note (fuzzy search) |
-| `<leader>os` | Search vault content |
-| `<leader>ob` | Show backlinks |
-| `<leader>ot` | Insert template |
-| `<leader>ol` | Show links from current note |
-| `<leader>op` | Paste image from clipboard |

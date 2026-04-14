@@ -450,7 +450,7 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 ### Moving and Renaming Notes Safely
 
-Only rename or move notes through neo-tree or Obsidian's file explorer. Both editors rewrite all `[[wiki-links]]` that point to the file.
+Only rename or move notes through neo-tree or Obsidian's file explorer. Both editors rewrite all `[[wiki-links]]` that point to the file. To re-slug a note created outside obsidian.nvim (e.g., on mobile), open it in Neovim and press `<leader>or`. This renames the file to kebab-case, updates the `id` frontmatter, and preserves the original title as an alias.
 
 **Never** use terminal `mv`, `rm`, ranger, or OS file managers for vault notes. They do not know about wiki-links. Every link pointing to the file will silently break.
 
@@ -469,6 +469,7 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 | `<leader>ot` | Insert template |
 | `<leader>ol` | Show outgoing links |
 | `<leader>op` | Paste image from clipboard |
+| `<leader>or` | Rename note to slug |
 | `[[` | Insert wiki-link (fuzzy picker) |
 
 ### Buffers and Windows
