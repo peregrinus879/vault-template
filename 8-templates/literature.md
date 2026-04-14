@@ -22,9 +22,6 @@ source:
 ## My Response
 
 
-## Permanent Note Candidates
--
-
 ## Connections
 <!-- Articulate each link with "because". -->
 -

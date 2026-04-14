@@ -24,5 +24,5 @@ status: planned
 ## Decisions
 -
 
-## Permanent Note Candidates
+## Connections
 -

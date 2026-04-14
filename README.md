@@ -94,7 +94,7 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 | `literature.md` | `2-literature/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `permanent.md` | `3-permanent/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `writing.md` | `4-writing/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `project.md` | `5-projects/` | `<leader>oN` (`:Obsidian new_from_template`) |
+| `project-charter.md` | `5-projects/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `meeting.md` | `6-meetings/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `index.md` | `7-index/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `review.md` | `0-daily/` | `<leader>oN` (`:Obsidian new_from_template`) |

@@ -198,8 +198,7 @@ A literature note answers: **what did this source say, in my words, that I might
 | **Key Ideas** | Bullets. The author's main claims, not yours. |
 | **Notable Passages** | Paraphrase or quote, but each must be followed by *why it matters to you*. A quote without your reaction is decoration. |
 | **My Response** | Where you disagree, where you are convinced, what it connects to in your existing thinking. |
-| **Permanent Note Candidates** | Bullets. Each bullet is a seed for a separate permanent note. This is the most important section; it drives future permanent notes. |
-| **Connections** | Link to existing notes with `[[...]]`. Explain the link with a because-clause. |
+| **Connections** | Links to existing notes and seeds for future permanent notes. Explain each link with a because-clause. |
 
 Do not try to summarize an entire book in one note. One source = one literature note, but it may seed many permanent notes over time.
 
@@ -246,10 +245,10 @@ Writing, project, and meeting notes follow the same pattern: press `<leader>oN`,
 | Type | Folder | Template | Key sections |
 |---|---|---|---|
 | Writing | `4-writing/` | `writing.md` | Outline, Draft, Sources. Status: draft, published, or abandoned. |
-| Project | `5-projects/` | `project.md` | Objective, Scope, Deliverables, Schedule, Risks, Decisions. Status: planned, in-progress, completed, or paused. |
+| Project Charter | `5-projects/` | `project-charter.md` | Business Case, Objectives, Sponsors, Scope (Deliverables, Exclusions), Assumptions, Constraints, Stakeholders, Governance, Resources, Schedule, Budget, Risks. |
 | Meeting | `6-meetings/` | `meeting.md` | Attendees, Agenda, Discussion, Action Items, Decisions. Status: planned, held, or cancelled. |
 
-All three templates include a **Permanent Note Candidates** section. Use it. Reusable insights from projects and meetings should graduate to permanent notes; otherwise they are locked inside a time-bound context.
+All three templates include a **Connections** section. Use it. Reusable insights from projects and meetings should graduate to permanent notes; otherwise they are locked inside a time-bound context.
 
 ## Promoting Notes
 
