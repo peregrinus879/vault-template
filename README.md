@@ -38,11 +38,11 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 |------|--------|---------|----------|
 | **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Ongoing chronological record |
 | **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into literature or permanent notes, or discard |
-| **Literature** | `2-literature/` | Summaries of external sources (books, articles, podcasts, videos) | Lasting; tied to a source |
+| **Literature** | `2-literature/` | Selective notes on external sources (books, articles, podcasts, videos) | Lasting; tied to a source |
 | **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
 | **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
-| **Project** | `5-projects/` | Time-bound, context-specific work notes | Active during project, then archived |
-| **Meeting** | `6-meetings/` | Structured meeting records with actions and decisions | Planned → held or cancelled |
+| **Project Charter** | `5-projects/` | High-level project authorization document | Active during project, then archived |
+| **Meeting** | `6-meetings/` | Structured meeting records with agenda, minutes, and actions | Scheduled → held or cancelled |
 | **Index** | `7-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
 ### Status Lifecycle
@@ -52,8 +52,7 @@ Some note types use a `status` frontmatter field to drive processing workflows. 
 | Type | Values | Flow |
 |------|--------|------|
 | Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
-| Project | `planned`, `in-progress`, `completed`, `paused` | planned → in-progress → completed or paused |
-| Meeting | `planned`, `held`, `cancelled` | planned → held or cancelled |
+| Meeting | `scheduled`, `held`, `cancelled` | scheduled → held or cancelled |
 
 ### Principles
 
@@ -61,7 +60,7 @@ Some note types use a `status` frontmatter field to drive processing workflows. 
 2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage. Move or rename notes only via Obsidian or neo-tree (nvim); both update links automatically. Do not use terminal `mv` or OS file managers as links will break.
 3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
 4. **Index notes are emergent**: do not pre-plan index notes. Create an index note in `7-index/` when 5-10 related notes naturally cluster. A good index note reads like a guided tour, not a table of contents.
-5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes summarize; permanent notes synthesize.
+5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes quote and paraphrase selectively; permanent notes synthesize.
 6. **Numbered directories**: prefixes (0-9) enforce a logical display order across all tools. The sequence reflects the knowledge lifecycle: anchor, capture, process, synthesize, compose, execute, review, navigate.
 
 ### Processing Workflow

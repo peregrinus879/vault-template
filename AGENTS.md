@@ -8,7 +8,7 @@ This repo is a knowledge base, not a code project. It holds notes, not source co
 
 It owns:
 
-- Zettelkasten permanent notes, daily journals, fleeting notes, project notes, meeting notes, and literature notes
+- Zettelkasten permanent notes, daily journals, fleeting notes, project charters, meeting notes, and literature notes
 - Obsidian app configuration (`.obsidian/`)
 - Note templates
 - Index notes (curated entry points into note clusters)

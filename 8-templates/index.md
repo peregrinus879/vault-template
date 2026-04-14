@@ -6,13 +6,12 @@ tags: []
 ---
 
 # {{title}}
-<!-- Guided tour, not table of contents. -->
+<!-- Guided tour, not table of contents. Arrange notes to build an argument. -->
 
-## Entry Points
--
+## Path
+<!-- Sequence notes in a reading order that tells a story. -->
+- [[]]
 
-## Argument / Path
--
-
-## Open Questions
+## Gaps
+<!-- Missing coverage worth exploring. -->
 -

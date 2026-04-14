@@ -169,7 +169,7 @@ When you create a note with `<leader>on`, the fleeting template is applied autom
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
 - **`tags`**: empty by default. Add tags as needed.
 
-Some templates add type-specific fields (e.g., `source` for literature notes, `status` for project notes). Write your content in the body, below any instructional comments.
+Some templates add type-specific fields (e.g., `source` for literature notes, `status` for writing and meeting notes). Write your content in the body, below any instructional comments.
 
 ### Fleeting Notes
 
@@ -194,11 +194,9 @@ A literature note answers: **what did this source say, in my words, that I might
 | Section | What to write |
 |---|---|
 | **Frontmatter** | `source`: full reference (title, author, year, URL as applicable). |
-| **Summary** | 3-5 sentences. What is this source fundamentally arguing? |
-| **Key Ideas** | Bullets. The author's main claims, not yours. |
-| **Notable Passages** | Paraphrase or quote, but each must be followed by *why it matters to you*. A quote without your reaction is decoration. |
-| **My Response** | Where you disagree, where you are convinced, what it connects to in your existing thinking. |
+| **Body** | Use `>` for quotes, then paraphrase or react in your own words below each. Be selective, not comprehensive. |
 | **Connections** | Links to existing notes and seeds for future permanent notes. Explain each link with a because-clause. |
+| **Attachments** | Source PDFs, screenshots, or diagrams. |
 
 Do not try to summarize an entire book in one note. One source = one literature note, but it may seed many permanent notes over time.
 
@@ -221,11 +219,9 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 
 | Section | What to write |
 |---|---|
-| **Frontmatter** | `source`: the literature note or external source that prompted this, if any. |
 | **Body** | One or two paragraphs stating the claim and why you hold it. Your own words only. |
-| **Why It Matters** | What decisions or other ideas does this claim affect? |
 | **Connections** | Link to at least one other note. Use `[[Note Title]]` and write a because-clause explaining the relationship. |
-| **References** | The literature notes or external sources that support it. Use `[[Author YYYY - Title]]`. |
+| **Attachments** | Images, diagrams, or files that support the claim. |
 
 **The one rule:** every permanent note must link to at least one other permanent or literature note. An unlinked note is a dead end. If you cannot find a link, move the note back to `1-fleeting/` until you can.
 
@@ -244,7 +240,7 @@ Writing, project, and meeting notes follow the same pattern: press `<leader>oN`,
 
 | Type | Folder | Template | Key sections |
 |---|---|---|---|
-| Writing | `4-writing/` | `writing.md` | Outline, Draft, Sources. Status: draft, published, or abandoned. |
+| Writing | `4-writing/` | `writing.md` | Audience, Outline, Draft. Status: draft, published, or abandoned. |
 | Project Charter | `5-projects/` | `project-charter.md` | Business Case, Objectives, Sponsors, Scope (Deliverables, Exclusions), Assumptions, Constraints, Stakeholders, Governance, Resources, Schedule, Budget, Risks. |
 | Meeting | `6-meetings/` | `meeting.md` | Attendees, Agenda, Minutes, Action Items. Status: scheduled, held, or cancelled. |
 
@@ -329,9 +325,8 @@ Do not create index notes up front. When you notice 5-10 permanent notes circlin
 1. *Neovim:* press `<leader>oN`, pick the `index` template, type the theme as a title. The note is created in `7-index/`.
    *Obsidian:* right-click `7-index/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
 2. Write it as a **guided tour**, not a list:
-   - **Entry Points**: the 2-3 notes that introduce the theme.
-   - **Argument / Path**: arrange notes in a sequence that builds an argument or tells a story.
-   - **Open Questions**: what the cluster does not yet answer. These are seeds for future permanent notes.
+   - **Path**: sequence notes in a reading order that tells a story or builds an argument.
+   - **Gaps**: missing coverage in the cluster. These are seeds for future permanent notes.
 
 If you find yourself writing "see also" followed by 30 bullets, you are making a table of contents, not an index note. Stop and argue for a path through the notes instead.
 

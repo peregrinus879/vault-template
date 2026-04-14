@@ -3,19 +3,16 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
-source:
 ---
 
 # {{title}}
 <!-- One claim per note. Split if you need "and". -->
 
 
-
-## Why It Matters
-
-
 ## Connections
--
+<!-- Links to supporting, contradicting, or extending notes. -->
+- [[]]
 
-## References
--
+## Attachments
+<!-- Images, diagrams, and files. -->
+- ![[]]

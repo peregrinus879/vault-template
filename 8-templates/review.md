@@ -6,15 +6,20 @@ tags: []
 ---
 
 # {{title}}
+<!-- Weekly review of vault activity. -->
 
 ## Triage
-- [ ] Review `1-fleeting/`: promote, link, or discard
+<!-- Process fleeting notes: promote, link, or discard. -->
+- [ ] Review `1-fleeting/`
 
 ## Literature
--
+<!-- What are you reading or watching? -->
+- [[]]
 
 ## Permanent Notes
--
+<!-- New permanent notes this week. -->
+- [[]]
 
 ## Index Notes
--
+<!-- Any note clusters forming? -->
+- [[]]
