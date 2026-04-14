@@ -371,6 +371,8 @@ Neovim is not a conventional editor. There is no menu bar, no toolbar, and no mo
 
 When neo-tree has focus, navigate with `j`/`k` and open files with `Enter`. When the editor has focus, you edit text. The current focus area is highlighted; the unfocused area is dimmed.
 
+**One rule to remember:** `Ctrl` + a vim direction (`h`/`j`/`k`/`l`) always moves focus between areas and splits. It works the same way everywhere: neo-tree to editor, editor to neo-tree, split to split.
+
 ### Neovim Essentials
 
 **Modes.** Neovim is a modal editor. You are always in one of these modes:
@@ -482,6 +484,21 @@ When writing a permanent note, you may want a literature note open beside it for
 
 To open a literature note beside your permanent note: press `<leader>|` to split, then `<leader><space>` or `<leader>oo` to find and open the reference file in the new pane. Press `Ctrl+h` / `Ctrl+l` to move between the two panes.
 
+**Copying text between notes:**
+
+The copy buffer is shared across all splits and buffers. Copy in one pane, move focus, paste in another.
+
+| Keys | Action |
+|---|---|
+| `yy` | Copy (yank) current line |
+| `3yy` | Copy 3 lines |
+| `yap` | Copy the entire paragraph around the cursor |
+| `v` then move then `y` | Select text visually, then copy |
+| `p` | Paste below cursor |
+| `P` | Paste above cursor |
+
+Workflow: `yy` in the left pane, `Ctrl+l` to the right pane, `p` to paste. Works across any splits.
+
 **Focused writing:**
 
 | Keys | Action |
@@ -568,11 +585,22 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 
 **Promoting a fleeting note** (the most common move):
 
-1. Open the fleeting note and read it.
-2. Press `<leader>oN`. Pick the target template (e.g., `permanent` or `literature`).
-3. Type the title (a declarative claim for permanent notes, or "Author YYYY - Title" for literature notes). The new note is created in the correct folder with the template applied.
-4. Write the content in the new note. Add at least one `[[link]]` for permanent notes.
-5. Delete the fleeting note (neo-tree: navigate to it, press `d`).
+*Side-by-side method* (best when you need to reference the fleeting note while writing):
+
+1. Open the fleeting note (from neo-tree or `<leader>oo`).
+2. Split the screen: `<leader>|` (vertical split, side by side).
+3. In the new right pane, press `<leader>oN`. Pick the target template (e.g., `permanent` or `literature`). Type the title (a declarative claim for permanent notes, or "Author YYYY - Title" for literature notes). The new note is created in the correct folder with the template applied.
+4. You now have the fleeting note on the left, the new note on the right. Use `Ctrl+h` / `Ctrl+l` to move focus between panes. Copy lines with `yy` in one pane, switch panes, paste with `p`.
+5. Write the content in the new note. Add at least one `[[link]]` for permanent notes.
+6. Close the left pane: `<leader>wd` (closes the window, not the buffer).
+7. Delete the fleeting note: `<leader>e` to open neo-tree, navigate to it in `1-fleeting/`, press `d`.
+
+*Quick method* (best when the fleeting note is short and you can hold the idea):
+
+1. Open the fleeting note, read it, close it (`<leader>bd`).
+2. Press `<leader>oN`, pick the template, type the title.
+3. Write the promoted note from memory.
+4. Delete the fleeting note via neo-tree.
 
 Fleeting notes rarely have backlinks, so nothing is lost by deleting them.
 
