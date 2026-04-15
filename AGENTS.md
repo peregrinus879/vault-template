@@ -1,6 +1,6 @@
 # AGENTS.md - vault
 
-Zettelkasten knowledge vault for Obsidian and obsidian.nvim: Syncthing sync, git-crypt encryption, and systemd auto-commit. Syncthing runs over Tailscale with a headless Linux server as the always-on hub. Encrypted content backed up to GitHub via the auto-commit timer.
+Zettelkasten knowledge vault for Obsidian and obsidian.nvim: Syncthing sync, dual-layer encryption (git-crypt + git-remote-gcrypt), and systemd auto-commit. Syncthing runs over Tailscale with a headless Linux server as the always-on hub. Encrypted content backed up to GitHub via the auto-commit timer.
 
 ## Scope
 
@@ -28,6 +28,8 @@ It does not own:
 - `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
 - `.git/hooks/post-commit` - auto-sync hook for public template repo
+- `~/.local/bin/pinentry-null` - headless pinentry for unattended GPG operations
+- `~/.gnupg/gpg-agent.conf` - GPG agent config (pinentry-null)
 
 ## Commit Policy
 
@@ -40,9 +42,10 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 ### When to verify
 
 - Adding, renaming, or removing a content directory
-- Editing `.gitattributes` (encryption rules)
+- Editing `.gitattributes` (git-crypt encryption rules; also drives post-commit hook content directory derivation)
 - Editing `.git/hooks/post-commit` (public repo sync logic)
 - Editing `.obsidian/daily-notes.json` or `.obsidian/templates.json` (folder paths)
+- Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Any change that references directory paths in templates, docs, or config
 
 ### What to check

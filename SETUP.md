@@ -57,26 +57,157 @@ ssh -L 8384:127.0.0.1:8384 <user>@<tailscale-ip>
 
 ### 1.2 Git-crypt
 
+git-crypt encrypts file contents in git objects. Encryption rules are defined in `.gitattributes`:
+
+```text
+0-daily/** filter=git-crypt diff=git-crypt
+1-fleeting/** filter=git-crypt diff=git-crypt
+2-literature/** filter=git-crypt diff=git-crypt
+3-permanent/** filter=git-crypt diff=git-crypt
+4-writing/** filter=git-crypt diff=git-crypt
+5-projects/** filter=git-crypt diff=git-crypt
+6-meetings/** filter=git-crypt diff=git-crypt
+7-index/** filter=git-crypt diff=git-crypt
+9-assets/** filter=git-crypt diff=git-crypt
+```
+
+Adding a new content directory requires adding a rule to `.gitattributes`. The post-commit hook derives content directories from these same rules for public template sync.
+
 ```bash
 sudo pacman -S git-crypt
 cd ~/vault && git-crypt init
 git-crypt export-key ~/vault-git-crypt.key
 ```
 
-Copy the key to a secure location. The key is raw binary (not human-readable text). Store it as a **file attachment** in a password manager, or base64-encode it for a text field. Then delete the local copy:
+Copy the key to a secure location. The key is raw binary (not human-readable text). Store it as a **file attachment** in a password manager. Then delete the local copy:
 
 ```bash
-# Copy to another machine over Tailscale
 scp ~/vault-git-crypt.key <user>@<tailscale-ip>:~/Downloads/
-
-# Or base64-encode for pasting into a password manager
-base64 ~/vault-git-crypt.key
-
-# Delete the local copy (the vault retains the key in .git/git-crypt/)
 rm ~/vault-git-crypt.key
 ```
 
-### 1.3 Deploy Key
+### 1.3 Git-remote-gcrypt
+
+git-remote-gcrypt encrypts the entire repository on the remote, including filenames and directory structure. This prevents note titles from being visible on GitHub.
+
+#### Install
+
+```bash
+yay -S git-remote-gcrypt
+```
+
+#### GPG key
+
+Generate a dedicated GPG key for unattended encrypted backup. No passphrase (required for systemd timer):
+
+```bash
+gpg --batch --gen-key <<'EOF'
+Key-Type: EdDSA
+Key-Curve: ed25519
+Name-Real: vault-backup
+Name-Email: vault-backup@noreply
+Expire-Date: 0
+%no-protection
+%commit
+EOF
+
+gpg --quick-add-key $(gpg --list-keys --with-colons vault-backup@noreply \
+  | awk -F: '/^fpr:/{print $10; exit}') cv25519 encr never
+```
+
+Record the fingerprint:
+
+```bash
+gpg --list-keys --keyid-format long vault-backup@noreply
+```
+
+If GPG prompts for a passphrase during subkey creation, change it to empty afterward:
+
+```bash
+gpg --change-passphrase vault-backup@noreply
+```
+
+#### GPG headless configuration
+
+Configure GPG for unattended operation (no terminal required). gpg-agent invokes pinentry even for no-passphrase keys; `pinentry-null` provides a headless pinentry that returns an empty passphrase automatically.
+
+Create `~/.local/bin/pinentry-null`:
+
+```bash
+#!/bin/sh
+echo "OK Pleased to meet you"
+while IFS= read -r cmd; do
+  case "$cmd" in
+    GETPIN) echo "D "; echo "OK" ;;
+    BYE)    echo "OK closing connection"; exit 0 ;;
+    *)      echo "OK" ;;
+  esac
+done
+```
+
+```bash
+chmod +x ~/.local/bin/pinentry-null
+```
+
+`~/.gnupg/gpg-agent.conf`:
+
+```ini
+pinentry-program /home/<user>/.local/bin/pinentry-null
+```
+
+Restart the agent:
+
+```bash
+gpgconf --kill gpg-agent
+```
+
+Verify headless decryption works:
+
+```bash
+echo "test" | gpg --no-tty -e -r vault-backup@noreply | gpg --no-tty -d
+```
+
+#### Backup GPG key material
+
+Export and store securely (same location as git-crypt key):
+
+```bash
+gpg --export --armor vault-backup@noreply > ~/vault-backup-public.asc
+gpg --export-secret-keys --armor vault-backup@noreply > ~/vault-backup-private.asc
+cp ~/.gnupg/openpgp-revocs.d/<fingerprint>.rev ~/vault-backup-revocation.asc
+scp ~/vault-backup-public.asc ~/vault-backup-private.asc ~/vault-backup-revocation.asc \
+  <user>@<tailscale-ip>:~/Downloads/
+rm ~/vault-backup-public.asc ~/vault-backup-private.asc ~/vault-backup-revocation.asc
+```
+
+Also record the GPG fingerprint and key ID alongside the key files.
+
+#### Configure remote
+
+```bash
+cd ~/vault
+git remote set-url origin "gcrypt::git@github.com:<owner>/<repo>.git#main"
+git config gcrypt.participants "<GPG-FINGERPRINT>"
+git config gcrypt.signingkey "<GPG-FINGERPRINT>"
+git config gcrypt.gpg-args "--no-tty"
+```
+
+If the target branch already exists with plain git data, delete it on GitHub first. gcrypt does not fully replace an existing branch; it may merge old tree data with encrypted blobs, leaving filenames visible. Push only to a fresh or empty branch:
+
+```bash
+# If the branch already has plain git data, delete it on GitHub first:
+# gh api repos/<owner>/<repo>/git/refs/heads/main -X DELETE
+
+git push origin main
+```
+
+Record the gcrypt remote ID shown in the output (`:id:...`).
+
+#### Performance note
+
+git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `9-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically. If push times become problematic, this is a broader backup-architecture decision, not a drop-in backend swap.
+
+### 1.4 Deploy Key
 
 Generate a dedicated SSH key (no passphrase) for unattended push:
 
@@ -92,7 +223,7 @@ Verify push works without passphrase prompt:
 cd ~/vault && git push --dry-run origin main
 ```
 
-### 1.4 Auto-commit Timer
+### 1.5 Auto-commit Timer
 
 Enable user linger so the timer persists across SSH logout:
 
@@ -152,7 +283,7 @@ systemctl --user start vault-autocommit.service
 journalctl --user -u vault-autocommit.service -n 10
 ```
 
-### 1.5 Public Template Sync
+### 1.6 Public Template Sync
 
 A public repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and docs. Note content is not synced. A git post-commit hook handles this automatically after every commit.
 
@@ -538,12 +669,41 @@ On first sync, Obsidian may write to `.obsidian/app.json` at the same time the h
 
 ## 5. Recovery (fresh clone)
 
+Recovery requires both the GPG key and the git-crypt key.
+
+### 5.1 Import GPG key
+
 ```bash
-git clone <repo-url> ~/vault
-cd ~/vault && git-crypt unlock <path-to-key>
+gpg --import vault-backup-private.asc
 ```
 
-The git-crypt key must have been backed up outside the vault (see step 1.2). Without it, encrypted directories are unreadable.
+### 5.2 Configure GPG for headless operation
+
+Set up `pinentry-null` and `gpg-agent.conf` as described in step 1.3 (GPG headless configuration).
+
+### 5.3 Clone from encrypted remote
+
+```bash
+git clone -c gcrypt.gpg-args="--no-tty" \
+  "gcrypt::git@github.com:<owner>/<repo>.git#main" ~/vault
+```
+
+### 5.4 Unlock git-crypt
+
+```bash
+cd ~/vault && git-crypt unlock <path-to-git-crypt-key>
+```
+
+### 5.5 Configure gcrypt for future pushes
+
+```bash
+cd ~/vault
+git config gcrypt.participants "<GPG-FINGERPRINT>"
+git config gcrypt.signingkey "<GPG-FINGERPRINT>"
+git config gcrypt.gpg-args "--no-tty"
+```
+
+Without the GPG key, the clone fails. Without the git-crypt key, file contents are unreadable.
 
 ## Verify
 
@@ -554,5 +714,5 @@ After setup on each device:
 - Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/1-fleeting/test.md` then `:checkhealth obsidian`
 - Confirm auto-commit timer is active (remote hub only): `systemctl --user list-timers vault-autocommit.timer`
 - Confirm deploy key push works (remote hub only): `cd ~/vault && git push --dry-run origin main`
-- Confirm encryption: push a test note, verify it appears as binary on GitHub
+- Confirm encryption: the GitHub repo should show only opaque encrypted data (no readable filenames or content)
 - Confirm public template sync (remote hub only): modify a template, commit, verify it appears in the public repo and on GitHub
