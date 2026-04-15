@@ -180,9 +180,26 @@ scp ~/vault-backup-public.asc ~/vault-backup-private.asc ~/vault-backup-revocati
 rm ~/vault-backup-public.asc ~/vault-backup-private.asc ~/vault-backup-revocation.asc
 ```
 
-Also record the GPG fingerprint and key ID alongside the key files.
+Store the following in your password manager:
+
+**Files:**
+- `vault-git-crypt.key` (git-crypt symmetric key)
+- `private-key.asc` (GPG private key)
+- `public-key.asc` (GPG public key)
+- `revocation-cert.asc` (GPG revocation certificate)
+
+**Values:**
+- GPG fingerprint
+- GPG key ID
+- GPG identity (`vault-backup <vault-backup@noreply>`)
+- gcrypt remote ID (`:id:...`, shown during first push)
+- Backup repo URL (`gcrypt::git@github.com:<owner>/<repo>.git#main`)
 
 #### Configure remote
+
+The GitHub backup repo name may differ from the local vault directory name (e.g., `vault-backup` on GitHub, `vault` locally). Use the GitHub repo name in the remote URL.
+
+gcrypt settings (`gcrypt.participants`, `gcrypt.signingkey`, `gcrypt.gpg-args`) are stored as global git config, not per-remote. This is a git-remote-gcrypt limitation; it does not read `remote.<name>.gcrypt-*` keys. Safe with a single gcrypt remote.
 
 ```bash
 cd ~/vault
@@ -202,6 +219,8 @@ git push origin main
 ```
 
 Record the gcrypt remote ID shown in the output (`:id:...`).
+
+GitHub will show a single synthetic commit ("Initial commit" by root@localhost, dated 2013-01-01). This is the encrypted container, not your real history. Your actual commits are preserved inside the encrypted payload and visible after cloning with the GPG key.
 
 #### Performance note
 

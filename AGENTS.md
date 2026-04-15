@@ -58,3 +58,31 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 ## Known Limitations
 
 - **Obsidian file explorer**: repo docs (README.md, WORKFLOW.md, AGENTS.md, CLAUDE.md, SETUP.md) appear in the Obsidian sidebar. The `userIgnoreFilters` setting in `.obsidian/app.json` only hides files from search, graph, and link suggestions, not from the file explorer. No native fix exists as of 2026-04. Revisit if Obsidian adds explorer-level exclusion.
+- **Public repo commit messages must be opaque**: the post-commit hook uses `sync: <date>` for public template repo commits. Do not forward private repo commit messages to the public repo. Private commit messages may reference note names, topics, or other content that would leak through the public repo's git history.
+
+## Changelog
+
+### 2026-04-10 to 2026-04-14: Vault restructuring
+
+- Rename directories to Ahrens' Zettelkasten terminology with numeric prefixes
+- Rewrite all templates with obsidian.nvim conventions and slug filenames
+- Add WORKFLOW.md as comprehensive dual-editor tutorial
+- Deduplicate and streamline AGENTS.md, README.md, SETUP.md
+- Add post-change verification checklist
+- Derive hook excludes from .gitattributes, auto-manage .gitkeep
+- Add SETUP.md with full multi-device setup guide (Linux, Windows/WSL, Android)
+- Add git-crypt encryption, deploy keys, auto-commit timer, public template sync
+
+### 2026-04-15: Dual-layer encryption migration
+
+- Add git-remote-gcrypt as second encryption layer (full remote opacity on GitHub)
+- Rename GitHub repo from vault to vault-backup
+- Generate dedicated GPG key (vault-backup, ed25519 + cv25519, no passphrase)
+- Add headless GPG configuration (pinentry-null, gpg-agent.conf)
+- Set gcrypt.gpg-args "--no-tty" (workaround for gcrypt not passing --no-tty to modern GPG)
+- Document dual-layer model, GPG key management, and recovery workflow
+- Document synthetic commit behavior, branch replacement caveat, global gcrypt config limitation
+- Add password manager checklist (4 files + 5 values)
+- Keep public repo commit messages opaque (sync: date); forwarding private messages would leak note names
+- Untrack .trash/ files from git
+- Install yay (AUR helper) and git-remote-gcrypt via AUR
