@@ -267,8 +267,7 @@ Writing notes hold compositions of any size from tweets to book chapters. All th
 | Template | Budget | Typical venues |
 |---|---|---|
 | `writing-short` | ≤280 characters | X/Twitter, Bluesky, Mastodon, short LinkedIn |
-| `writing-medium` | ~500 words (about one page) | LinkedIn post, short blog, newsletter, Substack flash |
-| `writing-long` | 500+ words | Essay, article, report, chapter |
+| `writing-long` | Anything longer | LinkedIn post, blog, newsletter, essay, article, report, chapter |
 
 Pick by what the piece actually will be, not what you hope it becomes. A draft that outgrows its template can be moved: copy the body to a new note from the bigger template, delete the old.
 
@@ -277,8 +276,7 @@ Pick by what the piece actually will be, not what you hope it becomes. A draft t
 **Where to put the piece content.**
 
 - **Short**: write the whole thing under the title comment; no sections.
-- **Medium**: write into `## Draft`.
-- **Long**: fill `## Audience`, `## Outline`, then `## Draft`.
+- **Long**: fill `## Audience`, `## Outline`, then `## Draft`. For mid-length pieces (LinkedIn posts, blog flashes), leave Audience and Outline empty and write into `## Draft`.
 
 ### Index Notes
 
