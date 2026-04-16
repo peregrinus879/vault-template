@@ -262,11 +262,23 @@ If your note title contains "and" or "also" at the top level, split it.
 
 ### Writing Notes
 
-Writing notes hold long-form compositions from tweets and posts to essays and reports. Press `<leader>oN`, pick `writing`, type a title. The note is created in `4-writing/` with the template applied. Set `status: draft` initially; mark `published` or `abandoned` when the piece exits active composition.
+Writing notes hold compositions of any size from tweets to book chapters. All three variants route to `4-writing/` and share `status: draft | published | abandoned`. Press `<leader>oN`, pick the right length, type a title.
 
-**No bibliography section in the template.** The vault already tracks sources in `1-sources/` and connections via `## Connections`. For a piece that needs a formal reference list (academic journal, formatted citations), add `## References` at the bottom of that specific piece by hand, in whatever citation style the venue requires. Citation styles are venue-specific; baking one into the template would be wrong for most pieces.
+| Template | Budget | Typical venues |
+|---|---|---|
+| `writing-short` | ≤280 characters | X/Twitter, Bluesky, Mastodon, short LinkedIn |
+| `writing-medium` | ~500 words (about one page) | LinkedIn post, short blog, newsletter, Substack flash |
+| `writing-long` | 500+ words | Essay, article, report, chapter |
 
-**Where to put the piece content.** Write directly into the Draft section. The Outline section is optional; for short pieces, skip it. The Audience section exists to remind you who the reader is before you start.
+Pick by what the piece actually will be, not what you hope it becomes. A draft that outgrows its template can be moved: copy the body to a new note from the bigger template, delete the old.
+
+**No bibliography section in any variant.** Sources are already tracked in `1-sources/` and connections via `## Connections`. For a piece that needs a formal reference list (academic journal, formatted citations), add `## References` at the bottom of that specific piece by hand, in whatever citation style the venue requires.
+
+**Where to put the piece content.**
+
+- **Short**: write the whole thing under the title comment; no sections.
+- **Medium**: write into `## Draft`.
+- **Long**: fill `## Audience`, `## Outline`, then `## Draft`.
 
 ### Index Notes
 

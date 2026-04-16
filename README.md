@@ -87,7 +87,9 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 | `source.md` | `1-sources/` | `<leader>oN` (`:Obsidian new_from_template`) |
 | `literature.md` | `2-literature/` | `<leader>oN` |
 | `permanent.md` | `3-permanent/` | `<leader>oN` |
-| `writing.md` | `4-writing/` | `<leader>oN` |
+| `writing-short.md` | `4-writing/` | `<leader>oN` (≤280 chars) |
+| `writing-medium.md` | `4-writing/` | `<leader>oN` (~500 words) |
+| `writing-long.md` | `4-writing/` | `<leader>oN` (500+ words) |
 | `index.md` | `5-index/` | `<leader>oN` |
 
 Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). `<leader>oN` picks a template from a list and routes the note to the correct folder. In Obsidian GUI: Ctrl/Cmd+P > Insert template.

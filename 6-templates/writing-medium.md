@@ -4,19 +4,13 @@ aliases:
   - {{title}}
 tags: []
 type: writing
+length: medium
 status: draft    # draft | published | abandoned
+venue:           # linkedin | substack | blog | newsletter | other
 ---
 
 # {{title}}
-<!-- Long-form composition. -->
-
-## Audience
-<!-- Who is this for. -->
-
-
-## Outline
-<!-- Structure of the piece. -->
--
+<!-- ~500 words, about one page. -->
 
 ## Draft
 <!-- Write here. -->
@@ -25,7 +19,3 @@ status: draft    # draft | published | abandoned
 ## Connections
 <!-- Notes and sources this piece draws from. -->
 - [[]]
-
-## Attachments
-<!-- Images, diagrams, and files. -->
-- ![[]]
