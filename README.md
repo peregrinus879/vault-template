@@ -174,11 +174,14 @@ Content directories are derived from `.gitattributes` automatically. Adding a ne
 
 See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
 
+- **Prerequisites**: Arch Linux, Tailscale, GitHub account with two repos
 1. **Remote hub** (headless Linux): baseline tools, Syncthing, git-crypt, git-remote-gcrypt, GPG key, deploy key, auto-commit timer, public template sync
 2. **Local machines** (Linux): Syncthing, Neovim config, Obsidian desktop
 3. **Local machines** (Windows / WSL): native Syncthing, Obsidian, WSL symlink
 4. **Mobile** (Android): Tailscale, Syncthing-Fork, Obsidian
 5. **Recovery**: fresh clone with gcrypt + git-crypt unlock
+- **Verify**: per-device smoke checks
+- **Appendix**: obsidian.nvim configuration reference snapshot
 
 ## References
 

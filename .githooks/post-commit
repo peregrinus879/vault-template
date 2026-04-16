@@ -42,7 +42,6 @@ PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/pro
 # denies anything the allowlist did not name. Protect filters keep
 # public-only files from being removed by --delete when the source lacks them.
 rsync -a --delete \
-  --filter='P LICENSE' \
   --filter='P /.vault-template-marker' \
   \
   --include='/README.md' \

@@ -243,7 +243,7 @@ gcrypt supports both per-remote and repo-wide config keys. Participants and sign
 cd ~/vault
 git remote set-url origin "gcrypt::git@github.com:<owner>/<repo>.git#main"
 git config gcrypt.participants "<GPG-FINGERPRINT>"
-git config gcrypt.signingkey "<GPG-FINGERPRINT>"
+git config user.signingkey "<GPG-FINGERPRINT>"
 git config gcrypt.gpg-args "--no-tty"
 ```
 
@@ -399,9 +399,10 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 
 | Rule | Effect |
 |------|--------|
-| Explicit `--include` allowlist | Only named root files (docs, `.gitignore`, `.gitattributes`, `.stignore`), `6-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
+| Explicit `--include` allowlist | Only named root files (docs, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`), `6-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
 | Trailing `--exclude='*'` | Anything not in the allowlist is denied; a new top-level file or directory will not publish unless its path is added to the filter |
-| `--filter='P LICENSE'` | Protects `LICENSE` in the public repo from `--delete` (the private vault has no LICENSE, but vault-template does) |
+| Sentinel check (`.vault-template-marker`) | Hook refuses to sync unless `$PUBLIC` contains the marker file. Guards against a wrong `vault.publicPath` trashing an unrelated repo. |
+| `--filter='P /.vault-template-marker'` | Protects the sentinel file in the public repo from `--delete` (the marker lives only in vault-template, not in the private vault) |
 | Orphan cleanup loop | Removes top-level directories from the public repo that no longer exist in the vault (catches renames) |
 | `.gitkeep` creation loop | Creates empty content-directory shells in the public repo (since content dirs are not in the allowlist) |
 | `--delete` | Anything in the public repo but not matched by the allowlist is removed on the next sync |
@@ -675,6 +676,8 @@ Install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) fr
 4. Navigate to the Syncthing vault folder
 5. Use `0-fleeting/` for fleeting notes; they sync to the hub within seconds
 
+**Template behavior on mobile**: `.obsidian/app.json` sets `mobilePullAction: insert-template`. Mobile captures do NOT auto-apply templates the way desktop/nvim notes do via `<leader>oN`. Pull down on an open blank note to trigger the template picker. See WORKFLOW.md §Using Obsidian → Mobile for details.
+
 ### 4.4 Resolving Sync Conflicts
 
 On first sync, Obsidian may write to `.obsidian/app.json` at the same time the hub version syncs, creating a `.sync-conflict-*` file. This is normal:
@@ -715,7 +718,7 @@ cd ~/vault && git-crypt unlock <path-to-git-crypt-key>
 ```bash
 cd ~/vault
 git config gcrypt.participants "<GPG-FINGERPRINT>"
-git config gcrypt.signingkey "<GPG-FINGERPRINT>"
+git config user.signingkey "<GPG-FINGERPRINT>"
 git config gcrypt.gpg-args "--no-tty"
 ```
 
