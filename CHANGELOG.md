@@ -2,6 +2,25 @@
 
 All notable changes to the vault structure, templates, tooling, and documentation. Grouped by theme; within each, sorted Added / Changed / Removed. Dates in parentheses indicate when the theme's primary work landed.
 
+## Hook hardening and doc alignment (2026-04-16, external audit remediation)
+
+### Added
+
+- obsidian.nvim configuration reference appendix in SETUP.md — explicit snapshot for forks, with a banner naming the live source of truth (`dotfiles-arch`, `dotfiles-omarchy`).
+- Deploy-key caveat in SETUP.md §1.5: `gh`-added keys may be removed if the authenticating `gh` session is revoked; verify after any credential rotation.
+
+### Changed
+
+- Post-commit hook: denylist → fail-closed allowlist. Only named root files, `6-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subpaths publish. A new top-level file or directory no longer publishes by default.
+- Post-commit hook: `VAULT` resolved via `git rev-parse --show-toplevel`; `PUBLIC` via `git config vault.publicPath` with fallback to the previous default. Works in any clone; forks override without editing the tracked script.
+- Pre-commit frontmatter normalizer: CRLF-safe awk pattern (`---\r?$`), YAML values quoted to defend against filename characters.
+- SETUP.md §1.4 gcrypt config corrected per upstream: participants and signing key are settable per-remote (`remote.<name>.gcrypt-*`) or repo-wide; the "remote keys unsupported" claim was inaccurate.
+- SETUP.md §1.7 rsync rules table rewritten for the allowlist.
+- WORKFLOW.md explorer note: `hide-root-docs` CSS snippet closes the prior "no native fix" limitation.
+- AGENTS.md Hidden Files table: catch-all paragraph covering other tracked `.obsidian/` files so the authoritative claim holds.
+- README §Public Template Synced list adds `CHANGELOG.md`.
+- `.obsidian/app.json` `userIgnoreFilters` adds `CHANGELOG.md`.
+
 ## Post-restructure polish (2026-04-16)
 
 ### Added
