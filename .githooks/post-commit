@@ -34,8 +34,6 @@ rsync -a --delete \
   --filter='P LICENSE' \
   "${EXCLUDE_ARGS[@]}" \
   --exclude='.git/' \
-  --exclude='.gitattributes' \
-  --exclude='.stignore' \
   --exclude='.stfolder/' \
   --exclude='.stversions/' \
   --exclude='.trash/' \

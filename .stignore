@@ -1,0 +1,9 @@
+// Syncthing: do not sync git history or Syncthing versioning
+.git
+.stversions
+// Per-device state (prevent sync conflicts and cross-device leakage)
+.trash
+.claude
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache

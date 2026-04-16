@@ -49,7 +49,7 @@ Three exclusion layers decide what propagates where:
 
 **Per-device items** (local state, machine-specific UI, soft-deletes) must be in all three layers. Current examples: `.trash/`, `.claude/`, `.obsidian/workspace.json`, `.obsidian/workspace-mobile.json`, `.obsidian/cache`. Keeping the three layers aligned prevents sync conflicts (two devices writing to the same file) and cross-device state leakage (e.g., a trash restore on device A appearing on device B).
 
-**Shared vault items** (templates, docs, tracked Obsidian config like `.obsidian/app.json` and `.obsidian/templates.json`, `.githooks/post-commit`) stay tracked and synced by all layers except rsync when the item is also marked private.
+**Shared vault items** (templates, docs, tracked Obsidian config like `.obsidian/app.json` and `.obsidian/templates.json`, `.githooks/post-commit`, `.gitattributes`, `.stignore`) are tracked in git, synced by Syncthing, and included in `vault-template`. Private note content is tracked and synced but excluded from `vault-template` by rsync.
 
 **When adding a new hidden directory or file**, decide first whether it is per-device or shared, then update all three layers consistently. An inconsistency means one of the failure modes above.
 
