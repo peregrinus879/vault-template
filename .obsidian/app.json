@@ -1,6 +1,7 @@
 {
   "userIgnoreFilters": [
     "AGENTS.md",
+    "CHANGELOG.md",
     "CLAUDE.md",
     "README.md",
     "SETUP.md",

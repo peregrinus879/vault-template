@@ -72,7 +72,9 @@ Two patterns visible at a glance:
 - **Fully shared** (all three Yes): config references that forks of `vault-template` need to reproduce the setup.
 - **Fully excluded** (all three No): per-device state. Any asymmetry (Yes in two columns, No in one) is a design smell worth investigating.
 
-The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles individually. Private note content (files under `0-fleeting/` through `4-writing/`, `5-index/`, `7-assets/`) is tracked and synced but excluded from `vault-template` by rsync.
+The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles whose handling is interesting. All other tracked files under `.obsidian/` (`appearance.json`, `core-plugins.json`, `graph.json`, `snippets/**`, `themes/**`) are fully shared — tracked in git, synced by Syncthing, included in `vault-template`.
+
+Private note content (files under `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/`) is tracked and synced but excluded from `vault-template` by the rsync allowlist (content dirs are not in the allowlist; structural `.gitkeep` stubs are recreated separately).
 
 **When adding a new hidden directory or file**, decide first whether it is per-device or shared, then update all three layers and the table above consistently. An inconsistency means one of the failure modes the layers exist to prevent.
 

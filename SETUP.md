@@ -237,7 +237,7 @@ Store the following in your password manager:
 
 The GitHub backup repo name may differ from the local vault directory name (e.g., `vault-backup` on GitHub, `vault` locally). Use the GitHub repo name in the remote URL.
 
-gcrypt settings (`gcrypt.participants`, `gcrypt.signingkey`, `gcrypt.gpg-args`) are stored as global git config, not per-remote. This is a git-remote-gcrypt limitation; it does not read `remote.<name>.gcrypt-*` keys. Safe with a single gcrypt remote.
+gcrypt supports both per-remote and repo-wide config keys. Participants and signing key can be set as `remote.<name>.gcrypt-participants` / `remote.<name>.gcrypt-signingkey`, or repo-wide as `gcrypt.participants` and `user.signingkey`. The commands below use repo-local `git config` values (the simpler shape); this repo has a single gcrypt remote so either layout works. `gcrypt.gpg-args` is documented as a repo-level or global value; a per-remote variant is not documented upstream, so leave it set at repo level.
 
 ```bash
 cd ~/vault
@@ -273,6 +273,8 @@ ssh-keygen -t ed25519 -f ~/.ssh/vault-deploy-key -N "" -C "vault-autocommit"
 cd ~/vault && git config core.sshCommand "ssh -i ~/.ssh/vault-deploy-key -o IdentitiesOnly=yes"
 gh repo deploy-key add ~/.ssh/vault-deploy-key.pub --repo <owner>/<repo> --title "vault-autocommit" --allow-write
 ```
+
+**Note**: deploy keys added via `gh` are attributed to the authenticating user. If that `gh` auth session is later revoked or rotated, GitHub audit policies may remove the key. If you rotate `gh` credentials, verify the key still appears under the repo's Settings > Deploy keys and re-add if missing.
 
 Verify push works without passphrase prompt:
 
@@ -393,17 +395,18 @@ Local machines skip this step; the hook runs only on the remote hub.
 
 #### Rsync rules
 
+The hook uses a fail-closed allowlist: only paths named explicitly in the `--include` list are published; the trailing `--exclude='*'` denies everything else.
+
 | Rule | Effect |
 |------|--------|
-| Content excludes (from `.gitattributes`) | Directory shells are synced but nothing inside them |
-| Orphan cleanup loop | Removes directories from public repo that no longer exist in vault |
-| `.gitkeep` creation loop | Ensures every content directory has a `.gitkeep` for git tracking |
-| `--filter='P LICENSE'` | Protects `LICENSE` (exists only in public repo) from deletion |
-| `--exclude='.git/'` | Never touches git internals |
-| `--exclude='.gitattributes'` | git-crypt rules stay in private repo only |
-| `--exclude='.stignore'`, `'.stfolder/'`, `'.stversions/'`, `'.trash/'`, `'.claude/'` | Syncthing, trash, and Claude artifacts stay private |
-| `--exclude='.obsidian/workspace*.json'`, `'.obsidian/cache'` | Machine-specific Obsidian state excluded |
-| `--delete` | Files removed from vault's public-facing set are removed from public repo |
+| Explicit `--include` allowlist | Only named root files (docs, `.gitignore`, `.gitattributes`, `.stignore`), `6-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
+| Trailing `--exclude='*'` | Anything not in the allowlist is denied; a new top-level file or directory will not publish unless its path is added to the filter |
+| `--filter='P LICENSE'` | Protects `LICENSE` in the public repo from `--delete` (the private vault has no LICENSE, but vault-template does) |
+| Orphan cleanup loop | Removes top-level directories from the public repo that no longer exist in the vault (catches renames) |
+| `.gitkeep` creation loop | Creates empty content-directory shells in the public repo (since content dirs are not in the allowlist) |
+| `--delete` | Anything in the public repo but not matched by the allowlist is removed on the next sync |
+| `VAULT` resolution | Read from `git rev-parse --show-toplevel`; the hook works in any clone regardless of filesystem location |
+| `PUBLIC` resolution | Read from `git config vault.publicPath`, falling back to `$HOME/projects/repos/templates/vault-template`. Forks override via `git config vault.publicPath /their/path` |
 
 #### Testing
 

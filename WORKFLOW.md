@@ -371,7 +371,7 @@ Key actions: `Ctrl+O` (Quick Switcher), `Ctrl+Shift+F` (search), `Ctrl+G` (graph
 
 Keep the **Backlinks panel** visible in the right sidebar while writing permanent notes. It shows every note that links to the current note.
 
-**Note:** repo docs (README.md, WORKFLOW.md, etc.) appear in the file explorer sidebar. They are hidden from search, graph, and link suggestions via `userIgnoreFilters` in `.obsidian/app.json`, but Obsidian does not support hiding files from the explorer as of 2026-04.
+**Note:** repo docs (README.md, WORKFLOW.md, SETUP.md, AGENTS.md, CLAUDE.md, CHANGELOG.md, LICENSE) are hidden from search, graph, and link suggestions via `userIgnoreFilters` in `.obsidian/app.json`, and hidden from the file explorer sidebar via the `hide-root-docs` CSS snippet (enabled in `.obsidian/appearance.json`; per-device toggle in Settings > Appearance > CSS snippets if it doesn't auto-load).
 
 ### Mobile
 
