@@ -35,6 +35,24 @@ It does not own:
 
 Only commit `6-templates/`, docs, `.githooks/`, and config. All other content is captured by the hourly auto-commit timer.
 
+## Hidden Files and Directories
+
+Infrastructure directories use a dotfile prefix (`.obsidian/`, `.githooks/`, `.stfolder/`, `.claude/`, `.trash/`). The convention signals "not content" and is respected by Obsidian, which hides dotfile-prefixed entries from its file explorer. Content directories never start with a dot.
+
+Three exclusion layers decide what propagates where:
+
+| Layer | Controls | Defined in |
+|---|---|---|
+| `.gitignore` | What git tracks | `.gitignore` |
+| `.stignore` | What Syncthing propagates between devices | `.stignore` |
+| Rsync excludes | What reaches the public `vault-template` mirror | `.githooks/post-commit` |
+
+**Per-device items** (local state, machine-specific UI, soft-deletes) must be in all three layers. Current examples: `.trash/`, `.claude/`, `.obsidian/workspace.json`, `.obsidian/workspace-mobile.json`, `.obsidian/cache`. Keeping the three layers aligned prevents sync conflicts (two devices writing to the same file) and cross-device state leakage (e.g., a trash restore on device A appearing on device B).
+
+**Shared vault items** (templates, docs, tracked Obsidian config like `.obsidian/app.json` and `.obsidian/templates.json`, `.githooks/post-commit`) stay tracked and synced by all layers except rsync when the item is also marked private.
+
+**When adding a new hidden directory or file**, decide first whether it is per-device or shared, then update all three layers consistently. An inconsistency means one of the failure modes above.
+
 ## Post-Change Verification
 
 After any change that adds, renames, or moves content directories, modifies `.gitattributes`, or edits the post-commit hook, you **must** verify no private content can leak. Not every change requires this; routine note edits and template tweaks do not. Use judgment: if the change could affect what gets encrypted or what gets synced to the public repo, run the checks.
@@ -45,6 +63,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing `.gitattributes` (git-crypt encryption rules; also drives post-commit hook content directory derivation)
 - Editing `.githooks/post-commit` (public repo sync logic)
 - Editing `.obsidian/app.json` (default new-note folder, attachment folder) or `.obsidian/templates.json`
+- Editing `.stignore` (Syncthing propagation rules; affects what reaches other devices)
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `WORKFLOW.md`, `SETUP.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
@@ -65,50 +84,36 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 
 ## Changelog
 
+### Post-restructure polish (templates, infrastructure, docs)
+
+- Standardize all templates: `type:` field per folder, inline YAML comments for enums, one-line section comments
+- Split writing into `writing-short` and `writing-long` variants
+- Rename `hooks/` to `.githooks/` so Obsidian hides it
+- Align per-device state in `.stignore` with `.gitignore` and rsync excludes
+- Document the dotfile-prefix convention and three-layer exclusion model in AGENTS
+
 ### Knowledge-vault restructure
 
-- Drop `0-daily/`, `6-meetings/`, `5-projects/`: vault is knowledge, not tracking
-- Add `1-sources/` (bibliographic records): classical Ahrens reference-note layer
-- Revise literature template: `source: "[[...]]"` link replaces free-text source field; inline per-quote locators documented per medium (p./pp., MM:SS, §heading)
-- Drop daily, review, meeting, project-charter templates
-- Add source template; revise literature template
-- Renumber directories tightly: 0-fleeting, 1-sources, 2-literature, 3-permanent, 4-writing, 5-index, 6-templates, 7-assets
-- Standardize `## Connections` section name across all templates; no bibliography/references section in writing template (add by hand per venue when publishing formally)
-- Remove weekly review ritual; trigger questions absorbed into WORKFLOW.md as periodic self-check prompts without cadence
-- Remove `_archive/` subfolders; status-based filtering only
-- Migrate post-commit hook from `.git/hooks/post-commit` to tracked `hooks/post-commit` (enable on hub via `git config core.hooksPath hooks`); remove `_archive` preservation loop
-- Update obsidian.nvim config in `dotfiles-arch` and `dotfiles-omarchy` (new folder layout, template customizations, `<leader>od` removed)
-- Remove `.obsidian/daily-notes.json`
-- Update `.obsidian/app.json` (default folder, attachment path) and `.obsidian/templates.json` (templates path)
+- Drop daily, review, meeting, project-charter: vault is knowledge, not tracking
+- Add `1-sources/` (Ahrens-style reference-note layer); literature notes link via `source: "[[...]]"`
+- Renumber directories: 0-fleeting, 1-sources, 2-literature, 3-permanent, 4-writing, 5-index, 6-templates, 7-assets
+- Migrate post-commit hook to a tracked location (now `.githooks/post-commit`)
+- Drop `_archive/` subfolders; use status frontmatter instead
 
 ### Standalone setup documentation
 
-- Make SETUP.md fully self-contained: declare prerequisites and install all baseline tools in the guide itself
-- Remove implicit dependency on dotfiles-arch; still referenced as an optional shortcut
-- Add Neovim and LazyVim installation steps to local-machine and WSL sections
-- Add doc cross-references as a Post-Change Verification trigger
+- Make SETUP.md fully self-contained; declare prerequisites and install baseline tools in the guide
+- Remove implicit dotfiles-arch dependency (still referenced as an optional shortcut)
 
 ### Dual-layer encryption migration
 
-- Add git-remote-gcrypt as second encryption layer (full remote opacity on GitHub)
+- Add git-remote-gcrypt as second encryption layer (encrypts filenames, history, tree)
 - Rename GitHub repo from vault to vault-backup
-- Generate dedicated GPG key (vault-backup, ed25519 + cv25519, no passphrase)
-- Add headless GPG configuration (pinentry-null, gpg-agent.conf)
-- Set gcrypt.gpg-args "--no-tty" (workaround for gcrypt not passing --no-tty to modern GPG)
-- Document dual-layer model, GPG key management, and recovery workflow
-- Document synthetic commit behavior, branch replacement caveat, global gcrypt config limitation
-- Add password manager checklist (4 files + 5 values)
-- Keep public repo commit messages opaque (sync: date); forwarding private messages would leak note names
-- Untrack .trash/ files from git
-- Install yay (AUR helper) and git-remote-gcrypt via AUR
+- Add headless GPG config (dedicated key, pinentry-null, `gcrypt.gpg-args --no-tty`)
+- Keep public repo commit messages opaque (`sync: <date>`)
 
 ### Vault restructuring
 
-- Rename directories to Ahrens' Zettelkasten terminology with numeric prefixes
-- Rewrite all templates with obsidian.nvim conventions and slug filenames
-- Add WORKFLOW.md as comprehensive dual-editor tutorial
-- Deduplicate and streamline AGENTS.md, README.md, SETUP.md
-- Add post-change verification checklist
-- Derive hook excludes from .gitattributes, auto-manage .gitkeep
-- Add SETUP.md with full multi-device setup guide (Linux, Windows/WSL, Android)
+- Ahrens-style numeric-prefix directories; `[[wiki-links]]` replace Folgezettel numbering
+- Add WORKFLOW.md as dual-editor tutorial
 - Add git-crypt encryption, deploy keys, auto-commit timer, public template sync
