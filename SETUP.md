@@ -1,12 +1,52 @@
 # Setup Guide
 
-Step-by-step setup for the vault across all devices. Prerequisites: [Tailscale](https://tailscale.com/) installed and connected on all devices.
+Step-by-step setup for the vault across all devices. This guide is self-contained: every tool it uses is installed here. If [`dotfiles-arch`](https://github.com/peregrinus879/dotfiles-arch) (headless) or [`dotfiles-omarchy`](https://github.com/peregrinus879/dotfiles-omarchy) (desktop) is already installed, most of the baseline is in place and the install steps below can be skimmed.
+
+## Prerequisites
+
+- **Arch Linux** on every Linux host (remote hub and local machines). Non-Arch distros are out of scope.
+- **[Tailscale](https://tailscale.com/)** installed and connected on all devices.
+- **GitHub account** with two repos: one private for the encrypted backup (e.g., `vault-backup`), one public for the mirrored template (e.g., `vault-template`).
 
 ## 1. Remote Hub (headless Linux, always-on)
 
 The remote hub is the authoritative copy. It runs Syncthing as an always-on relay, git for version history, and a systemd timer for automated backup to GitHub.
 
-### 1.1 Syncthing
+### 1.1 Baseline Tools
+
+Install the tools used throughout this guide. If `dotfiles-arch` is already installed, these are already present.
+
+```bash
+sudo pacman -S --needed base-devel git github-cli gnupg openssh rsync
+```
+
+Bootstrap `yay` (AUR helper) for `git-remote-gcrypt` in §1.4:
+
+```bash
+git clone https://aur.archlinux.org/yay.git /tmp/yay
+( cd /tmp/yay && makepkg -si )
+rm -rf /tmp/yay
+```
+
+Set your Git identity. If you use the `dotfiles-arch` layout, place identity in an untracked local file:
+
+```bash
+mkdir -p ~/.config/git
+cat > ~/.config/git/config.local <<'EOF'
+[user]
+  name = Your Name
+  email = your-email@example.com
+EOF
+```
+
+Otherwise, set it globally:
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+```
+
+### 1.2 Syncthing
 
 ```bash
 sudo pacman -S syncthing
@@ -55,7 +95,7 @@ ssh -L 8384:127.0.0.1:8384 <user>@<tailscale-ip>
 # Open http://127.0.0.1:8384 in browser for GUI configuration
 ```
 
-### 1.2 Git-crypt
+### 1.3 Git-crypt
 
 git-crypt encrypts file contents in git objects. Encryption rules are defined in `.gitattributes`:
 
@@ -86,7 +126,7 @@ scp ~/vault-git-crypt.key <user>@<tailscale-ip>:~/Downloads/
 rm ~/vault-git-crypt.key
 ```
 
-### 1.3 Git-remote-gcrypt
+### 1.4 Git-remote-gcrypt
 
 git-remote-gcrypt encrypts the entire repository on the remote, including filenames and directory structure. This prevents note titles from being visible on GitHub.
 
@@ -226,7 +266,7 @@ GitHub will show a single synthetic commit ("Initial commit" by root@localhost, 
 
 git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `9-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically. If push times become problematic, this is a broader backup-architecture decision, not a drop-in backend swap.
 
-### 1.4 Deploy Key
+### 1.5 Deploy Key
 
 Generate a dedicated SSH key (no passphrase) for unattended push:
 
@@ -242,7 +282,7 @@ Verify push works without passphrase prompt:
 cd ~/vault && git push --dry-run origin main
 ```
 
-### 1.5 Auto-commit Timer
+### 1.6 Auto-commit Timer
 
 Enable user linger so the timer persists across SSH logout:
 
@@ -302,15 +342,9 @@ systemctl --user start vault-autocommit.service
 journalctl --user -u vault-autocommit.service -n 10
 ```
 
-### 1.6 Public Template Sync
+### 1.7 Public Template Sync
 
 A public repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and docs. Note content is not synced. A git post-commit hook handles this automatically after every commit.
-
-#### Install rsync
-
-```bash
-sudo pacman -S rsync
-```
 
 #### Clone the public repo
 
@@ -495,11 +529,11 @@ User service (not system service) starts and stops with the desktop session.
 Open the Syncthing web UI at `http://localhost:8384`:
 
 1. Click **Add Remote Device**
-2. Paste the remote hub's device ID (from step 1.1)
+2. Paste the remote hub's device ID (from step 1.2)
 3. Set the device address to `tcp://<hub-tailscale-ip>:22000`
 4. Save
 
-The remote hub must accept the device and share the vault folder (see step 1.1). Once accepted, a notification appears in the local Syncthing UI:
+The remote hub must accept the device and share the vault folder (see step 1.2). Once accepted, a notification appears in the local Syncthing UI:
 
 1. Accept the **vault** folder share
 2. Set the folder path to `~/vault`
@@ -522,6 +556,19 @@ syncthing cli config options relays-enabled set false
 ### 2.5 Neovim Config
 
 *Skip this section if you don't use Neovim.*
+
+Install Neovim and supporting tools:
+
+```bash
+sudo pacman -S neovim git stow
+```
+
+Clone the LazyVim starter so `obsidian.nvim` has a config to extend:
+
+```bash
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
+```
 
 If the machine uses `dotfiles-arch` or `dotfiles-omarchy` via GNU Stow:
 
@@ -620,6 +667,19 @@ ln -s /mnt/c/Users/<user>/vault ~/vault
 
 *Skip the Neovim steps below if not applicable.*
 
+Install Neovim and supporting tools inside WSL:
+
+```bash
+sudo pacman -S neovim git stow
+```
+
+Clone the LazyVim starter:
+
+```bash
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
+```
+
 If `dotfiles-arch` is cloned in WSL:
 
 ```bash
@@ -660,7 +720,7 @@ Pair with the remote hub:
 4. Set the address to `tcp://<hub-tailscale-ip>:22000`
 5. Save
 
-The remote hub must accept the device and share the vault folder (see step 1.1).
+The remote hub must accept the device and share the vault folder (see step 1.2).
 
 Back on the phone, accept the **vault** folder share:
 
@@ -698,7 +758,7 @@ gpg --import vault-backup-private.asc
 
 ### 5.2 Configure GPG for headless operation
 
-Set up `pinentry-null` and `gpg-agent.conf` as described in step 1.3 (GPG headless configuration).
+Set up `pinentry-null` and `gpg-agent.conf` as described in step 1.4 (GPG headless configuration).
 
 ### 5.3 Clone from encrypted remote
 
