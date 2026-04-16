@@ -2,57 +2,90 @@
 # Sync public-facing vault files to the public template repo.
 # Runs after every commit in the vault repo (including auto-commits).
 #
-# FORK NOTE: VAULT and PUBLIC paths below are user-specific. Adjust if forked.
 # ENABLE: on the remote hub, run `git config core.hooksPath .githooks` once.
+# FORK NOTE: set `git config vault.publicPath /path/to/your/vault-template`
+# if your public mirror lives anywhere other than the default below.
 #
-# SAFETY: Content directories are excluded by rsync. Only structure
-# (empty dirs via .gitkeep), templates, config, and docs are copied.
-# Private notes never leave this repo.
+# SAFETY MODEL: fail-closed allowlist. The rsync filter below names every
+# path that may leave this repo. A new root file or a new non-content
+# top-level directory will not publish unless its path is added explicitly.
+# Content-directory contents are excluded by default because content dirs
+# are never in the allowlist.
 #
-# Content directories are derived from .gitattributes (git-crypt rules).
-# Adding a new content directory only requires updating .gitattributes.
+# Structural content dirs (0-fleeting, 1-sources, ..., 7-assets) are
+# recreated in the public repo by the .gitkeep loop further down, so the
+# public mirror shows the layout without any private content.
 
 set -euo pipefail
 
-VAULT="$HOME/vault"
-PUBLIC="$HOME/projects/repos/templates/vault-template"
+# Resolve the vault root from the repo being committed, not from $HOME.
+VAULT="$(git rev-parse --show-toplevel)"
 
-# Bail if the public repo isn't cloned on this machine
+# PUBLIC can be overridden per-repo via `git config vault.publicPath`;
+# default is the canonical location on the remote hub.
+PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/projects/repos/templates/vault-template")"
+
+# Bail if the public repo isn't cloned on this machine.
 [ -d "$PUBLIC/.git" ] || exit 0
 
-# Derive content directories from .gitattributes
-EXCLUDE_ARGS=()
-CONTENT_DIRS=()
-while IFS= read -r line; do
-  dir="${line%%/**}"
-  CONTENT_DIRS+=("$dir")
-  EXCLUDE_ARGS+=(--exclude="${dir}/**")
-done < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes")
-
-# Sync: templates, config, and docs only
+# Allowlist sync. First matching filter rule wins; the trailing --exclude='*'
+# denies anything the allowlist did not name.
 rsync -a --delete \
   --filter='P LICENSE' \
-  "${EXCLUDE_ARGS[@]}" \
-  --exclude='.git/' \
-  --exclude='.stfolder/' \
-  --exclude='.stversions/' \
-  --exclude='.trash/' \
-  --exclude='.claude/' \
-  --exclude='.obsidian/workspace.json' \
-  --exclude='.obsidian/workspace-mobile.json' \
-  --exclude='.obsidian/cache' \
+  \
+  --include='/README.md' \
+  --include='/WORKFLOW.md' \
+  --include='/SETUP.md' \
+  --include='/AGENTS.md' \
+  --include='/CLAUDE.md' \
+  --include='/CHANGELOG.md' \
+  --include='/LICENSE' \
+  --include='/.gitignore' \
+  --include='/.gitattributes' \
+  --include='/.stignore' \
+  \
+  --include='/6-templates/' \
+  --include='/6-templates/**' \
+  --include='/.githooks/' \
+  --include='/.githooks/**' \
+  \
+  --include='/.obsidian/' \
+  --include='/.obsidian/app.json' \
+  --include='/.obsidian/appearance.json' \
+  --include='/.obsidian/core-plugins.json' \
+  --include='/.obsidian/graph.json' \
+  --include='/.obsidian/templates.json' \
+  --include='/.obsidian/snippets/' \
+  --include='/.obsidian/snippets/**' \
+  --include='/.obsidian/themes/' \
+  --include='/.obsidian/themes/**' \
+  \
+  --exclude='*' \
+  \
   "$VAULT/" "$PUBLIC/"
 
-# Clean orphaned directories (deleted/renamed in vault)
-for dir in "$PUBLIC"/*/; do
+# Derive content directories from .gitattributes (git-crypt rules).
+# Used by the orphan cleanup and .gitkeep loop below to recreate the
+# empty structural layout in the public mirror.
+CONTENT_DIRS=()
+while IFS= read -r line; do
+  CONTENT_DIRS+=("${line%%/**}")
+done < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes")
+
+# Clean orphaned directories: anything in the public repo root that is
+# neither a content dir, infrastructure (.git, .obsidian), nor explicitly
+# present in the vault. Guards against renamed/removed top-level items.
+for dir in "$PUBLIC"/*/ "$PUBLIC"/.*/; do
   [ -d "$dir" ] || continue
-  name=$(basename "$dir")
-  [[ "$name" == .git ]] && continue
-  [[ "$name" == .obsidian ]] && continue
+  name="$(basename "$dir")"
+  case "$name" in
+    . | .. | .git | .obsidian | .githooks) continue ;;
+  esac
   [ -d "$VAULT/$name" ] || rm -rf "$dir"
 done
 
-# Ensure content directories exist with .gitkeep
+# Ensure each content directory exists in public with a .gitkeep,
+# so the empty structural layout mirrors the vault.
 for dir in "${CONTENT_DIRS[@]}"; do
   mkdir -p "$PUBLIC/$dir"
   [ -f "$PUBLIC/$dir/.gitkeep" ] || touch "$PUBLIC/$dir/.gitkeep"
@@ -61,7 +94,7 @@ done
 cd "$PUBLIC" || exit 1
 git add -A
 
-# Only commit and push if there are changes
+# Only commit and push if there are changes.
 if ! git diff --cached --quiet; then
   git commit -m "sync: $(date +%F-%H%M)"
   git push --quiet origin main 2>/dev/null || true
