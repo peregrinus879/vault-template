@@ -27,6 +27,7 @@ It does not own:
 - [SETUP.md](SETUP.md) - full setup guide with commands and app links for all devices
 - `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
+- `.githooks/pre-commit` - frontmatter normalizer for staged notes in content directories
 - `.githooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath .githooks` on the hub)
 - `~/.local/bin/pinentry-null` - headless pinentry for unattended GPG operations
 - `~/.gnupg/gpg-agent.conf` - GPG agent config (pinentry-null)

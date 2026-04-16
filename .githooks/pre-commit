@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Frontmatter normalizer.
+# Ensures staged markdown notes in content directories carry the vault's
+# required frontmatter fields: id, aliases, tags, type. Missing fields
+# are injected with derived or empty values; the commit proceeds.
+# Does NOT rename files; for slug normalization use <leader>or in nvim.
+#
+# Auto-commit safe: non-interactive, auto-stages rewrites, exits 0 on
+# normalization. Warns (stderr) but does not reject on malformed
+# frontmatter to keep the hourly timer unblocked.
+
+set -uo pipefail
+
+VAULT="$(git rev-parse --show-toplevel)" || exit 0
+cd "$VAULT" || exit 0
+
+# Content directories that should carry Zettelkasten-convention frontmatter.
+# Excludes 6-templates (placeholder frontmatter) and 7-assets (non-markdown).
+readonly CONTENT_DIRS_RE='^(0-fleeting|1-sources|2-literature|3-permanent|4-writing|5-index)/.+\.md$'
+
+# Gather staged, added/modified markdown files in content dirs.
+mapfile -t staged_files < <(git diff --cached --name-only --diff-filter=AM | grep -E "$CONTENT_DIRS_RE" || true)
+
+if [ "${#staged_files[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+modified=0
+
+for f in "${staged_files[@]}"; do
+  [ -f "$f" ] || continue
+
+  stem="$(basename "$f" .md)"
+  first_line="$(head -n 1 "$f" | tr -d '\r')"
+
+  if [ "$first_line" != "---" ]; then
+    # No frontmatter: prepend a minimal block.
+    tmp="$(mktemp)"
+    {
+      printf -- '---\n'
+      printf -- 'id: %s\n' "$stem"
+      printf -- 'aliases:\n  - %s\n' "$stem"
+      printf -- 'tags: []\n'
+      printf -- 'type:\n'
+      printf -- '---\n\n'
+      cat "$f"
+    } > "$tmp"
+    mv "$tmp" "$f"
+    git add "$f"
+    modified=$((modified + 1))
+    continue
+  fi
+
+  # Find the closing --- line number.
+  end_line="$(awk '/^---$/ { c++; if (c == 2) { print NR; exit } }' "$f")"
+  if [ -z "$end_line" ]; then
+    printf -- '[pre-commit] warning: %s has unclosed frontmatter; skipping.\n' "$f" >&2
+    continue
+  fi
+
+  fm="$(sed -n "2,$((end_line - 1))p" "$f")"
+
+  missing=()
+  grep -q '^id:'      <<< "$fm" || missing+=('id')
+  grep -q '^aliases:' <<< "$fm" || missing+=('aliases')
+  grep -q '^tags:'    <<< "$fm" || missing+=('tags')
+  grep -q '^type:'    <<< "$fm" || missing+=('type')
+
+  if [ "${#missing[@]}" -eq 0 ]; then
+    continue
+  fi
+
+  additions=''
+  for field in "${missing[@]}"; do
+    case "$field" in
+      id)      additions+="id: ${stem}"$'\n' ;;
+      aliases) additions+="aliases:"$'\n'"  - ${stem}"$'\n' ;;
+      tags)    additions+="tags: []"$'\n' ;;
+      type)    additions+="type:"$'\n' ;;
+    esac
+  done
+
+  # Insert additions immediately before the closing ---.
+  tmp="$(mktemp)"
+  {
+    sed -n "1,$((end_line - 1))p" "$f"
+    printf -- '%s' "$additions"
+    sed -n "${end_line},\$p" "$f"
+  } > "$tmp"
+  mv "$tmp" "$f"
+  git add "$f"
+  modified=$((modified + 1))
+done
+
+if [ "$modified" -gt 0 ]; then
+  printf -- '[pre-commit] Normalized frontmatter in %d file(s).\n' "$modified" >&2
+fi
+
+exit 0
