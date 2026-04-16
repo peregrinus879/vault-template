@@ -164,7 +164,7 @@ A public template repo ([vault-template](https://github.com/peregrinus879/vault-
 
 A git post-commit hook (tracked at `.githooks/post-commit`) syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; templates, `.obsidian/` config, `.githooks/`, shared config references, and documentation are copied. The public repo has its own deploy key for unattended push.
 
-**Synced**: `6-templates/`, `.obsidian/` config, `.githooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `.gitignore`, `.gitattributes`, `.stignore`
+**Synced**: `6-templates/`, `.obsidian/` config, `.githooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`
 
 **Excluded**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 

@@ -161,6 +161,8 @@ When you create a note with `<leader>on`, the fleeting template is applied autom
 
 All templates set `type:` to match the folder name (`fleeting`, `source`, `literature`, `permanent`, `writing`, `index`). Type-specific fields: source notes add `medium`, `author`, `year`, `title`, `publisher`, `identifier`, `status`; literature notes add `source:` (wiki-link to the source note); writing notes add `status:`. Enum-valued fields carry an inline `# v1 | v2 | ...` YAML comment for reference. Write your content in the body, below any instructional comments.
 
+**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The `.githooks/pre-commit` hook catches the resulting gaps on commit: it fills missing `id`, `aliases`, `tags`, and `type` (derived from the folder name) and re-stages the file. What the hook does **not** do is slugify the filename or rewrite any existing frontmatter values. For slug normalization (renaming the file and rewriting wiki-links vault-wide), use `<leader>or` in obsidian.nvim.
+
 ### Fleeting Notes
 
 Fleeting notes exist to get thoughts out of your head. They have no quality bar.

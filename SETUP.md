@@ -409,6 +409,8 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 | `VAULT` resolution | Read from `git rev-parse --show-toplevel`; the hook works in any clone regardless of filesystem location |
 | `PUBLIC` resolution | Read from `git config vault.publicPath`, falling back to `$HOME/projects/repos/templates/vault-template`. Forks override via `git config vault.publicPath /their/path` |
 
+**Public-mirror constraint**: `--delete` plus the orphan cleanup loop mean the public repo is strictly a derived view of the private vault's allowlisted set. Any file or directory that exists only in the public repo (a fork's public-only CI config, a public-only `.github/` directory, a non-upstream banner) will be wiped on the next sync unless explicitly protected. Use an rsync protect filter to preserve it: add a line like `--filter='P /.github/'` inside the `rsync` invocation in `.githooks/post-commit`, mirroring the pattern already used for `.vault-template-marker`.
+
 #### Testing
 
 Verify no private content leaks:
