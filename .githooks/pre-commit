@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
-# Frontmatter normalizer.
-# Ensures staged markdown notes in content directories carry the vault's
-# required frontmatter fields: id, aliases, tags, type. Missing fields
-# are injected with derived or empty values; the commit proceeds.
-# Does NOT rename files; for slug normalization use <leader>or in nvim.
+# Frontmatter filler for missing required fields.
+# Ensures staged markdown notes in content directories carry the required
+# frontmatter fields: id, aliases, tags, type. Missing fields are added;
+# existing values are never rewritten.
 #
-# Auto-commit safe: non-interactive, auto-stages rewrites, exits 0 on
-# normalization. Warns (stderr) but does not reject on malformed
-# frontmatter to keep the hourly timer unblocked.
+# Values when fields are missing:
+#   id       = filename stem (single-quoted)
+#   aliases  = filename stem (single-quoted)
+#   tags     = []
+#   type     = folder-derived (e.g., 3-permanent/foo.md -> "permanent")
+#              empty if the folder does not match the N-name pattern
+#
+# The hook does NOT slugify filenames or rewrite existing frontmatter.
+# Full slug normalization (renaming the file and updating wiki-links)
+# requires <leader>or in obsidian.nvim, which is an interactive, cross-
+# file rewrite outside commit scope.
+#
+# Auto-commit safe: non-interactive, auto-stages rewrites, exits 0.
+# Warns on malformed frontmatter (unclosed ---) but does not reject, so
+# the hourly auto-commit timer stays unblocked.
 
 set -uo pipefail
 
@@ -43,6 +54,16 @@ for f in "${staged_files[@]}"; do
   # escape, no double-quote escape. Defends against filenames containing
   # colons, hashes, brackets, backslashes, and double quotes.
   stem_q="${stem//\'/\'\'}"
+
+  # Derive type from the top-level folder name. Expected pattern: N-name
+  # where N is one or more digits. Empty type_val if the pattern doesn't
+  # match (leaves the field empty for the user to fill).
+  top_dir="${f%%/*}"
+  type_val=""
+  if [[ "$top_dir" =~ ^[0-9]+-(.+)$ ]]; then
+    type_val="${BASH_REMATCH[1]}"
+  fi
+
   first_line="$(head -n 1 "$f" | tr -d '\r')"
 
   if [ "$first_line" != "---" ]; then
@@ -53,7 +74,11 @@ for f in "${staged_files[@]}"; do
       printf -- "id: '%s'\n" "$stem_q"
       printf -- "aliases:\n  - '%s'\n" "$stem_q"
       printf -- 'tags: []\n'
-      printf -- 'type:\n'
+      if [ -n "$type_val" ]; then
+        printf -- 'type: %s\n' "$type_val"
+      else
+        printf -- 'type:\n'
+      fi
       printf -- '---\n\n'
       cat "$f"
     } > "$tmp"
@@ -88,7 +113,13 @@ for f in "${staged_files[@]}"; do
       id)      additions+="id: '${stem_q}'"$'\n' ;;
       aliases) additions+="aliases:"$'\n'"  - '${stem_q}'"$'\n' ;;
       tags)    additions+="tags: []"$'\n' ;;
-      type)    additions+="type:"$'\n' ;;
+      type)
+        if [ -n "$type_val" ]; then
+          additions+="type: ${type_val}"$'\n'
+        else
+          additions+="type:"$'\n'
+        fi
+        ;;
     esac
   done
 
