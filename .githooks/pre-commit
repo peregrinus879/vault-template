@@ -14,9 +14,17 @@ set -uo pipefail
 VAULT="$(git rev-parse --show-toplevel)" || exit 0
 cd "$VAULT" || exit 0
 
-# Content directories that should carry Zettelkasten-convention frontmatter.
-# Excludes 6-templates (placeholder frontmatter) and 7-assets (non-markdown).
-readonly CONTENT_DIRS_RE='^(0-fleeting|1-sources|2-literature|3-permanent|4-writing|5-index)/.+\.md$'
+# Derive content directories from .gitattributes (git-crypt rules), the same
+# source post-commit uses. Adding a new content directory requires only a
+# .gitattributes update; this hook picks it up automatically. The trailing
+# \.md$ filter naturally excludes 7-assets (binary attachments) and
+# 6-templates (not listed in .gitattributes).
+mapfile -t CONTENT_DIRS < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes" | sed 's|/\*\*$||')
+if [ "${#CONTENT_DIRS[@]}" -eq 0 ]; then
+  exit 0
+fi
+printf -v CONTENT_DIRS_PIPE '%s|' "${CONTENT_DIRS[@]}"
+CONTENT_DIRS_RE="^(${CONTENT_DIRS_PIPE%|})/.+\\.md\$"
 
 # Gather staged, added/modified markdown files in content dirs.
 mapfile -t staged_files < <(git diff --cached --name-only --diff-filter=AM | grep -E "$CONTENT_DIRS_RE" || true)
@@ -31,6 +39,10 @@ for f in "${staged_files[@]}"; do
   [ -f "$f" ] || continue
 
   stem="$(basename "$f" .md)"
+  # YAML single-quoted scalar: only ' needs escaping (as ''). No backslash
+  # escape, no double-quote escape. Defends against filenames containing
+  # colons, hashes, brackets, backslashes, and double quotes.
+  stem_q="${stem//\'/\'\'}"
   first_line="$(head -n 1 "$f" | tr -d '\r')"
 
   if [ "$first_line" != "---" ]; then
@@ -38,8 +50,8 @@ for f in "${staged_files[@]}"; do
     tmp="$(mktemp)"
     {
       printf -- '---\n'
-      printf -- 'id: "%s"\n' "$stem"
-      printf -- 'aliases:\n  - "%s"\n' "$stem"
+      printf -- "id: '%s'\n" "$stem_q"
+      printf -- "aliases:\n  - '%s'\n" "$stem_q"
       printf -- 'tags: []\n'
       printf -- 'type:\n'
       printf -- '---\n\n'
@@ -73,8 +85,8 @@ for f in "${staged_files[@]}"; do
   additions=''
   for field in "${missing[@]}"; do
     case "$field" in
-      id)      additions+="id: \"${stem}\""$'\n' ;;
-      aliases) additions+="aliases:"$'\n'"  - \"${stem}\""$'\n' ;;
+      id)      additions+="id: '${stem_q}'"$'\n' ;;
+      aliases) additions+="aliases:"$'\n'"  - '${stem_q}'"$'\n' ;;
       tags)    additions+="tags: []"$'\n' ;;
       type)    additions+="type:"$'\n' ;;
     esac
