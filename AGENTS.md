@@ -108,36 +108,4 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 
 ## Changelog
 
-### Post-restructure polish (templates, infrastructure, docs)
-
-- Standardize all templates: `type:` field per folder, inline YAML comments for enums, one-line section comments
-- Split writing into `writing-short` and `writing-long` variants
-- Rename `hooks/` to `.githooks/` so Obsidian hides it
-- Align per-device state in `.stignore` with `.gitignore` and rsync excludes
-- Document the dotfile-prefix convention and three-layer exclusion model in AGENTS
-
-### Knowledge-vault restructure
-
-- Drop daily, review, meeting, project-charter: vault is knowledge, not tracking
-- Add `1-sources/` (Ahrens-style reference-note layer); literature notes link via `source: "[[...]]"`
-- Renumber directories: 0-fleeting, 1-sources, 2-literature, 3-permanent, 4-writing, 5-index, 6-templates, 7-assets
-- Migrate post-commit hook to a tracked location (now `.githooks/post-commit`)
-- Drop `_archive/` subfolders; use status frontmatter instead
-
-### Standalone setup documentation
-
-- Make SETUP.md fully self-contained; declare prerequisites and install baseline tools in the guide
-- Remove implicit dotfiles-arch dependency (still referenced as an optional shortcut)
-
-### Dual-layer encryption migration
-
-- Add git-remote-gcrypt as second encryption layer (encrypts filenames, history, tree)
-- Rename GitHub repo from vault to vault-backup
-- Add headless GPG config (dedicated key, pinentry-null, `gcrypt.gpg-args --no-tty`)
-- Keep public repo commit messages opaque (`sync: <date>`)
-
-### Vault restructuring
-
-- Ahrens-style numeric-prefix directories; `[[wiki-links]]` replace Folgezettel numbering
-- Add WORKFLOW.md as dual-editor tutorial
-- Add git-crypt encryption, deploy keys, auto-commit timer, public template sync
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
