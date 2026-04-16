@@ -46,7 +46,7 @@ Three exclusion layers decide what propagates where:
 |---|---|---|
 | `.gitignore` | What git tracks | `.gitignore` |
 | `.stignore` | What Syncthing propagates between devices | `.stignore` |
-| Rsync excludes | What reaches the public `vault-template` mirror | `.githooks/post-commit` |
+| Rsync allowlist | What reaches the public `vault-template` mirror | `.githooks/post-commit` |
 
 ### Current state per item
 
@@ -89,7 +89,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing `.githooks/post-commit` (public repo sync logic)
 - Editing `.obsidian/app.json` (default new-note folder, attachment folder) or `.obsidian/templates.json`
 - Editing `.stignore` (Syncthing propagation rules; affects what reaches other devices)
-- Changing `.gitignore`, `.stignore`, or the rsync excludes in `.githooks/post-commit` (update the per-item state table in §Hidden Files and Directories)
+- Changing `.gitignore`, `.stignore`, or the rsync allowlist in `.githooks/post-commit` (update the per-item state table in §Hidden Files and Directories)
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `WORKFLOW.md`, `SETUP.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
