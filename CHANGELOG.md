@@ -2,6 +2,28 @@
 
 All notable changes to the vault structure, templates, tooling, and documentation. Grouped by theme; within each, sorted Added / Changed / Removed. Dates in parentheses indicate when the theme's primary work landed.
 
+## Post-audit hardening round 2 (2026-04-16)
+
+### Added
+
+- Sentinel check in the post-commit hook. A new `.vault-template-marker` file in vault-template is the identity proof; the hook refuses to touch `$PUBLIC` unless the marker is present, guarding against a misconfigured `vault.publicPath` trashing an unrelated repo. Matching rsync protect filter preserves the marker from `--delete`.
+- `LICENSE` (MIT, copied from vault-template) at the private vault root. Aligns with the public mirror; makes the existing `userIgnoreFilters` and `hide-root-docs` CSS rule describe real files rather than defensive no-ops.
+
+### Changed
+
+- Post-commit push no longer hardcodes `origin main`. Uses `git push --quiet` with upstream tracking so forks with different remote names or default branches work unchanged; push errors surface on stderr (were silently suppressed).
+- Pre-commit frontmatter normalizer uses single-quoted YAML scalars (only `'` needs escaping), making filename-stem emission safe against colons, hashes, brackets, backslashes, and double quotes.
+- Pre-commit content-directory list now derived from `.gitattributes` (same source post-commit uses). Adding a new content directory requires only a `.gitattributes` update, as the docs already claimed.
+- `SETUP.md` §1.4 and §5.5 gcrypt signing config: `gcrypt.signingkey` → `user.signingkey`. The old key is not read by upstream git-remote-gcrypt, so signing was silently unpinned.
+- `SETUP.md` §1.7 rsync rules table rewritten to reflect the sentinel check and the new protect filter.
+- `SETUP.md` §4.3 Obsidian Mobile: note that mobile captures do not auto-apply templates; pull-down invokes the template picker.
+- `README.md` Setup overview updated to match `SETUP.md`'s actual top-level structure (Prerequisites, 1-5, Verify, Appendix).
+
+### Removed
+
+- `--filter='P LICENSE'` protect rule in `.githooks/post-commit`. LICENSE now lives in both repos; the rule's purpose (protect a public-only file from `--delete`) no longer applies.
+- `daily-notes` disabled in `.obsidian/core-plugins.json`. The daily-notes workflow was removed during the earlier knowledge-vault restructure; the core plugin remained enabled as stale config until now.
+
 ## Hook hardening and doc alignment (2026-04-16, external audit remediation)
 
 ### Added
