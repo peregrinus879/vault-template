@@ -3,15 +3,16 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
+type: index
 ---
 
 # {{title}}
-<!-- Guided tour, not table of contents. Arrange notes to build an argument. -->
+<!-- Guided tour through permanent notes on a theme. -->
 
 ## Path
-<!-- Sequence notes in a reading order that tells a story. -->
+<!-- Sequence notes as a reading order. -->
 - [[]]
 
 ## Gaps
-<!-- Missing coverage worth exploring. -->
+<!-- Missing notes worth writing. -->
 -

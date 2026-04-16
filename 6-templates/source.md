@@ -4,23 +4,20 @@ aliases:
   - {{title}}
 tags: []
 type: source
-medium:
+medium:          # book | article | paper | podcast | video | talk | web | other
 author:
 year:
 title:
 publisher:
-identifier:
-status: unread
+identifier:      # ISBN | DOI | URL | other
+status:          # unread | reading | read | abandoned | reference
 ---
 
 # {{title}}
-<!-- Bibliographic record for a source you cite in literature notes. -->
-<!-- medium: book | article | paper | podcast | video | talk | web | other -->
-<!-- identifier: ISBN | DOI | URL -->
-<!-- status: unread | reading | read | abandoned | reference -->
+<!-- Bibliographic record for a cited work. -->
 
 ## Why this source
-<!-- What drew you to it; what you hoped to get. -->
+<!-- What drew you to it. -->
 
 
 ## Summary
@@ -28,5 +25,5 @@ status: unread
 
 
 ## Connections
-<!-- Other sources in conversation with this one. -->
+<!-- Links to related sources. -->
 - [[]]

@@ -3,14 +3,15 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
-status: draft
+type: writing
+status: draft    # draft | published | abandoned
 ---
 
 # {{title}}
-<!-- Long-form composition from notes. -->
+<!-- Long-form composition. -->
 
 ## Audience
-<!-- Who is this for and what should it achieve? -->
+<!-- Who is this for. -->
 
 
 ## Outline
@@ -26,5 +27,5 @@ status: draft
 - [[]]
 
 ## Attachments
-<!-- Figures, images, and files. -->
+<!-- Images, diagrams, and files. -->
 - ![[]]

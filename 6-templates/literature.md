@@ -3,20 +3,18 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
-type: note
-source: "[[]]"
+type: literature
+source: "[[]]"   # wiki-link to the source note
 ---
 
 # {{title}}
-<!-- What this source said, in your words. One source, one theme per note. -->
-<!-- Use > for quotes with an inline locator, then paraphrase or react. -->
-<!-- Locator convention: book/article/paper "(p.47)" or "(pp.47-49)"; podcast/video/talk "(12:30)"; web "(§heading)". -->
+<!-- Paraphrase from a single source. Quote with inline locator (p.N, MM:SS, §heading); paraphrase below. -->
 >
 
 ## Connections
-<!-- Related literature notes; articulate each link with a because-clause. -->
+<!-- Links to related literature notes and permanent-note candidates. -->
 - [[]]
 
 ## Attachments
-<!-- Source files, images, and diagrams. -->
+<!-- Source PDFs, images, and diagrams. -->
 - ![[]]

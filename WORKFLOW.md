@@ -159,7 +159,7 @@ When you create a note with `<leader>on`, the fleeting template is applied autom
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
 - **`tags`**: empty by default. Add tags as needed.
 
-Some templates add type-specific fields (source and literature notes share `type:`; source notes add `medium`, `author`, `year`, `title`, `publisher`, `identifier`, `status`; literature notes add `source:`; writing notes add `status`). Write your content in the body, below any instructional comments.
+All templates set `type:` to match the folder name (`fleeting`, `source`, `literature`, `permanent`, `writing`, `index`). Type-specific fields: source notes add `medium`, `author`, `year`, `title`, `publisher`, `identifier`, `status`; literature notes add `source:` (wiki-link to the source note); writing notes add `status:`. Enum-valued fields carry an inline `# v1 | v2 | ...` YAML comment for reference. Write your content in the body, below any instructional comments.
 
 ### Fleeting Notes
 

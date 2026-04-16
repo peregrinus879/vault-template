@@ -3,8 +3,9 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
+type: fleeting
 ---
 
 # {{title}}
-<!-- Process within 1-2 days: promote, link, or discard. -->
+<!-- Capture; process within 1-2 days. -->
 

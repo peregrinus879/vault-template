@@ -3,14 +3,15 @@ id: {{id}}
 aliases:
   - {{title}}
 tags: []
+type: permanent
 ---
 
 # {{title}}
-<!-- One claim per note. Split if you need "and". -->
+<!-- One atomic claim in your own words. Must link to another note. -->
 
 
 ## Connections
-<!-- Links to supporting, contradicting, or extending notes. -->
+<!-- Links to notes this supports, contradicts, or extends. -->
 - [[]]
 
 ## Attachments
