@@ -8,39 +8,39 @@ A hands-on tutorial for running a Zettelkasten in this vault. It covers two edit
 
 | Type | Folder | Job |
 |------|--------|-----|
-| Daily | `0-daily/` | Timestamped anchor for the day. Plan, log, reflect. |
-| Fleeting | `1-fleeting/` | Half-thoughts. Written fast, processed within 24-48h, then deleted. |
+| Fleeting | `0-fleeting/` | Half-thoughts. Written fast, processed within 24-48h, then deleted. |
+| Source | `1-sources/` | Bibliographic record for a cited work. One per source. |
 | Literature | `2-literature/` | What someone else said, paraphrased in your words, tied to a source. |
 | Permanent | `3-permanent/` | What **you** think. One claim per note, linked to other notes. |
 
-The vault also has folders for writing (`4-writing/`), projects (`5-projects/`), meetings (`6-meetings/`), and index notes (`7-index/`). Master the four core types first. See [README.md](README.md) for the full directory layout and status lifecycles.
+Writing (`4-writing/`) and index notes (`5-index/`) are downstream outputs built from the four core types. Master the core first. See [README.md](README.md) for the full directory layout and status lifecycles.
 
 ### The Flow
 
 ```text
-                  ┌──────────────────── Discard
-                  │
-Capture ── Fleeting ──── Literature ──── (persists, seeds permanent notes)
-                  │                         │
-                  │                         ▼
-                  └─────────────────── Permanent ──── Writing / Index
+Capture ── Fleeting ─┬── Discard
+                     │
+                     ├── Source (bibliographic record) + Literature (paraphrase)
+                     │         │
+                     │         ▼
+                     └── Permanent ─── Writing / Index
 ```
 
 Three paths out of fleeting:
 
-1. **The thought came from a source** (book, article, video, podcast, conversation). Create a literature note in `2-literature/`. Delete the fleeting note.
+1. **The thought came from a source** (book, article, video, podcast, conversation). Create or locate a source note in `1-sources/`, then create a literature note in `2-literature/` that references it via `source: "[[slug]]"`. Delete the fleeting note.
 2. **The thought is your own and worth keeping.** Create a permanent note in `3-permanent/`. Delete the fleeting note.
 3. **The thought is noise.** Delete the fleeting note. This is the correct answer more often than not.
 
-Literature notes persist. They are a lasting record of what a source said, in your words. Over time, a single literature note seeds multiple permanent notes as your thinking develops. You do not delete or "promote" literature notes; they stay in `2-literature/` and accumulate links.
+Source notes persist; literature notes persist. Over time, one source note is referenced by many literature notes (a book's chapters, for example), and each literature note may seed multiple permanent notes as your thinking develops. You do not delete or "promote" source or literature notes; they stay put and accumulate links.
 
-Permanent notes are the core of the Zettelkasten. Each one states a single claim, links to at least one other note, and is written in your own words. They grow in value as the link network grows.
+Permanent notes are the core of the Zettelkasten. Each states a single claim, links to at least one other note, and is written in your own words. They grow in value as the link network grows.
 
-**Why there is no separate "reference" step.** Some Zettelkasten descriptions separate "reference notes" (bibliographic metadata) from "literature notes" (paraphrased content). In this vault, the literature note template merges both: frontmatter holds the `source` field, and the body holds the paraphrased content. Splitting them only pays off if you routinely write multiple literature notes about different chapters of the same source. For most material, one literature note per source is sufficient.
+**Why sources are separate from literature**. Ahrens' classical Zettelkasten distinguishes a **reference note** (bibliographic metadata) from a **literature note** (paraphrased content). This vault uses the same split under the names `source` and `literature`. The split earns its weight when you read a book and write multiple literature notes across its chapters; the source metadata is entered once in `1-sources/` and each literature note references it by wiki-link, not by retyping.
 
 ### Why Linking Matters
 
-The value of a Zettelkasten is in the links, not the notes. An unlinked permanent note is a dead end; a linked note is a node in a growing network where ideas compound. Every time you write in `3-permanent/`, ask: what existing note does this support, contradict, or extend? Insert a `[[wiki-link]]` and write a short clause explaining the relationship. If you cannot find a single link for a permanent note, the note is not ready. Move it back to `1-fleeting/` until you can connect it.
+The value of a Zettelkasten is in the links, not the notes. An unlinked permanent note is a dead end; a linked note is a node in a growing network where ideas compound. Every time you write in `3-permanent/`, ask: what existing note does this support, contradict, or extend? Insert a `[[wiki-link]]` and write a short clause explaining the relationship. If you cannot find a single link for a permanent note, the note is not ready. Move it back to `0-fleeting/` until you can connect it.
 
 ## Naming Conventions
 
@@ -58,36 +58,33 @@ You never need to think about the filename. Type the title naturally; the slug i
 
 ### Design Principles
 
-- **Title as claim**: a permanent note's title is its assertion, written as a full declarative sentence. Literature titles point to the source. Fleeting titles are disposable.
+- **Title as claim**: a permanent note's title is its assertion, written as a full declarative sentence. Source titles identify the work. Literature titles identify the scope of the paraphrase (often by chapter or section). Fleeting titles are disposable.
 - **Picker-first**: titles are the primary search key in `<leader>oo` and `[[` autocomplete. Start with the content-bearing word, not a date or tag.
-- **Slug filenames, readable aliases**: all notes get auto-generated lowercase-hyphenated filenames. The human-readable title lives in the `aliases` frontmatter field, which powers search and link autocomplete. You see the readable title in pickers; the filesystem sees the slug.
+- **Slug filenames, readable aliases**: all notes get auto-generated lowercase-hyphenated filenames. The human-readable title lives in the `aliases` frontmatter field, which powers search and link autocomplete.
 - **Cross-platform safety**: Syncthing moves files across Linux, Windows (WSL), and Android. Slug filenames avoid all platform-specific character issues by design (lowercase, hyphens, alphanumeric only).
 - **Aliases are the single source of truth for display**: the `aliases` field is what appears in search, autocomplete, and link resolution. Both obsidian.nvim and Obsidian rewrite every `[[link]]` on rename, so titles can evolve freely.
 
 ### Convention per Note Type
 
-The "title" column is what you type when creating a note. obsidian.nvim converts it to a slug filename and stores the original as an alias.
-
 | Type | Title you type | Slug filename |
 |------|---------------|---------------|
-| Daily | (auto, via `<leader>od`) | `2026-04-13.md` |
 | Fleeting | `Contingency is not a buffer` | `contingency-is-not-a-buffer.md` |
-| Literature | `Ahrens 2017 - How to Take Smart Notes` | `ahrens-2017---how-to-take-smart-notes.md` |
+| Source | `Ahrens 2017 - How to Take Smart Notes` | `ahrens-2017---how-to-take-smart-notes.md` |
+| Literature | `Ahrens 2017 Ch3 - The slip-box is a thinking partner` | `ahrens-2017-ch3---the-slip-box-is-a-thinking-partner.md` |
 | Permanent | `Risk appetite is a board-level choice, not a risk-team calculation` | `risk-appetite-is-a-board-level-choice-not-a-risk-team-calculation.md` |
 | Writing | `The case against stage-gate theatre` | `the-case-against-stage-gate-theatre.md` |
-| Project | `Line 3 upgrade - baseline schedule` | `line-3-upgrade---baseline-schedule.md` |
-| Meeting | `2026-04-13 Sponsor - gate 2 review` | `2026-04-13-sponsor---gate-2-review.md` |
 | Index | `How controls fail in capital projects` | `how-controls-fail-in-capital-projects.md` |
-| Review | `2026-04-19 Weekly Review` | `2026-04-19-weekly-review.md` |
 
 ### Rules
 
 1. **Sentence case, always.** Easier to scan; avoids Title Case tax on every new note.
 2. **Permanent titles must be declarative claims.** If the title reads as a topic ("risk appetite"), it is wrong. Rewrite as a sentence that asserts something.
-3. **ASCII only in titles**: no em dash, no smart quotes, no slashes. The slug function strips non-alphanumeric characters.
-4. **Rename freely.** obsidian.nvim and Obsidian both update every `[[link]]` on rename. The title is not a commitment; the claim is.
-5. **Fleeting titles are disposable.** Do not invest effort. They die within 48 hours.
-6. **Type the title naturally.** Do not think about filenames. The slug is generated automatically.
+3. **Source titles identify the work**, typically as `Author Year - Title`.
+4. **Literature titles identify scope**, typically as `Author Year Ch/§ - theme` so siblings cluster in pickers.
+5. **ASCII only in titles**: no em dash, no smart quotes, no slashes. The slug function strips non-alphanumeric characters.
+6. **Rename freely.** obsidian.nvim and Obsidian both update every `[[link]]` on rename. The title is not a commitment; the claim is.
+7. **Fleeting titles are disposable.** Do not invest effort. They die within 48 hours.
+8. **Type the title naturally.** Do not think about filenames. The slug is generated automatically.
 
 ### Trade-offs
 
@@ -95,28 +92,13 @@ The "title" column is what you type when creating a note. obsidian.nvim converts
 
 **Aliases in links.** Wiki-links display the alias, not the slug. When you type `[[` and select a note, the link resolves through the alias. If a link renders as a slug in some context, you can add a display name: `[[slug-filename|Readable title]]`.
 
-## The Daily Loop
+## The Capture Loop
 
-### Morning: Anchor the Day
-
-Open the vault and create or open today's daily note.
-
-**In Neovim:**
-
-```
-nvim ~/vault/0-daily/
-<leader>od
-```
-
-**In Obsidian desktop:** click the **Open today's daily note** icon in the left ribbon (calendar icon), or press `Ctrl+P` and type "daily".
-
-**In Obsidian mobile:** tap the calendar icon in the bottom toolbar, or open the command palette and search for "daily".
-
-The daily note is your timeline. Fill in **Plan** with 3-5 bullets. Do not over-plan. If something comes up during the day that does not warrant its own fleeting note, drop it under **Log**.
+The vault has no daily anchor note. Capture is continuous; triage is daily.
 
 ### Throughout the Day: Capture
 
-When a thought appears that is not tied to your current task, capture it immediately. Speed matters more than structure.
+When a thought appears, capture it immediately. Speed matters more than structure.
 
 **In Neovim:**
 
@@ -124,13 +106,13 @@ When a thought appears that is not tied to your current task, capture it immedia
 <leader>on
 ```
 
-Type a short title, press Enter. The note lands in `1-fleeting/` with the fleeting template applied automatically: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
+Type a short title, press Enter. The note lands in `0-fleeting/` with the fleeting template applied: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
 
 The filename is a slug (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). Your original title is preserved in the `aliases` field for search and link autocomplete.
 
-**In Obsidian desktop:** press `Ctrl+N` to create a new note. It lands in `1-fleeting/` (configured in Settings > Files and links > Default location). Type the thought.
+**In Obsidian desktop:** press `Ctrl+N` to create a new note. It lands in `0-fleeting/` (configured in Settings > Files and links > Default location). Type the thought.
 
-**In Obsidian mobile:** tap the `+` icon or new-note button. Confirm the default folder is `1-fleeting/` (Settings > Files and links > Default location for new notes > In the folder specified below > `1-fleeting`). Type, save. Syncthing pushes it to the hub within seconds to minutes.
+**In Obsidian mobile:** tap the `+` icon or new-note button. Confirm the default folder is `0-fleeting/` (Settings > Files and links > Default location for new notes > In the folder specified below > `0-fleeting`). Type, save. Syncthing pushes it to the hub within seconds to minutes.
 
 Mobile captures will not have the fleeting template applied automatically. That is fine; you will process them during triage.
 
@@ -138,21 +120,29 @@ Mobile captures will not have the fleeting template applied automatically. That 
 
 Open the fleeting folder.
 
-**In Neovim:** `nvim ~/vault/1-fleeting/`
+**In Neovim:** `nvim ~/vault/0-fleeting/`
 
-**In Obsidian:** expand `1-fleeting/` in the file explorer sidebar.
+**In Obsidian:** expand `0-fleeting/` in the file explorer sidebar.
 
 For each note, make one decision:
 
 | If the thought... | Then... |
 |---|---|
-| Came from something you read, watched, or heard | Create a literature note in `2-literature/`. Delete the fleeting note. |
+| Came from something you read, watched, or heard | Find or create the source note in `1-sources/`, then create a literature note in `2-literature/`. Delete the fleeting note. |
 | Is your own and worth keeping | Create a permanent note in `3-permanent/`. Delete the fleeting note. |
 | Is noise or redundant | Delete the fleeting note. |
 
-Do not skip. Do not "leave it for tomorrow." An unprocessed fleeting folder is a sign the system is stalling. See [Literature Notes](#literature-notes) and [Permanent Notes](#permanent-notes) for step-by-step creation.
+Do not skip. Do not "leave it for tomorrow." An unprocessed fleeting folder is a sign the system is stalling. See [Source Notes](#source-notes), [Literature Notes](#literature-notes), and [Permanent Notes](#permanent-notes) for step-by-step creation.
 
-After triage, return to the daily note and fill in **Log**, **Reflections**, and **Connections**.
+### Periodic Self-Check Questions
+
+No enforced cadence. When you notice the vault getting stale (once a month, once a season), walk through these:
+
+1. **Fleeting age.** Any fleeting notes older than 48 hours? Process or delete now.
+2. **Orphan permanent notes.** Any permanent notes with zero outgoing links? Find a link or move them back to fleeting. Use the Obsidian graph view or grep for notes with no `[[...]]` in the body.
+3. **Emerging clusters.** Any theme with 5-10 interconnected permanent notes? Start an index note in `5-index/`.
+4. **Stalled source notes.** Any `status: reading` source notes you haven't touched in months? Decide: resume, mark `abandoned`, or keep as `reference`.
+5. **Unexpected backlinks.** Open a few recent permanent notes and check backlinks. Surprise connections are the Zettelkasten's serendipity engine.
 
 ## Writing Notes
 
@@ -169,23 +159,51 @@ When you create a note with `<leader>on`, the fleeting template is applied autom
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
 - **`tags`**: empty by default. Add tags as needed.
 
-Some templates add type-specific fields (e.g., `source` for literature notes, `status` for writing and meeting notes). Write your content in the body, below any instructional comments.
+Some templates add type-specific fields (source and literature notes share `type:`; source notes add `medium`, `author`, `year`, `title`, `publisher`, `identifier`, `status`; literature notes add `source:`; writing notes add `status`). Write your content in the body, below any instructional comments.
 
 ### Fleeting Notes
 
 Fleeting notes exist to get thoughts out of your head. They have no quality bar.
 
-The template (`8-templates/fleeting.md`) has minimal structure: `id`, `aliases`, `tags`, and a title heading. The comment reminds you to process within 1-2 days.
+The template (`6-templates/fleeting.md`) has minimal structure: `id`, `aliases`, `tags`, and a title heading. The comment reminds you to process within 1-2 days.
 
-Write fast. Do not format, link, or title carefully. The note dies within 48 hours: it either becomes a literature or permanent note, or it gets deleted.
+Write fast. Do not format, link, or title carefully. The note dies within 48 hours: it either becomes a source+literature pair or a permanent note, or it gets deleted.
+
+### Source Notes
+
+A source note answers: **what is the cited work, and what is its bibliographic metadata?**
+
+One source note per work (book, article, paper, podcast episode, video, talk, web page, conversation). The note body captures *why you engaged with it* and *a brief summary*; it does not paraphrase the content. Paraphrase lives in literature notes.
+
+**Creating the note:**
+
+*In Neovim:* press `<leader>oN`. Pick the `source` template. Type the title, conventionally `Author Year - Title` (e.g., `Ahrens 2017 - How to Take Smart Notes`). The note is created in `1-sources/`.
+
+*In Obsidian:* right-click `1-sources/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `source`.
+
+**Filling in the template:**
+
+| Field | Fill with |
+|---|---|
+| `medium` | `book`, `article`, `paper`, `podcast`, `video`, `talk`, `web`, `other` |
+| `author`, `year`, `title`, `publisher` | Bibliographic metadata |
+| `identifier` | ISBN, DOI, or URL |
+| `status` | `unread`, `reading`, `read`, `abandoned`, `reference` |
+| Why this source | One or two lines on what drew you to it |
+| Summary | One paragraph in your own words once you finish |
+| Connections | Other source notes in conversation with this one |
+
+**Source-first vs lazy create.** Recommended flow: create the source note at the start of reading a new work. Alternative: when writing a literature note, type `source: "[[author-year-title]]"` even if the source does not yet exist. The link renders as unresolved; place cursor on it and press `gf` in nvim (or click in Obsidian) to create a stub source note, then fill in the metadata.
 
 ### Literature Notes
 
 A literature note answers: **what did this source say, in my words, that I might want to use later?**
 
+One source can have many literature notes (one per chapter, section, or theme you want to capture). Each literature note references its source via `source: "[[...]]"` in the frontmatter.
+
 **Creating the note:**
 
-*In Neovim:* press `<leader>oN`. Pick the `literature` template from the picker. Type the title (e.g., "Ahrens 2017 - How to Take Smart Notes"). The note is created in `2-literature/` with a slug filename and the literature template applied.
+*In Neovim:* press `<leader>oN`. Pick the `literature` template. Type the title, conventionally `Author Year Ch/§ - theme` (e.g., `Ahrens 2017 Ch3 - The slip-box is a thinking partner`). The note is created in `2-literature/`.
 
 *In Obsidian:* right-click `2-literature/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `literature`.
 
@@ -193,12 +211,20 @@ A literature note answers: **what did this source say, in my words, that I might
 
 | Section | What to write |
 |---|---|
-| **Frontmatter** | `source`: full reference (title, author, year, URL as applicable). |
-| **Body** | Use `>` for quotes, then paraphrase or react in your own words below each. Be selective, not comprehensive. |
-| **Connections** | Links to existing notes and seeds for future permanent notes. Explain each link with a because-clause. |
+| **Frontmatter `source:`** | Wiki-link to the source note, e.g., `source: "[[ahrens-2017---how-to-take-smart-notes]]"` |
+| **Body** | Use `>` for quotes with an inline locator (see below), then paraphrase or react in your own words below each. Be selective, not comprehensive. |
+| **Connections** | Links to related literature notes and seeds for future permanent notes. Explain each link with a because-clause. |
 | **Attachments** | Source PDFs, screenshots, or diagrams. |
 
-Do not try to summarize an entire book in one note. One source = one literature note, but it may seed many permanent notes over time.
+**Inline locator conventions** (goes in parentheses next to each quote):
+
+| Medium | Format | Example |
+|---|---|---|
+| Book, article, paper | `(p.N)` or `(pp.N-M)` | `(p.47)`, `(pp.47-49)` |
+| Podcast, video, talk | `(MM:SS)` or `(HH:MM:SS)` | `(12:30)`, `(01:24:05)` |
+| Web | `(§heading)` or omit | `(§methods)` |
+
+Do not try to summarize an entire book in one note. One literature note per theme or chapter; many literature notes per source.
 
 ### Permanent Notes
 
@@ -211,7 +237,7 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 
 **Creating the note:**
 
-*In Neovim:* press `<leader>oN`. Pick the `permanent` template from the picker. Type the title as a full declarative sentence, sentence case. The note is created in `3-permanent/` with a slug filename and the permanent template applied.
+*In Neovim:* press `<leader>oN`. Pick the `permanent` template. Type the title as a full declarative sentence, sentence case. The note is created in `3-permanent/`.
 
 *In Obsidian:* right-click `3-permanent/` in the file explorer, select **New note**. Title as a claim. Press `Ctrl+P`, type "Insert template", choose `permanent`.
 
@@ -223,7 +249,7 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 | **Connections** | Link to at least one other note. Use `[[Note Title]]` and write a because-clause explaining the relationship. |
 | **Attachments** | Images, diagrams, or files that support the claim. |
 
-**The one rule:** every permanent note must link to at least one other permanent or literature note. An unlinked note is a dead end. If you cannot find a link, move the note back to `1-fleeting/` until you can.
+**The one rule:** every permanent note must link to at least one other permanent or literature note. An unlinked note is a dead end. If you cannot find a link, move the note back to `0-fleeting/` until you can.
 
 **What "atomic" means, concretely:**
 
@@ -234,21 +260,29 @@ If your note title contains "and" or "also" at the top level, split it.
   - `Controls require a defined testing cadence to remain effective.md`
 - Now each can be linked independently from different contexts.
 
-### Other Note Types
+### Writing Notes
 
-Writing, project, and meeting notes follow the same pattern: press `<leader>oN`, pick the template, type a title. The note is created in the correct folder with the template applied. Each template is self-documenting with comments explaining what goes where.
+Writing notes hold long-form compositions from tweets and posts to essays and reports. Press `<leader>oN`, pick `writing`, type a title. The note is created in `4-writing/` with the template applied. Set `status: draft` initially; mark `published` or `abandoned` when the piece exits active composition.
 
-| Type | Folder | Template | Key sections |
-|---|---|---|---|
-| Writing | `4-writing/` | `writing.md` | Audience, Outline, Draft. Status: draft, published, or abandoned. |
-| Project Charter | `5-projects/` | `project-charter.md` | Business Case, Objectives, Sponsors, Scope (Deliverables, Exclusions), Assumptions, Constraints, Stakeholders, Governance, Resources, Schedule, Budget, Risks. |
-| Meeting | `6-meetings/` | `meeting.md` | Attendees, Agenda, Minutes, Action Items. Status: scheduled, held, or cancelled. |
+**No bibliography section in the template.** The vault already tracks sources in `1-sources/` and connections via `## Connections`. For a piece that needs a formal reference list (academic journal, formatted citations), add `## References` at the bottom of that specific piece by hand, in whatever citation style the venue requires. Citation styles are venue-specific; baking one into the template would be wrong for most pieces.
 
-All three templates include a **Connections** section. Use it. Reusable insights from projects and meetings should graduate to permanent notes; otherwise they are locked inside a time-bound context.
+**Where to put the piece content.** Write directly into the Draft section. The Outline section is optional; for short pieces, skip it. The Audience section exists to remind you who the reader is before you start.
+
+### Index Notes
+
+Do not create index notes up front. When you notice 5-10 permanent notes circling the same theme, create one in `5-index/`:
+
+1. *Neovim:* press `<leader>oN`, pick the `index` template, type the theme as a title.
+   *Obsidian:* right-click `5-index/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
+2. Write it as a **guided tour**, not a list:
+   - **Path**: sequence notes in a reading order that tells a story or builds an argument.
+   - **Gaps**: missing coverage in the cluster. These are seeds for future permanent notes.
+
+If you find yourself writing "see also" followed by 30 bullets, you are making a table of contents, not an index note. Stop and argue for a path through the notes instead.
 
 ## Promoting Notes
 
-This is the most frequent workflow: turning a fleeting note into a literature or permanent note.
+This is the most frequent workflow: turning a fleeting note into a source+literature pair or a permanent note.
 
 ### Side-by-side method
 
@@ -256,11 +290,11 @@ Best when you need to reference the fleeting note while writing.
 
 1. Open the fleeting note (from neo-tree or `<leader>oo`).
 2. Split the screen: `<leader>|` (vertical split, side by side).
-3. In the new right pane, press `<leader>oN`. Pick the target template (e.g., `permanent` or `literature`). Type the title. The new note is created in the correct folder with the template applied.
+3. In the new right pane, press `<leader>oN`. Pick the target template (`source`, `literature`, or `permanent`). Type the title. The new note is created in the correct folder with the template applied.
 4. You now have the fleeting note on the left, the new note on the right. Use `Ctrl+h` / `Ctrl+l` to move focus between panes. Copy lines with `yy` in one pane, switch panes, paste with `p`.
-5. Write the content in the new note. Add at least one `[[link]]` for permanent notes.
+5. Write the content in the new note. Add at least one `[[link]]` for permanent notes. For literature notes, set the `source:` field.
 6. Close the left pane: `<leader>wd` (closes the window, not the buffer).
-7. Delete the fleeting note: `<leader>e` to open neo-tree, navigate to it in `1-fleeting/`, press `d`.
+7. Delete the fleeting note: `<leader>e` to open neo-tree, navigate to it in `0-fleeting/`, press `d`.
 
 ### Quick method
 
@@ -299,36 +333,7 @@ not the board.
 | Find note by name | `<leader>oo` | `Ctrl+O` (Quick Switcher) |
 | Visual link map | N/A | `Ctrl+G` (Graph view) |
 
-Check backlinks every time you open a permanent note. Unexpected backlinks are the Zettelkasten's serendipity engine.
-
-## The Weekly Review (15-30 minutes)
-
-Do this on Sunday evening or Monday morning.
-
-1. Create the review note.
-   - *Neovim:* press `<leader>oN`, pick the `review` template, type the title (e.g., "2026-04-19 Weekly Review"). The note is created in `0-daily/`.
-   - *Obsidian:* right-click `0-daily/` > New note. Press `Ctrl+P`, type "Insert template", choose `review`.
-2. Walk through each template section. Key trigger questions:
-   - Any fleeting notes older than 48 hours? Process or delete them now.
-   - Any cluster of 5+ permanent notes on one theme? Start an index note in `7-index/`.
-   - Any permanent notes with zero links? Find a link or move them back to fleeting.
-   - What surprised you this week? That surprise is the seed of a permanent note.
-3. Open the graph view in Obsidian (`Ctrl+G`). Look for:
-   - Orphan nodes (notes with no links). Fix or delete.
-   - Emerging clusters (groups of interconnected notes). Consider an index note.
-   - Unexpected connections. Follow them; they often produce the best permanent notes.
-
-## Index Notes
-
-Do not create index notes up front. When you notice 5-10 permanent notes circling the same theme, create one in `7-index/`:
-
-1. *Neovim:* press `<leader>oN`, pick the `index` template, type the theme as a title. The note is created in `7-index/`.
-   *Obsidian:* right-click `7-index/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
-2. Write it as a **guided tour**, not a list:
-   - **Path**: sequence notes in a reading order that tells a story or builds an argument.
-   - **Gaps**: missing coverage in the cluster. These are seeds for future permanent notes.
-
-If you find yourself writing "see also" followed by 30 bullets, you are making a table of contents, not an index note. Stop and argue for a path through the notes instead.
+Check backlinks every time you open a permanent note or a source note. Source backlinks show every literature note drawn from that work; unexpected permanent-note backlinks are the Zettelkasten's serendipity engine.
 
 ## Common Pitfalls
 
@@ -338,12 +343,13 @@ If you find yourself writing "see also" followed by 30 bullets, you are making a
 | Writing permanent notes with no links | Enforce the one-rule: no unlinked permanent notes. Move back to fleeting if stuck. |
 | Hoarding fleeting notes for weeks | Triage daily. Deletion is a valid outcome. |
 | Copy-pasting from sources into permanent notes | That is a literature note. Permanent notes must be in your words. |
+| Re-entering bibliographic data in each literature note | Create the source note once in `1-sources/`; reference it via `source: "[[slug]]"` in every literature note from that work. |
 | Creating sub-folders inside `3-permanent/` | Links are the structure. Folders are storage. Keep `3-permanent/` flat. |
 | Renaming files with `mv` in the terminal | Use neo-tree or Obsidian's file explorer. Links break otherwise. |
 | Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. |
 | Waiting for the "right" title before writing | Write the note, title later. Rename is cheap; both editors update links. |
-| Creating permanent notes with `<leader>on` instead of `<leader>oN` | `<leader>on` creates fleeting notes. Use `<leader>oN` to pick the permanent template and route directly to `3-permanent/`. |
-| Ignoring backlinks | Check backlinks (`<leader>ob` or Obsidian's right sidebar) every time you open a permanent note. They surface connections you did not plan. |
+| Creating permanent notes with `<leader>on` instead of `<leader>oN` | `<leader>on` creates fleeting notes. Use `<leader>oN` to pick the target template and route directly. |
+| Ignoring backlinks | Check backlinks (`<leader>ob` or Obsidian's right sidebar) on source, literature, and permanent notes. |
 
 ## Using Obsidian
 
@@ -362,7 +368,7 @@ Keep the **Backlinks panel** visible in the right sidebar while writing permanen
 Obsidian mobile is for capture, not composition.
 
 1. Open Obsidian. Tap `+` to create a new note.
-2. Confirm the default folder is `1-fleeting/` (Settings > Files and links > Default location > `1-fleeting`).
+2. Confirm the default folder is `0-fleeting/` (Settings > Files and links > Default location > `0-fleeting`).
 3. Type the thought. Save. Syncthing pushes it to the hub within seconds to minutes.
 
 **Insert template on mobile:** swipe down (pull) on an open note to trigger the template picker. Templates are not auto-applied on mobile; process raw captures during triage.
@@ -376,10 +382,10 @@ This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the v
 ### Starting a Session
 
 ```bash
-nvim ~/vault/0-daily/
+nvim ~/vault/0-fleeting/
 ```
 
-This opens the `0-daily/` directory listing in neo-tree. Press `<leader>od` to open today's daily note.
+This opens the `0-fleeting/` directory listing in neo-tree.
 
 ### Screen Layout
 
@@ -388,8 +394,8 @@ This opens the `0-daily/` directory listing in neo-tree. Press `<leader>od` to o
 │ Neo-tree │  Buffer tab bar                  │
 │ (sidebar)├──────────────────────────────────┤
 │          │                                  │
-│ 0-daily/ │  Editor area                     │
-│ 1-fleeti.│  (your note content goes here)   │
+│ 0-fleeti.│  Editor area                     │
+│ 1-source.│  (your note content goes here)   │
 │ 2-litera.│                                  │
 │ 3-perman.│                                  │
 │ ...      │                                  │
@@ -403,7 +409,7 @@ This opens the `0-daily/` directory listing in neo-tree. Press `<leader>od` to o
 - **Buffer tab bar** (top of the editor area): each open file is a tab. Switch with `Shift+h` / `Shift+l`.
 - **Status line** (bottom): current mode, filename, cursor position.
 
-**One rule to remember:** `Ctrl` + a vim direction (`h`/`j`/`k`/`l`) always moves focus between areas and splits. It works the same way everywhere: neo-tree to editor, editor to neo-tree, split to split.
+**One rule to remember:** `Ctrl` + a vim direction (`h`/`j`/`k`/`l`) always moves focus between areas and splits. It works the same way everywhere.
 
 ### Buffers vs. Windows
 
@@ -425,9 +431,9 @@ In short: buffers are files, windows are panes. `<leader>bd` closes the file. `<
 | Visual | `v` | Select text. |
 | Command | `:` | Run Ex commands (save, quit, search-replace). |
 
-All obsidian.nvim keybindings (`<leader>od`, `<leader>on`, etc.) work from Normal mode.
+All obsidian.nvim keybindings (`<leader>on`, `<leader>oN`, etc.) work from Normal mode.
 
-**Leader key.** In LazyVim, the leader key is `Space`. When this document says `<leader>od`, press Space, then `o`, then `d`. Press Space and wait; [which-key](https://github.com/folke/which-key.nvim) shows all available bindings grouped by category. If you forget any keybinding, press Space and read the menu.
+**Leader key.** In LazyVim, the leader key is `Space`. When this document says `<leader>on`, press Space, then `o`, then `n`. Press Space and wait; [which-key](https://github.com/folke/which-key.nvim) shows all available bindings grouped by category.
 
 ### Neo-tree
 
@@ -460,7 +466,6 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 
 | Keys | Action |
 |------|--------|
-| `<leader>od` | Open/create daily note |
 | `<leader>on` | New fleeting note |
 | `<leader>oN` | New note from template (picks template, routes to folder) |
 | `<leader>oo` | Find note by name |
@@ -546,9 +551,9 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 
 If you forget everything above, do just this:
 
-1. Open the daily note every morning.
-2. Capture anything that flickers.
-3. Empty `1-fleeting/` every evening.
+1. Capture anything that flickers into `0-fleeting/`.
+2. Empty `0-fleeting/` every evening.
+3. When a fleeting came from a source, create the source note once (if new) and a literature note per theme.
 4. Never write a permanent note without one `[[link]]`.
 
 The rest compounds on top of that.

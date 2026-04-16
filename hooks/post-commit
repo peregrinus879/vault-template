@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Sync public-facing vault files to the public template repo.
+# Runs after every commit in the vault repo (including auto-commits).
+#
+# FORK NOTE: VAULT and PUBLIC paths below are user-specific. Adjust if forked.
+# ENABLE: on the remote hub, run `git config core.hooksPath hooks` once.
+#
+# SAFETY: Content directories are excluded by rsync. Only structure
+# (empty dirs via .gitkeep), templates, config, and docs are copied.
+# Private notes never leave this repo.
+#
+# Content directories are derived from .gitattributes (git-crypt rules).
+# Adding a new content directory only requires updating .gitattributes.
+
+set -euo pipefail
+
+VAULT="$HOME/vault"
+PUBLIC="$HOME/projects/repos/templates/vault-template"
+
+# Bail if the public repo isn't cloned on this machine
+[ -d "$PUBLIC/.git" ] || exit 0
+
+# Derive content directories from .gitattributes
+EXCLUDE_ARGS=()
+CONTENT_DIRS=()
+while IFS= read -r line; do
+  dir="${line%%/**}"
+  CONTENT_DIRS+=("$dir")
+  EXCLUDE_ARGS+=(--exclude="${dir}/**")
+done < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes")
+
+# Sync: templates, config, and docs only
+rsync -a --delete \
+  --filter='P LICENSE' \
+  "${EXCLUDE_ARGS[@]}" \
+  --exclude='.git/' \
+  --exclude='.gitattributes' \
+  --exclude='.stignore' \
+  --exclude='.stfolder/' \
+  --exclude='.stversions/' \
+  --exclude='.trash/' \
+  --exclude='.claude/' \
+  --exclude='.obsidian/workspace.json' \
+  --exclude='.obsidian/workspace-mobile.json' \
+  --exclude='.obsidian/cache' \
+  "$VAULT/" "$PUBLIC/"
+
+# Clean orphaned directories (deleted/renamed in vault)
+for dir in "$PUBLIC"/*/; do
+  [ -d "$dir" ] || continue
+  name=$(basename "$dir")
+  [[ "$name" == .git ]] && continue
+  [[ "$name" == .obsidian ]] && continue
+  [ -d "$VAULT/$name" ] || rm -rf "$dir"
+done
+
+# Ensure content directories exist with .gitkeep
+for dir in "${CONTENT_DIRS[@]}"; do
+  mkdir -p "$PUBLIC/$dir"
+  [ -f "$PUBLIC/$dir/.gitkeep" ] || touch "$PUBLIC/$dir/.gitkeep"
+done
+
+cd "$PUBLIC" || exit 1
+git add -A
+
+# Only commit and push if there are changes
+if ! git diff --cached --quiet; then
+  git commit -m "sync: $(date +%F-%H%M)"
+  git push --quiet origin main 2>/dev/null || true
+fi

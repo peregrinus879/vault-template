@@ -8,10 +8,10 @@ This repo is a knowledge base, not a code project. It holds notes, not source co
 
 It owns:
 
-- Zettelkasten permanent notes, daily journals, fleeting notes, project charters, meeting notes, and literature notes
+- Zettelkasten fleeting notes, source notes (bibliographic records), literature notes (paraphrase), permanent notes (atomic claims), writing notes (long-form output), and index notes
 - Obsidian app configuration (`.obsidian/`)
 - Note templates
-- Index notes (curated entry points into note clusters)
+- Post-commit hook (`hooks/post-commit`) for public template sync
 
 It does not own:
 
@@ -27,13 +27,13 @@ It does not own:
 - [SETUP.md](SETUP.md) - full setup guide with commands and app links for all devices
 - `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
-- `.git/hooks/post-commit` - auto-sync hook for public template repo
+- `hooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath hooks` on the hub)
 - `~/.local/bin/pinentry-null` - headless pinentry for unattended GPG operations
 - `~/.gnupg/gpg-agent.conf` - GPG agent config (pinentry-null)
 
 ## Commit Policy
 
-Only commit `8-templates/`, docs, and config. All other content is captured by the hourly auto-commit timer.
+Only commit `6-templates/`, docs, `hooks/`, and config. All other content is captured by the hourly auto-commit timer.
 
 ## Post-Change Verification
 
@@ -43,8 +43,8 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 
 - Adding, renaming, or removing a content directory
 - Editing `.gitattributes` (git-crypt encryption rules; also drives post-commit hook content directory derivation)
-- Editing `.git/hooks/post-commit` (public repo sync logic)
-- Editing `.obsidian/daily-notes.json` or `.obsidian/templates.json` (folder paths)
+- Editing `hooks/post-commit` (public repo sync logic)
+- Editing `.obsidian/app.json` (default new-note folder, attachment folder) or `.obsidian/templates.json`
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `WORKFLOW.md`, `SETUP.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
@@ -54,7 +54,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 1. **git-crypt encryption**: `git-crypt status` must show all files in content directories as `encrypted`. If any content file shows `not encrypted`, stop and fix `.gitattributes` before pushing.
 2. **Public template repo**: `ls ~/projects/repos/templates/vault-template/` must show only empty content directories (with `.gitkeep`), templates, config, and docs. No note content. Grep for any content that should not be there.
 3. **Stale references**: `grep -rn '<old-name>' --include='*.md' --include='*.json' . --exclude-dir=.git` must return no hits outside `.obsidian/workspace-mobile.json` (which Obsidian regenerates).
-4. **obsidian.nvim config**: if directory paths changed, verify `~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua` and `~/projects/repos/dotfiles/dotfiles-omarchy/nvim/.config/nvim/lua/plugins/obsidian.lua` have the correct `notes_subdir` and `daily_notes.folder` values. These files live in separate repos and must be updated and committed independently.
+4. **obsidian.nvim config**: if directory paths changed, verify `~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua` and `~/projects/repos/dotfiles/dotfiles-omarchy/nvim/.config/nvim/lua/plugins/obsidian.lua` have the correct `notes_subdir`, `templates.folder`, `attachments.folder`, and `templates.customizations` values. These files live in separate repos and must be updated and committed independently.
 5. **Doc cross-references and overviews**: cross-document references (section numbers, file names, headings) must resolve. `README.md` §Setup overview must reflect `SETUP.md`'s top-level section structure. `AGENTS.md` Key Files descriptions must still match each doc's actual scope. Run `grep -rn 'step [0-9]\|§[0-9]' --include='*.md' .` and confirm every referenced section exists.
 
 ## Known Limitations
@@ -63,6 +63,22 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - **Public repo commit messages must be opaque**: the post-commit hook uses `sync: <date>` for public template repo commits. Do not forward private repo commit messages to the public repo. Private commit messages may reference note names, topics, or other content that would leak through the public repo's git history.
 
 ## Changelog
+
+### Knowledge-vault restructure
+
+- Drop `0-daily/`, `6-meetings/`, `5-projects/`: vault is knowledge, not tracking
+- Add `1-sources/` (bibliographic records): classical Ahrens reference-note layer
+- Revise literature template: `source: "[[...]]"` link replaces free-text source field; inline per-quote locators documented per medium (p./pp., MM:SS, §heading)
+- Drop daily, review, meeting, project-charter templates
+- Add source template; revise literature template
+- Renumber directories tightly: 0-fleeting, 1-sources, 2-literature, 3-permanent, 4-writing, 5-index, 6-templates, 7-assets
+- Standardize `## Connections` section name across all templates; no bibliography/references section in writing template (add by hand per venue when publishing formally)
+- Remove weekly review ritual; trigger questions absorbed into WORKFLOW.md as periodic self-check prompts without cadence
+- Remove `_archive/` subfolders; status-based filtering only
+- Migrate post-commit hook from `.git/hooks/post-commit` to tracked `hooks/post-commit` (enable on hub via `git config core.hooksPath hooks`); remove `_archive` preservation loop
+- Update obsidian.nvim config in `dotfiles-arch` and `dotfiles-omarchy` (new folder layout, template customizations, `<leader>od` removed)
+- Remove `.obsidian/daily-notes.json`
+- Update `.obsidian/app.json` (default folder, attachment path) and `.obsidian/templates.json` (templates path)
 
 ### Standalone setup documentation
 

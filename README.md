@@ -14,18 +14,16 @@ Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [obsidian.n
 ## Structure
 
 ```text
-0-daily/          Daily journal notes (ongoing chronological log, vault entry point)
-1-fleeting/       Fleeting notes (processing queue)
-2-literature/     Literature notes (books, articles, podcasts, videos)
-3-permanent/      Permanent notes (atomic, linked, tagged)
+0-fleeting/       Fleeting notes (capture, processing queue)
+1-sources/        Source notes (bibliographic records, one per work cited)
+2-literature/     Literature notes (paraphrase tied to a source)
+3-permanent/      Permanent notes (atomic, your words, linked)
 4-writing/        Long-form compositions (drafts, published, abandoned)
-5-projects/       Active project notes (time-bound)
-  _archive/       Completed projects (spatial declutter, not a status)
-6-meetings/       Meeting notes
-7-index/          Index notes (curated entry points, emergent)
-8-templates/      Note templates
-9-assets/         Images and attachments
+5-index/          Index notes (curated entry points, emergent)
+6-templates/      Note templates (only unencrypted content directory)
+7-assets/         Images and attachments
 .obsidian/        Obsidian app configuration
+hooks/            Git hooks tracked in repo (enabled via core.hooksPath on the hub)
 ```
 
 ## Methodology
@@ -36,51 +34,48 @@ This vault follows the [Zettelkasten](https://zettelkasten.de/introduction/) met
 
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
-| **Daily** | `0-daily/` | Daily journal, plans, logs, reflections, weekly reviews | Ongoing chronological record |
-| **Fleeting** | `1-fleeting/` | Quick captures, half-formed ideas | Temporary; process into literature or permanent notes, or discard |
-| **Literature** | `2-literature/` | Selective notes on external sources (books, articles, podcasts, videos) | Lasting; tied to a source |
-| **Permanent** | `3-permanent/` | Your own refined ideas, one atomic idea per note | Permanent, the core of the Zettelkasten |
-| **Writing** | `4-writing/` | Long-form compositions from notes (articles, reports, docs) | Active until published or abandoned |
-| **Project Charter** | `5-projects/` | High-level project authorization document | Active during project, then archived |
-| **Meeting** | `6-meetings/` | Structured meeting records with agenda, minutes, and actions | Scheduled → held or cancelled |
-| **Index** | `7-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
+| **Fleeting** | `0-fleeting/` | Quick captures, half-formed ideas | Temporary; promote to literature or permanent, or discard |
+| **Source** | `1-sources/` | Bibliographic record of a cited work | Lasting; one per source, referenced by literature notes |
+| **Literature** | `2-literature/` | Paraphrased content tied to a source | Lasting; may seed many permanent notes over time |
+| **Permanent** | `3-permanent/` | Your own refined ideas, one atomic claim per note | Permanent; the core of the Zettelkasten |
+| **Writing** | `4-writing/` | Long-form compositions (posts, articles, essays) | Active until published or abandoned |
+| **Index** | `5-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
 
 ### Status Lifecycle
 
-Some note types use a `status` frontmatter field to drive processing workflows. Types without a status field (daily, fleeting, literature, permanent, index) exist or are deleted; they have no lifecycle transitions.
+Writing notes carry a `status` field: `draft`, `published`, or `abandoned`. All other types exist or are deleted; they have no lifecycle transitions.
 
-| Type | Values | Flow |
-|------|--------|------|
-| Writing | `draft`, `published`, `abandoned` | draft → published or abandoned |
-| Meeting | `scheduled`, `held`, `cancelled` | scheduled → held or cancelled |
+Source notes carry an informational `status` field: `unread`, `reading`, `read`, `abandoned`, `reference`. This is progress tracking, not a state machine.
 
 ### Principles
 
 1. **Atomic notes**: each note in `3-permanent/` expresses one idea, not a topic. "Risk appetite vs risk tolerance" is a note. "Risk management" is a topic dump.
-2. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage. Move or rename notes only via Obsidian or neo-tree (nvim); both update links automatically. Do not use terminal `mv` or OS file managers as links will break.
-3. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
-4. **Index notes are emergent**: do not pre-plan index notes. Create an index note in `7-index/` when 5-10 related notes naturally cluster. A good index note reads like a guided tour, not a table of contents.
-5. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes quote and paraphrase selectively; permanent notes synthesize.
-6. **Numbered directories**: prefixes (0-9) enforce a logical display order across all tools. The sequence reflects the knowledge lifecycle: anchor, capture, process, synthesize, compose, execute, review, navigate.
+2. **Sources are separate from literature**: the bibliographic record lives in `1-sources/` (one note per work). Literature notes in `2-literature/` paraphrase specific content from a source and reference it via `source: "[[slug]]"`. One source can feed many literature notes.
+3. **Links over hierarchy**: `[[wiki-links]]` connect ideas across folders. The link graph is the real structure; folders are just storage. Move or rename notes only via Obsidian or neo-tree (nvim); both update links automatically. Do not use terminal `mv` or OS file managers, as links will break.
+4. **Tags for retrieval, links for connection**: tags (`#risk`, `#controls`) help find notes by filtering. Links (`[[note-name]]`) express relationships between ideas.
+5. **Index notes are emergent**: do not pre-plan index notes. Create one in `5-index/` when 5-10 related notes naturally cluster. A good index note reads like a guided tour, not a table of contents.
+6. **Your own words**: permanent notes must express your thinking, not copy-paste from sources. Literature notes quote and paraphrase selectively; permanent notes synthesize.
+7. **Numbered directories**: prefixes (0-7) enforce a logical display order. The sequence reflects the knowledge lifecycle: capture, cite, paraphrase, synthesize, compose, navigate; templates and assets follow as infrastructure.
 
 ### Processing Workflow
 
 ```text
-Capture (1-fleeting/)
-    --> Refine  --> Literature (2-literature/)
-                --> Permanent (3-permanent/)
+Capture (0-fleeting/)
+    --> Refine --> Source (1-sources/) + Literature (2-literature/)
+               --> Permanent (3-permanent/)
     --> Discard
 
 Permanent (3-permanent/)
     --> Compose --> Writing (4-writing/)
-    --> Cluster --> Index notes (7-index/)
+    --> Cluster --> Index notes (5-index/)
 ```
 
 | When | What | Where |
 |------|------|-------|
-| Anytime | Capture quickly, do not overthink | `1-fleeting/` |
-| Daily (2-5 min) | Review fleeting notes, promote or discard | `1-fleeting/` to `2-literature/` or `3-permanent/` |
-| Weekly (15-30 min) | Write permanent notes, link, update index notes if clusters emerge | All folders |
+| Anytime | Capture quickly, do not overthink | `0-fleeting/` |
+| Daily (2-5 min) | Review fleeting notes, promote or discard | `0-fleeting/` to `1-sources/` + `2-literature/` or `3-permanent/` |
+| As needed | Create a source note when you start engaging with a new work | `1-sources/` |
+| As themes emerge | Write permanent notes, link, update index notes if clusters form | All folders |
 
 For a step-by-step walkthrough of this workflow, naming conventions, and keybindings, see [WORKFLOW.md](WORKFLOW.md).
 
@@ -88,17 +83,14 @@ For a step-by-step walkthrough of this workflow, naming conventions, and keybind
 
 | Template | Target folder | Trigger |
 |----------|--------------|---------|
-| `daily.md` | `0-daily/` | `<leader>od` (`:Obsidian today`) |
-| `fleeting.md` | `1-fleeting/` | `<leader>on` (`:Obsidian new`) |
-| `literature.md` | `2-literature/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `permanent.md` | `3-permanent/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `writing.md` | `4-writing/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `project-charter.md` | `5-projects/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `meeting.md` | `6-meetings/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `index.md` | `7-index/` | `<leader>oN` (`:Obsidian new_from_template`) |
-| `review.md` | `0-daily/` | `<leader>oN` (`:Obsidian new_from_template`) |
+| `fleeting.md` | `0-fleeting/` | `<leader>on` (`:Obsidian new`) |
+| `source.md` | `1-sources/` | `<leader>oN` (`:Obsidian new_from_template`) |
+| `literature.md` | `2-literature/` | `<leader>oN` |
+| `permanent.md` | `3-permanent/` | `<leader>oN` |
+| `writing.md` | `4-writing/` | `<leader>oN` |
+| `index.md` | `5-index/` | `<leader>oN` |
 
-Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). `<leader>oN` picks a template from a list and routes the note to the correct folder. In Obsidian GUI: use the Daily notes core plugin for `daily.md`, and Ctrl/Cmd+P > Insert template for others.
+Triggers shown are for [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim). `<leader>oN` picks a template from a list and routes the note to the correct folder. In Obsidian GUI: Ctrl/Cmd+P > Insert template.
 
 ## Sync
 
@@ -125,9 +117,9 @@ Vault content is protected by two encryption layers before reaching GitHub:
 
 **Why two layers**: git-crypt alone leaves filenames visible on GitHub. git-remote-gcrypt hides everything on the remote but does not encrypt local git objects. Together, they provide defense-in-depth.
 
-**Encrypted (git-crypt)**: `0-daily/`, `1-fleeting/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-projects/`, `6-meetings/`, `7-index/`, `9-assets/`
+**Encrypted (git-crypt)**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/`
 
-**Unencrypted (git-crypt)**: `8-templates/`, `.obsidian/`, repo documentation files
+**Unencrypted (git-crypt)**: `6-templates/`, `.obsidian/`, `hooks/`, repo documentation files
 
 **GitHub visibility**: none. The entire remote is opaque (encrypted filenames, content, and history).
 
@@ -158,7 +150,7 @@ The remote hub runs a systemd timer (`vault-autocommit.timer`) that commits and 
 vault-autocommit.timer (hourly, on the hour)
   └── vault-autocommit.service
         └── git add -A && git commit && git push
-              └── post-commit hook
+              └── post-commit hook (hooks/post-commit, enabled via core.hooksPath)
                     └── rsync to public repo && git commit && git push
 ```
 
@@ -171,11 +163,11 @@ vault-autocommit.timer (hourly, on the hour)
 
 A public template repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and documentation. It contains no note content.
 
-A git post-commit hook syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, and documentation are copied. The public repo has its own deploy key for unattended push.
+A git post-commit hook (tracked at `hooks/post-commit`) syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, `hooks/`, and documentation are copied. The public repo has its own deploy key for unattended push.
 
-**Synced**: `8-templates/`, `.obsidian/` config, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
+**Synced**: `6-templates/`, `.obsidian/` config, `hooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
 
-**Excluded**: `0-daily/`, `1-fleeting/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-projects/`, `6-meetings/`, `7-index/`, `9-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
+**Excluded**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 
 Content directories are derived from `.gitattributes` automatically. Adding a new content directory only requires updating `.gitattributes`.
 
@@ -202,4 +194,3 @@ See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
 - [git-crypt](https://github.com/AGWA/git-crypt)
 - [git-remote-gcrypt](https://github.com/spwhitton/git-remote-gcrypt)
 - [Syncthing](https://syncthing.net/)
-

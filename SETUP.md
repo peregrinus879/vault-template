@@ -100,15 +100,13 @@ ssh -L 8384:127.0.0.1:8384 <user>@<tailscale-ip>
 git-crypt encrypts file contents in git objects. Encryption rules are defined in `.gitattributes`:
 
 ```text
-0-daily/** filter=git-crypt diff=git-crypt
-1-fleeting/** filter=git-crypt diff=git-crypt
+0-fleeting/** filter=git-crypt diff=git-crypt
+1-sources/** filter=git-crypt diff=git-crypt
 2-literature/** filter=git-crypt diff=git-crypt
 3-permanent/** filter=git-crypt diff=git-crypt
 4-writing/** filter=git-crypt diff=git-crypt
-5-projects/** filter=git-crypt diff=git-crypt
-6-meetings/** filter=git-crypt diff=git-crypt
-7-index/** filter=git-crypt diff=git-crypt
-9-assets/** filter=git-crypt diff=git-crypt
+5-index/** filter=git-crypt diff=git-crypt
+7-assets/** filter=git-crypt diff=git-crypt
 ```
 
 Adding a new content directory requires adding a rule to `.gitattributes`. The post-commit hook derives content directories from these same rules for public template sync.
@@ -264,7 +262,7 @@ GitHub will show a single synthetic commit ("Initial commit" by root@localhost, 
 
 #### Performance note
 
-git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `9-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically. If push times become problematic, this is a broader backup-architecture decision, not a drop-in backend swap.
+git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `7-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically. If push times become problematic, this is a broader backup-architecture decision, not a drop-in backend swap.
 
 ### 1.5 Deploy Key
 
@@ -371,90 +369,27 @@ cd ~/projects/repos/templates/vault-template && git push --dry-run origin main
 
 #### Post-commit hook
 
-Create `~/vault/.git/hooks/post-commit`:
+The hook is tracked in the repo at `hooks/post-commit`. Enable it on the remote hub only:
 
 ```bash
-#!/usr/bin/env bash
-# Sync public-facing vault files to the public template repo.
-# Runs after every commit in ~/vault (including auto-commits).
-#
-# SAFETY: Content directories are excluded by rsync. Only structure
-# (empty dirs via .gitkeep), templates, config, and docs are copied.
-# Private notes never leave this repo.
-#
-# Content directories are derived from .gitattributes (git-crypt rules).
-# Adding a new content directory only requires updating .gitattributes.
-
-set -euo pipefail
-
-VAULT="$HOME/vault"
-PUBLIC="$HOME/projects/repos/templates/vault-template"
-
-# Bail if the public repo isn't cloned on this machine
-[ -d "$PUBLIC/.git" ] || exit 0
-
-# Derive content directories from .gitattributes
-EXCLUDE_ARGS=()
-CONTENT_DIRS=()
-while IFS= read -r line; do
-  dir="${line%%/**}"
-  CONTENT_DIRS+=("$dir")
-  EXCLUDE_ARGS+=(--exclude="${dir}/**")
-done < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes")
-
-# Sync: templates, config, and docs only
-rsync -a --delete \
-  --filter='P LICENSE' \
-  "${EXCLUDE_ARGS[@]}" \
-  --exclude='.git/' \
-  --exclude='.gitattributes' \
-  --exclude='.stignore' \
-  --exclude='.stfolder/' \
-  --exclude='.stversions/' \
-  --exclude='.trash/' \
-  --exclude='.claude/' \
-  --exclude='.obsidian/workspace.json' \
-  --exclude='.obsidian/workspace-mobile.json' \
-  --exclude='.obsidian/cache' \
-  "$VAULT/" "$PUBLIC/"
-
-# Clean orphaned directories (deleted/renamed in vault)
-for dir in "$PUBLIC"/*/; do
-  [ -d "$dir" ] || continue
-  name=$(basename "$dir")
-  [[ "$name" == .git ]] && continue
-  [[ "$name" == .obsidian ]] && continue
-  [ -d "$VAULT/$name" ] || rm -rf "$dir"
-done
-
-# Ensure content directories exist with .gitkeep
-for dir in "${CONTENT_DIRS[@]}"; do
-  mkdir -p "$PUBLIC/$dir"
-  [ -f "$PUBLIC/$dir/.gitkeep" ] || touch "$PUBLIC/$dir/.gitkeep"
-done
-
-# Preserve _archive subdirectories
-find "$VAULT" -maxdepth 2 -name '_archive' -type d | while read -r archive; do
-  rel="${archive#"$VAULT/"}"
-  mkdir -p "$PUBLIC/$rel"
-  [ -f "$PUBLIC/$rel/.gitkeep" ] || touch "$PUBLIC/$rel/.gitkeep"
-done
-
-cd "$PUBLIC" || exit 1
-git add -A
-
-# Only commit and push if there are changes
-if ! git diff --cached --quiet; then
-  git commit -m "sync: $(date +%F-%H%M)"
-  git push --quiet origin main 2>/dev/null || true
-fi
+cd ~/vault
+git config core.hooksPath hooks
 ```
 
-Make executable:
+Verify the executable bit is set (git preserves it on clone):
 
 ```bash
-chmod +x ~/vault/.git/hooks/post-commit
+ls -la ~/vault/hooks/post-commit
 ```
+
+If not executable, set and re-commit:
+
+```bash
+chmod +x ~/vault/hooks/post-commit
+cd ~/vault && git add hooks/post-commit && git commit -m "chore: mark hook executable"
+```
+
+Local machines skip this step; the hook runs only on the remote hub.
 
 #### Rsync rules
 
@@ -463,7 +398,6 @@ chmod +x ~/vault/.git/hooks/post-commit
 | Content excludes (from `.gitattributes`) | Directory shells are synced but nothing inside them |
 | Orphan cleanup loop | Removes directories from public repo that no longer exist in vault |
 | `.gitkeep` creation loop | Ensures every content directory has a `.gitkeep` for git tracking |
-| `_archive` discovery | Preserves `_archive` subdirectories with `.gitkeep` |
 | `--filter='P LICENSE'` | Protects `LICENSE` (exists only in public repo) from deletion |
 | `--exclude='.git/'` | Never touches git internals |
 | `--exclude='.gitattributes'` | git-crypt rules stay in private repo only |
@@ -476,16 +410,16 @@ chmod +x ~/vault/.git/hooks/post-commit
 Verify no private content leaks:
 
 ```bash
-# Create a fake note in every content directory
-echo "PRIVATE" > ~/vault/1-fleeting/test-leak.md
+# Create a fake note in a content directory
+echo "PRIVATE" > ~/vault/0-fleeting/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: leak check"
 
 # Verify it did NOT appear in the public repo
-ls ~/projects/repos/templates/vault-template/1-fleeting/
+ls ~/projects/repos/templates/vault-template/0-fleeting/
 # Expected: only .gitkeep
 
 # Clean up
-rm ~/vault/1-fleeting/test-leak.md
+rm ~/vault/0-fleeting/test-leak.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 
@@ -493,15 +427,15 @@ Verify template sync works:
 
 ```bash
 # Modify a template
-echo "<!-- test -->" >> ~/vault/8-templates/daily.md
+echo "<!-- test -->" >> ~/vault/6-templates/fleeting.md
 cd ~/vault && git add -A && git commit -m "test: sync check"
 
 # Verify it appeared in the public repo
-tail -1 ~/projects/repos/templates/vault-template/8-templates/daily.md
+tail -1 ~/projects/repos/templates/vault-template/6-templates/fleeting.md
 # Expected: <!-- test -->
 
 # Clean up
-sed -i '$ d' ~/vault/8-templates/daily.md
+sed -i '$ d' ~/vault/6-templates/fleeting.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 
@@ -593,7 +527,7 @@ Append to `~/.config/nvim/lua/config/options.lua` if not already present:
 vim.g.markdown_folding = 1
 ```
 
-Verify: `nvim ~/vault/1-fleeting/test.md` then `:checkhealth obsidian`
+Verify: `nvim ~/vault/0-fleeting/test.md` then `:checkhealth obsidian`
 
 ### 2.6 Obsidian Desktop (optional)
 
@@ -736,7 +670,7 @@ Install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) fr
 2. Choose **Open folder as vault** (not "Create new vault")
 3. Select **Device storage** (not app storage)
 4. Navigate to the Syncthing vault folder
-5. Use `1-fleeting/` for fleeting notes; they sync to the hub within seconds
+5. Use `0-fleeting/` for fleeting notes; they sync to the hub within seconds
 
 ### 4.4 Resolving Sync Conflicts
 
@@ -790,7 +724,7 @@ After setup on each device:
 
 - Confirm Syncthing is running: `systemctl --user status syncthing` (local) or `systemctl status syncthing@$USER` (remote hub)
 - Confirm vault folder is syncing: check Syncthing web UI for "Up to Date" status
-- Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/1-fleeting/test.md` then `:checkhealth obsidian`
+- Confirm obsidian.nvim loads (if using Neovim): `nvim ~/vault/0-fleeting/test.md` then `:checkhealth obsidian`
 - Confirm auto-commit timer is active (remote hub only): `systemctl --user list-timers vault-autocommit.timer`
 - Confirm deploy key push works (remote hub only): `cd ~/vault && git push --dry-run origin main`
 - Confirm encryption: the GitHub repo should show only opaque encrypted data (no readable filenames or content)
