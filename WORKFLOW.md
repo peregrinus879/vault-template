@@ -393,11 +393,41 @@ This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the v
 
 ### Starting a Session
 
+Three entry patterns.
+
+**A. Bare nvim (recommended).**
+
 ```bash
-nvim ~/vault/0-fleeting/
+cd ~/vault
+nvim
 ```
 
-This opens the `0-fleeting/` directory listing in neo-tree.
+LazyVim shows the dashboard. Pick notes by name rather than navigating folders.
+
+| Key | Action |
+|---|---|
+| `<leader>oo` | Find note by name |
+| `<leader>on` | New fleeting note |
+| `<leader>oN` | New note from template |
+| `<leader>e` | Toggle neo-tree as left sidebar |
+
+**B. Open a specific file.**
+
+```bash
+nvim ~/vault/0-fleeting/some-note.md
+```
+
+File opens in the editor; `<leader>e` toggles neo-tree on the left.
+
+**C. Open a directory.**
+
+```bash
+nvim ~/vault/
+```
+
+Neo-tree fills the whole window. Press `s` on a file in the tree to open it in a vertical split; the tree stays on the left as a sidebar.
+
+Treat neo-tree as a *sometimes tool*: renames, moves, visual triage of `0-fleeting/`. For everything else, `<leader>oo` is faster.
 
 ### Screen Layout
 
