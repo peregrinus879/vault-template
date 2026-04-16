@@ -19,3 +19,7 @@ venue:           # linkedin | substack | blog | newsletter | other
 ## Connections
 <!-- Notes and sources this piece draws from. -->
 - [[]]
+
+## Attachments
+<!-- Images, diagrams, and files. -->
+- ![[]]

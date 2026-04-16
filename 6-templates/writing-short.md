@@ -16,3 +16,7 @@ venue:           # twitter | bluesky | mastodon | linkedin | other
 ## Connections
 <!-- Notes this piece draws from. -->
 - [[]]
+
+## Attachments
+<!-- Images, diagrams, and files. -->
+- ![[]]
