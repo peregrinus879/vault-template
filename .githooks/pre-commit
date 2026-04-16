@@ -38,8 +38,8 @@ for f in "${staged_files[@]}"; do
     tmp="$(mktemp)"
     {
       printf -- '---\n'
-      printf -- 'id: %s\n' "$stem"
-      printf -- 'aliases:\n  - %s\n' "$stem"
+      printf -- 'id: "%s"\n' "$stem"
+      printf -- 'aliases:\n  - "%s"\n' "$stem"
       printf -- 'tags: []\n'
       printf -- 'type:\n'
       printf -- '---\n\n'
@@ -51,8 +51,8 @@ for f in "${staged_files[@]}"; do
     continue
   fi
 
-  # Find the closing --- line number.
-  end_line="$(awk '/^---$/ { c++; if (c == 2) { print NR; exit } }' "$f")"
+  # Find the closing --- line number. Tolerate CRLF line endings.
+  end_line="$(awk '/^---\r?$/ { c++; if (c == 2) { print NR; exit } }' "$f")"
   if [ -z "$end_line" ]; then
     printf -- '[pre-commit] warning: %s has unclosed frontmatter; skipping.\n' "$f" >&2
     continue
@@ -73,8 +73,8 @@ for f in "${staged_files[@]}"; do
   additions=''
   for field in "${missing[@]}"; do
     case "$field" in
-      id)      additions+="id: ${stem}"$'\n' ;;
-      aliases) additions+="aliases:"$'\n'"  - ${stem}"$'\n' ;;
+      id)      additions+="id: \"${stem}\""$'\n' ;;
+      aliases) additions+="aliases:"$'\n'"  - \"${stem}\""$'\n' ;;
       tags)    additions+="tags: []"$'\n' ;;
       type)    additions+="type:"$'\n' ;;
     esac
