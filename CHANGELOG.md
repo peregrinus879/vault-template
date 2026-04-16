@@ -2,6 +2,17 @@
 
 All notable changes to the vault structure, templates, tooling, and documentation. Grouped by theme; within each, sorted Added / Changed / Removed. Dates in parentheses indicate when the theme's primary work landed.
 
+## Post-audit round 3 accuracy (2026-04-16)
+
+### Changed
+
+- Pre-commit hook now derives `type:` from the top-level folder name (`3-permanent/foo.md` → `type: permanent`). Non-template-created notes get a correct value automatically; the field stays empty only when the folder does not match the `N-name` pattern.
+- Pre-commit hook header rewritten to describe actual scope: "filler for missing required fields," explicit that it does not slugify filenames and does not rewrite existing values. Prevents the "normalizer" label from implying more than it delivers.
+- `README.md` Synced list adds `LICENSE` (LICENSE is now in the private vault and in the rsync allowlist, was previously omitted from the doc).
+- `AGENTS.md` Post-Change Verification step 2 mentions `.vault-template-marker` as an expected public-repo file.
+- `SETUP.md` §1.7 documents the public-mirror constraint: `--delete` plus the orphan cleanup loop mean public-only items require an explicit rsync protect filter.
+- `WORKFLOW.md` §Writing Notes clarifies what the pre-commit hook does and does not do (fills missing frontmatter; does not slugify or rewrite).
+
 ## Post-audit hardening round 2 (2026-04-16)
 
 ### Added
@@ -18,11 +29,8 @@ All notable changes to the vault structure, templates, tooling, and documentatio
 - `SETUP.md` §1.7 rsync rules table rewritten to reflect the sentinel check and the new protect filter.
 - `SETUP.md` §4.3 Obsidian Mobile: note that mobile captures do not auto-apply templates; pull-down invokes the template picker.
 - `README.md` Setup overview updated to match `SETUP.md`'s actual top-level structure (Prerequisites, 1-5, Verify, Appendix).
-
-### Removed
-
-- `--filter='P LICENSE'` protect rule in `.githooks/post-commit`. LICENSE now lives in both repos; the rule's purpose (protect a public-only file from `--delete`) no longer applies.
-- `daily-notes` disabled in `.obsidian/core-plugins.json`. The daily-notes workflow was removed during the earlier knowledge-vault restructure; the core plugin remained enabled as stale config until now.
+- `--filter='P LICENSE'` protect rule removed from `.githooks/post-commit`. LICENSE now lives in both repos; the rule's purpose (protect a public-only file from `--delete`) no longer applies.
+- `daily-notes` core plugin disabled in `.obsidian/core-plugins.json` (was left enabled as stale config after the knowledge-vault restructure removed the daily-note workflow).
 
 ## Hook hardening and doc alignment (2026-04-16, external audit remediation)
 
@@ -55,7 +63,6 @@ All notable changes to the vault structure, templates, tooling, and documentatio
 - `type:` field in all templates, matching folder name.
 - Inline YAML `#` comments on enum-valued frontmatter fields (medium, identifier, status, source link, writing status).
 - `writing-short` and `writing-long` template variants covering tweet-sized and longer-form compositions respectively.
-- `<leader>or` slug-rename injects an empty `type:` field when missing, preserving existing values (handles non-template-created notes).
 - WORKFLOW.md section clarifying the three nvim session entry patterns (bare, file arg, directory arg) and the `s`-for-split trick when opening on a directory.
 
 ### Changed
@@ -80,8 +87,7 @@ All notable changes to the vault structure, templates, tooling, and documentatio
 ### Changed
 
 - Directory numbering tightened: `0-fleeting`, `1-sources`, `2-literature`, `3-permanent`, `4-writing`, `5-index`, `6-templates`, `7-assets`.
-- Post-commit hook migrated from `.git/hooks/post-commit` to a tracked location; enabled on the hub via `git config core.hooksPath .githooks`.
-- obsidian.nvim config in `dotfiles-arch` and `dotfiles-omarchy` aligned with the new folder layout and template customizations.
+- Post-commit hook migrated from `.git/hooks/post-commit` to a tracked location (initially `hooks/`; renamed to `.githooks/` in a later theme). Enabled on the hub via `git config core.hooksPath <path>`.
 
 ### Removed
 
