@@ -47,11 +47,33 @@ Three exclusion layers decide what propagates where:
 | `.stignore` | What Syncthing propagates between devices | `.stignore` |
 | Rsync excludes | What reaches the public `vault-template` mirror | `.githooks/post-commit` |
 
-**Per-device items** (local state, machine-specific UI, soft-deletes) must be in all three layers. Current examples: `.trash/`, `.claude/`, `.obsidian/workspace.json`, `.obsidian/workspace-mobile.json`, `.obsidian/cache`. Keeping the three layers aligned prevents sync conflicts (two devices writing to the same file) and cross-device state leakage (e.g., a trash restore on device A appearing on device B).
+### Current state per item
 
-**Shared vault items** (templates, docs, tracked Obsidian config like `.obsidian/app.json` and `.obsidian/templates.json`, `.githooks/post-commit`, `.gitattributes`, `.stignore`) are tracked in git, synced by Syncthing, and included in `vault-template`. Private note content is tracked and synced but excluded from `vault-template` by rsync.
+| Item | In git | In Syncthing | In `vault-template` | Notes |
+|---|---|---|---|---|
+| `.claude/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Claude Code per-device state |
+| `.git/` | n/a (is git) | No (`.stignore`) | No (rsync) | Git internals |
+| `.gitattributes` | Yes | Yes | Yes | git-crypt encryption rules; hook reads it at runtime |
+| `.githooks/` | Yes | Yes | Yes | Tracked hook, enabled via `core.hooksPath` on the hub |
+| `.gitignore` | Yes | Yes | Yes | Standard git ignore patterns |
+| `.obsidian/app.json` | Yes | Yes | Yes | Shared Obsidian settings |
+| `.obsidian/templates.json` | Yes | Yes | Yes | Templates folder pointer |
+| `.obsidian/workspace.json` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Per-device UI layout |
+| `.obsidian/workspace-mobile.json` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Per-device mobile UI layout |
+| `.obsidian/cache` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Per-device search/graph cache |
+| `.stfolder/` | No (`.gitignore`) | Syncthing's own marker | No (rsync) | Syncthing folder sentinel |
+| `.stignore` | Yes | Yes | Yes | Syncthing ignore patterns |
+| `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups (transient) |
+| `.trash/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Obsidian soft-delete bucket |
 
-**When adding a new hidden directory or file**, decide first whether it is per-device or shared, then update all three layers consistently. An inconsistency means one of the failure modes above.
+Two patterns visible at a glance:
+
+- **Fully shared** (all three Yes): config references that forks of `vault-template` need to reproduce the setup.
+- **Fully excluded** (all three No): per-device state. Any asymmetry (Yes in two columns, No in one) is a design smell worth investigating.
+
+The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles individually. Private note content (files under `0-fleeting/` through `4-writing/`, `5-index/`, `7-assets/`) is tracked and synced but excluded from `vault-template` by rsync.
+
+**When adding a new hidden directory or file**, decide first whether it is per-device or shared, then update all three layers and the table above consistently. An inconsistency means one of the failure modes the layers exist to prevent.
 
 ## Post-Change Verification
 
@@ -64,6 +86,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing `.githooks/post-commit` (public repo sync logic)
 - Editing `.obsidian/app.json` (default new-note folder, attachment folder) or `.obsidian/templates.json`
 - Editing `.stignore` (Syncthing propagation rules; affects what reaches other devices)
+- Changing `.gitignore`, `.stignore`, or the rsync excludes in `.githooks/post-commit` (update the per-item state table in §Hidden Files and Directories)
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `WORKFLOW.md`, `SETUP.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config

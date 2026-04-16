@@ -164,9 +164,9 @@ vault-autocommit.timer (hourly, on the hour)
 
 A public template repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and documentation. It contains no note content.
 
-A git post-commit hook (tracked at `.githooks/post-commit`) syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, `.githooks/`, and documentation are copied. The public repo has its own deploy key for unattended push.
+A git post-commit hook (tracked at `.githooks/post-commit`) syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; templates, `.obsidian/` config, `.githooks/`, shared config references, and documentation are copied. The public repo has its own deploy key for unattended push.
 
-**Synced**: `6-templates/`, `.obsidian/` config, `.githooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
+**Synced**: `6-templates/`, `.obsidian/` config, `.githooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.gitattributes`, `.stignore`
 
 **Excluded**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 
