@@ -1,0 +1,14 @@
+/* Hide repo documentation and license from Obsidian's file explorer.
+   userIgnoreFilters (.obsidian/app.json) only hides these from search,
+   graph, and link autocomplete, not from the file explorer itself.
+   Enable via Settings > Appearance > CSS snippets. */
+
+.nav-file-title[data-path="README.md"],
+.nav-file-title[data-path="WORKFLOW.md"],
+.nav-file-title[data-path="SETUP.md"],
+.nav-file-title[data-path="AGENTS.md"],
+.nav-file-title[data-path="CLAUDE.md"],
+.nav-file-title[data-path="CHANGELOG.md"],
+.nav-file-title[data-path="LICENSE"] {
+  display: none;
+}
