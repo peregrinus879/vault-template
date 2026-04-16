@@ -93,6 +93,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `WORKFLOW.md`, `SETUP.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
+- Completing a themed work pass (audit remediation, structural change, new hook or template, setup flow change): draft a `CHANGELOG.md` entry before declaring the work done, per §Changelog discipline
 
 ### What to check
 
@@ -101,6 +102,21 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 3. **Stale references**: `grep -rn '<old-name>' --include='*.md' --include='*.json' . --exclude-dir=.git` must return no hits outside `.obsidian/workspace-mobile.json` (which Obsidian regenerates).
 4. **obsidian.nvim config**: if directory paths changed, verify `~/projects/repos/dotfiles/dotfiles-arch/nvim/.config/nvim/lua/plugins/obsidian.lua` and `~/projects/repos/dotfiles/dotfiles-omarchy/nvim/.config/nvim/lua/plugins/obsidian.lua` have the correct `notes_subdir`, `templates.folder`, `attachments.folder`, and `templates.customizations` values. These files live in separate repos and must be updated and committed independently.
 5. **Doc cross-references and overviews**: cross-document references (section numbers, file names, headings) must resolve. `README.md` §Setup overview must reflect `SETUP.md`'s top-level section structure. `AGENTS.md` Key Files descriptions must still match each doc's actual scope. Run `grep -rn 'step [0-9]\|§[0-9]' --include='*.md' .` and confirm every referenced section exists.
+
+## Changelog discipline
+
+`CHANGELOG.md` is theme-grouped, not per-commit. Update it when a logical arc wraps — a session boundary, a coherent feature/fix bundle, an audit-remediation pass. Do not commit each non-trivial change with its own changelog line; git log is the per-commit record.
+
+When adding an entry:
+
+- Place at the top of the file (newest first).
+- Use a descriptive theme heading with an ISO date: `## Theme name (YYYY-MM-DD)`.
+- Sort bullets under `### Added`, `### Changed`, `### Removed`.
+- Reference commit hashes only for archaeological value (rarely).
+
+Skip the changelog for: typo fixes, routine template content tweaks, auto-commit sweeps, and individual chore commits that don't close an arc.
+
+Triggers for an update pass: end of a working session, completion of an audit or review, any commit that introduces a new note type, a new hook, a new config layer, or a visible workflow change.
 
 ## Known Limitations
 
