@@ -11,7 +11,7 @@ It owns:
 - Zettelkasten fleeting notes, source notes (bibliographic records), literature notes (paraphrase), permanent notes (atomic claims), writing notes (long-form output), and index notes
 - Obsidian app configuration (`.obsidian/`)
 - Note templates
-- Post-commit hook (`hooks/post-commit`) for public template sync
+- Post-commit hook (`.githooks/post-commit`) for public template sync
 
 It does not own:
 
@@ -27,13 +27,13 @@ It does not own:
 - [SETUP.md](SETUP.md) - full setup guide with commands and app links for all devices
 - `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
-- `hooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath hooks` on the hub)
+- `.githooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath .githooks` on the hub)
 - `~/.local/bin/pinentry-null` - headless pinentry for unattended GPG operations
 - `~/.gnupg/gpg-agent.conf` - GPG agent config (pinentry-null)
 
 ## Commit Policy
 
-Only commit `6-templates/`, docs, `hooks/`, and config. All other content is captured by the hourly auto-commit timer.
+Only commit `6-templates/`, docs, `.githooks/`, and config. All other content is captured by the hourly auto-commit timer.
 
 ## Post-Change Verification
 
@@ -43,7 +43,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 
 - Adding, renaming, or removing a content directory
 - Editing `.gitattributes` (git-crypt encryption rules; also drives post-commit hook content directory derivation)
-- Editing `hooks/post-commit` (public repo sync logic)
+- Editing `.githooks/post-commit` (public repo sync logic)
 - Editing `.obsidian/app.json` (default new-note folder, attachment folder) or `.obsidian/templates.json`
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `~/.local/bin/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `WORKFLOW.md`, `SETUP.md`, or `AGENTS.md`

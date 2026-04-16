@@ -369,24 +369,24 @@ cd ~/projects/repos/templates/vault-template && git push --dry-run origin main
 
 #### Post-commit hook
 
-The hook is tracked in the repo at `hooks/post-commit`. Enable it on the remote hub only:
+The hook is tracked in the repo at `.githooks/post-commit`. Enable it on the remote hub only:
 
 ```bash
 cd ~/vault
-git config core.hooksPath hooks
+git config core.hooksPath .githooks
 ```
 
 Verify the executable bit is set (git preserves it on clone):
 
 ```bash
-ls -la ~/vault/hooks/post-commit
+ls -la ~/vault/.githooks/post-commit
 ```
 
 If not executable, set and re-commit:
 
 ```bash
-chmod +x ~/vault/hooks/post-commit
-cd ~/vault && git add hooks/post-commit && git commit -m "chore: mark hook executable"
+chmod +x ~/vault/.githooks/post-commit
+cd ~/vault && git add .githooks/post-commit && git commit -m "chore: mark hook executable"
 ```
 
 Local machines skip this step; the hook runs only on the remote hub.

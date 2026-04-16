@@ -23,7 +23,7 @@ Zettelkasten knowledge vault for [Obsidian](https://obsidian.md) and [obsidian.n
 6-templates/      Note templates (only unencrypted content directory)
 7-assets/         Images and attachments
 .obsidian/        Obsidian app configuration
-hooks/            Git hooks tracked in repo (enabled via core.hooksPath on the hub)
+.githooks/        Git hooks tracked in repo (enabled via core.hooksPath on the hub)
 ```
 
 ## Methodology
@@ -120,7 +120,7 @@ Vault content is protected by two encryption layers before reaching GitHub:
 
 **Encrypted (git-crypt)**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/`
 
-**Unencrypted (git-crypt)**: `6-templates/`, `.obsidian/`, `hooks/`, repo documentation files
+**Unencrypted (git-crypt)**: `6-templates/`, `.obsidian/`, `.githooks/`, repo documentation files
 
 **GitHub visibility**: none. The entire remote is opaque (encrypted filenames, content, and history).
 
@@ -151,7 +151,7 @@ The remote hub runs a systemd timer (`vault-autocommit.timer`) that commits and 
 vault-autocommit.timer (hourly, on the hour)
   └── vault-autocommit.service
         └── git add -A && git commit && git push
-              └── post-commit hook (hooks/post-commit, enabled via core.hooksPath)
+              └── post-commit hook (.githooks/post-commit, enabled via core.hooksPath)
                     └── rsync to public repo && git commit && git push
 ```
 
@@ -164,9 +164,9 @@ vault-autocommit.timer (hourly, on the hour)
 
 A public template repo ([vault-template](https://github.com/peregrinus879/vault-template)) mirrors the vault's structure, templates, config, and documentation. It contains no note content.
 
-A git post-commit hook (tracked at `hooks/post-commit`) syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, `hooks/`, and documentation are copied. The public repo has its own deploy key for unattended push.
+A git post-commit hook (tracked at `.githooks/post-commit`) syncs public-facing files via rsync after every commit (including auto-commits). Content directories are excluded; only templates, `.obsidian/` config, `.githooks/`, and documentation are copied. The public repo has its own deploy key for unattended push.
 
-**Synced**: `6-templates/`, `.obsidian/` config, `hooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
+**Synced**: `6-templates/`, `.obsidian/` config, `.githooks/`, `README.md`, `WORKFLOW.md`, `SETUP.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
 
 **Excluded**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/` (contents only; empty directory structure is preserved via `.gitkeep` files)
 

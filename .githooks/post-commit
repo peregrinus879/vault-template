@@ -3,7 +3,7 @@
 # Runs after every commit in the vault repo (including auto-commits).
 #
 # FORK NOTE: VAULT and PUBLIC paths below are user-specific. Adjust if forked.
-# ENABLE: on the remote hub, run `git config core.hooksPath hooks` once.
+# ENABLE: on the remote hub, run `git config core.hooksPath .githooks` once.
 #
 # SAFETY: Content directories are excluded by rsync. Only structure
 # (empty dirs via .gitkeep), templates, config, and docs are copied.
