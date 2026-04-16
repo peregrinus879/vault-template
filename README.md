@@ -118,9 +118,7 @@ Vault content is protected by two encryption layers before reaching GitHub:
 
 **Why two layers**: git-crypt alone leaves filenames visible on GitHub. git-remote-gcrypt hides everything on the remote but does not encrypt local git objects. Together, they provide defense-in-depth.
 
-**Encrypted (git-crypt)**: `0-fleeting/`, `1-sources/`, `2-literature/`, `3-permanent/`, `4-writing/`, `5-index/`, `7-assets/`
-
-**Unencrypted (git-crypt)**: `6-templates/`, `.obsidian/`, `.githooks/`, repo documentation files
+Encryption scope is defined in `.gitattributes`: content directories (`0-fleeting/` through `7-assets/`, except `6-templates/`) are encrypted; templates, Obsidian config, `.githooks/`, and documentation are not. See `AGENTS.md` §Hidden Files and Directories for the full per-item state.
 
 **GitHub visibility**: none. The entire remote is opaque (encrypted filenames, content, and history).
 
