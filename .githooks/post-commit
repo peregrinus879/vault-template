@@ -28,10 +28,22 @@ PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/pro
 # Bail if the public repo isn't cloned on this machine.
 [ -d "$PUBLIC/.git" ] || exit 0
 
+# Sentinel: refuse to publish unless $PUBLIC is the intended vault-template
+# mirror. An errant or hostile vault.publicPath value pointing at any other
+# git repo would otherwise expose it to rsync --delete, rm -rf, git add -A,
+# commit, and push from this hook. The marker file lives in vault-template
+# only (not in private vault) and is bootstrapped one-time per fork.
+[ -f "$PUBLIC/.vault-template-marker" ] || {
+  printf -- '[post-commit] refusing: %s lacks .vault-template-marker sentinel\n' "$PUBLIC" >&2
+  exit 0
+}
+
 # Allowlist sync. First matching filter rule wins; the trailing --exclude='*'
-# denies anything the allowlist did not name.
+# denies anything the allowlist did not name. Protect filters keep
+# public-only files from being removed by --delete when the source lacks them.
 rsync -a --delete \
   --filter='P LICENSE' \
+  --filter='P /.vault-template-marker' \
   \
   --include='/README.md' \
   --include='/WORKFLOW.md' \
@@ -97,5 +109,8 @@ git add -A
 # Only commit and push if there are changes.
 if ! git diff --cached --quiet; then
   git commit -m "sync: $(date +%F-%H%M)"
-  git push --quiet origin main 2>/dev/null || true
+  # Rely on branch upstream tracking rather than hardcoded origin/main,
+  # so the hook works in forks that name their remote or default branch
+  # differently. Push errors go to stderr so they're visible in journal logs.
+  git push --quiet || printf -- '[post-commit] push failed; next sync will retry\n' >&2
 fi
