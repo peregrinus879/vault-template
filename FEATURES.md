@@ -37,7 +37,7 @@ Together, GitHub sees only opaque encrypted data. Neither layer alone provides f
 
 ## Automated backup (self-hosting)
 
-A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist: new files do not publish unless explicitly added.
+A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist at the root level: new root files and directories do not publish unless explicitly added. Files inside already-allowlisted subtrees (e.g., `6-templates/`, `nvim-vault/`) publish automatically.
 
 ## Public template mirroring (self-hosting)
 

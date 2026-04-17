@@ -4,6 +4,8 @@
 // Per-device state (prevent sync conflicts and cross-device leakage)
 .trash
 .claude
+// Syncthing conflict files (disposable; git also ignores them)
+*.sync-conflict-*
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache

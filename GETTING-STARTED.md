@@ -19,13 +19,31 @@ Each path builds on the previous. Start with Obsidian; add layers as needed. For
 ```bash
 git clone https://github.com/peregrinus879/vault-template.git ~/vault
 cd ~/vault && rm -rf .git
-git init -b main
-git add -A && git commit -m "init: vault from template"
 ```
 
 Choose a different path if you prefer; the default is `~/vault`. If you add Neovim later, set the `OBSIDIAN_VAULT` environment variable to match (see §2).
 
-### 1.2 Install Obsidian
+### 1.2 Initialize version history (optional)
+
+Initialize a fresh git repo for local version history and to enable the pre-commit frontmatter normalizer:
+
+```bash
+cd ~/vault
+git init -b main
+git config core.hooksPath .githooks
+git add -A && git commit -m "init: vault from template"
+```
+
+This requires a git identity. If not already configured:
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+```
+
+Skip this step if you only want to use Obsidian without version history. The vault works without git.
+
+### 1.3 Install Obsidian
 
 **Linux** (Flatpak):
 
@@ -43,7 +61,7 @@ winget install Obsidian.Obsidian
 
 **Android**: install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) from Play Store.
 
-### 1.3 Open as vault
+### 1.4 Open as vault
 
 Open Obsidian. Choose **Open folder as vault** (not "Create new vault"). Select the cloned directory.
 
@@ -54,13 +72,13 @@ Settings to verify (Settings > Files and links):
 
 These should already be set from the included `.obsidian/app.json`.
 
-### 1.4 Write your first note
+### 1.5 Write your first note
 
 Press `Ctrl+N` (desktop) or tap `+` (mobile). The note lands in `0-fleeting/`. Type a thought and save.
 
 See [WORKFLOW.md](WORKFLOW.md) for the full Zettelkasten method, naming conventions, and daily routine.
 
-### 1.5 Mobile (Android)
+### 1.6 Mobile (Android)
 
 On mobile, templates are not auto-applied. After creating a new note, swipe down (pull) to trigger the template picker. This behavior is configured by `mobilePullAction: insert-template` in `.obsidian/app.json` (already set in this template).
 

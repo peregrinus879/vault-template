@@ -12,9 +12,10 @@
 #              empty if the folder does not match the N-name pattern
 #
 # The hook does NOT slugify filenames or rewrite existing frontmatter.
-# Full slug normalization (renaming the file and updating wiki-links)
-# requires <leader>or in obsidian.nvim, which is an interactive, cross-
-# file rewrite outside commit scope.
+# Slug normalization (renaming the file and updating frontmatter id)
+# requires <leader>or in obsidian.nvim. That command renames the local
+# file and preserves the old title as an alias; it does not rewrite
+# backlinks vault-wide (use :Obsidian rename for that).
 #
 # Auto-commit safe: non-interactive, auto-stages rewrites, exits 0.
 # Warns on malformed frontmatter (unclosed ---) but does not reject, so

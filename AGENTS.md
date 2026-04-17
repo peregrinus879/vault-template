@@ -24,7 +24,7 @@ It does not own:
 ## Key Files
 
 - [README.md](README.md) - landing page: pitch, feature highlights, directory structure
-- [GETTING-STARTED.md](GETTING-STARTED.md) - setup guide: Obsidian, Neovim overlay, multi-device sync
+- [GETTING-STARTED.md](GETTING-STARTED.md) - setup guide: Obsidian, version history and hooks, Neovim overlay, multi-device sync
 - [WORKFLOW.md](WORKFLOW.md) - Zettelkasten method, naming conventions, capture loop, keybindings
 - [FEATURES.md](FEATURES.md) - detailed feature showcase
 - [SELF-HOSTING.md](SELF-HOSTING.md) - encryption, automated backup, public template mirroring
@@ -84,7 +84,8 @@ Infrastructure directories use a dotfile prefix (`.obsidian/`, `.githooks/`, `.s
 Two patterns visible at a glance:
 
 - **Fully shared** (all three Yes): config references that forks of `vault-template` need to reproduce the setup.
-- **Fully excluded** (all three No): per-device state. Any asymmetry (Yes in two columns, No in one) is a design smell worth investigating.
+- **Fully excluded** (all three No): per-device state.
+- **Tracked and synced but not public** (Yes/Yes/No): private note content. This is the one intentional asymmetry; content is excluded from `vault-template` by the rsync allowlist. Any other asymmetry across the three layers is worth investigating.
 
 The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles whose handling is interesting. All other tracked files under `.obsidian/` (`appearance.json`, `core-plugins.json`, `graph.json`, `snippets/**`, `themes/**`) are fully shared, tracked in git, synced by Syncthing, included in `vault-template`.
 
@@ -136,7 +137,7 @@ Triggers for an update pass: end of a working session, completion of an audit or
 
 ## Known Limitations
 
-- **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, GETTING-STARTED.md, SELF-HOSTING.md, FEATURES.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `self-hosting/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
+- **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, GETTING-STARTED.md, SELF-HOSTING.md, FEATURES.md, CHANGELOG.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `self-hosting/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
 - **Public repo commit messages must be opaque**: the post-commit hook uses `sync: <date>` for public template repo commits. Do not forward private repo commit messages to the public repo. Private commit messages may reference note names, topics, or other content that would leak through the public repo's git history.
 - **Auto-commit timer can preempt planned commits**: `vault-autocommit.timer` fires hourly on the hub (`*:00`) and runs `git add -A && git commit -m "auto: <ts>" && git push`. If a planned multi-stage change straddles the top of the hour, the timer will sweep staged changes into an `auto:` commit and push it before you can write a descriptive message. Before any structural change on the hub, pause the timer: `systemctl --user stop vault-autocommit.timer`. Restart after the planned commit: `systemctl --user start vault-autocommit.timer`. If the timer preempts anyway, prefer accepting the `auto:` message. Amending is allowed but requires force-push; reserve it for commits where the message loss is materially worse than a rewritten hash.
 

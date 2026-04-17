@@ -100,6 +100,20 @@ for dir in "$PUBLIC"/*/ "$PUBLIC"/.*/; do
   [ -d "$VAULT/$name" ] || rm -rf "$dir"
 done
 
+# Clean orphaned root files: rsync --delete only removes files within the
+# included set. Files removed from the allowlist (excluded by --exclude='*')
+# are invisible to rsync and left behind. This loop catches them.
+# Keep in sync with the rsync --include list above.
+ALLOWED_ROOT_FILES="README.md WORKFLOW.md GETTING-STARTED.md SELF-HOSTING.md FEATURES.md AGENTS.md CLAUDE.md LICENSE .gitignore .gitattributes .stignore .vault-template-marker"
+for file in "$PUBLIC"/* "$PUBLIC"/.*; do
+  [ -f "$file" ] || continue
+  name="$(basename "$file")"
+  case " $ALLOWED_ROOT_FILES " in
+    *" $name "*) ;;
+    *) rm -f "$file" ;;
+  esac
+done
+
 # Ensure each content directory exists in public with a .gitkeep,
 # so the empty structural layout mirrors the vault.
 for dir in "${CONTENT_DIRS[@]}"; do

@@ -18,6 +18,8 @@ Encrypted backup to GitHub with automated commits and public template mirroring.
 - **Syncthing** on local machines and mobile, configured per [GETTING-STARTED.md](GETTING-STARTED.md) §3. Hub-side Syncthing is set up in §1a below.
 - **GitHub account** with two repos: one private (encrypted backup, e.g., `vault-backup`), one public (template mirror, e.g., `vault-template`)
 
+This guide standardizes on `~/vault` for the hub. All commands, systemd units, and scripts assume this path. If you use a different location, adjust the service file (`self-hosting/vault-autocommit.service`) and the commands below accordingly. The `OBSIDIAN_VAULT` environment variable documented in GETTING-STARTED.md is for the Neovim overlay on local machines, not for hub infrastructure.
+
 ## 1. Baseline tools
 
 Install on the remote hub:
@@ -43,7 +45,7 @@ git config --global user.email "your-email@example.com"
 
 ## 1a. Hub Syncthing
 
-The remote hub runs Syncthing as a system service (always-on, survives reboot):
+The remote hub runs Syncthing as a system service (always-on, survives reboot). After pairing with a local machine (§3.2 in GETTING-STARTED.md), wait for the initial sync to complete before continuing with git-crypt and gcrypt setup. The vault directory (`~/vault`) is created by Syncthing during the first sync.
 
 ```bash
 sudo pacman -S syncthing
@@ -111,10 +113,10 @@ cd ~/vault && git-crypt init
 git-crypt export-key ~/vault-git-crypt.key
 ```
 
-Copy the key to a secure location. The key is raw binary (not human-readable text). Store it as a **file attachment** in a password manager. Then delete the local copy:
+Copy the key to a secure location. The key is raw binary (not human-readable text). Store it as a **file attachment** in a password manager. Transfer to a trusted workstation (not the hub itself), then delete the local copy:
 
 ```bash
-scp ~/vault-git-crypt.key <user>@<tailscale-ip>:~/Downloads/
+scp ~/vault-git-crypt.key <user>@<workstation-tailscale-ip>:~/Downloads/
 rm ~/vault-git-crypt.key
 ```
 
@@ -185,14 +187,14 @@ echo "test" | gpg --no-tty -e -r vault-backup@noreply | gpg --no-tty -d
 
 ### 3.4 Backup GPG key material
 
-Export and store securely (same location as the git-crypt key):
+Export and store securely (same location as the git-crypt key). Transfer to a trusted workstation:
 
 ```bash
 gpg --export --armor vault-backup@noreply > ~/vault-backup-public.asc
 gpg --export-secret-keys --armor vault-backup@noreply > ~/vault-backup-private.asc
 cp ~/.gnupg/openpgp-revocs.d/<fingerprint>.rev ~/vault-backup-revocation.asc
 scp ~/vault-backup-public.asc ~/vault-backup-private.asc ~/vault-backup-revocation.asc \
-  <user>@<tailscale-ip>:~/Downloads/
+  <user>@<workstation-tailscale-ip>:~/Downloads/
 rm ~/vault-backup-public.asc ~/vault-backup-private.asc ~/vault-backup-revocation.asc
 ```
 
@@ -231,8 +233,10 @@ If the target branch already exists with plain git data, delete it on GitHub fir
 # If the branch already has plain git data, delete it on GitHub first:
 # gh api repos/<owner>/<repo>/git/refs/heads/main -X DELETE
 
-git push origin main
+git push -u origin main
 ```
+
+The `-u` flag sets upstream tracking so that subsequent `git push` (without arguments) targets the correct remote and branch. The auto-commit timer relies on this.
 
 Record the gcrypt remote ID shown in the output (`:id:...`).
 
@@ -318,7 +322,16 @@ Verify:
 cd ~/projects/repos/templates/vault-template && git push --dry-run origin main
 ```
 
-### 6.3 Post-commit hook
+### 6.3 Sentinel file
+
+The post-commit hook refuses to run unless the public repo contains a `.vault-template-marker` file. This guards against a misconfigured `vault.publicPath` trashing an unrelated repo. Create it once:
+
+```bash
+touch ~/projects/repos/templates/vault-template/.vault-template-marker
+cd ~/projects/repos/templates/vault-template && git add .vault-template-marker && git commit -m "chore: add sentinel marker"
+```
+
+### 6.4 Post-commit hook
 
 The hook is tracked in the repo at `.githooks/post-commit`. Enable it on the remote hub only:
 
@@ -341,7 +354,7 @@ cd ~/vault && git add .githooks/post-commit && git commit -m "chore: mark hook e
 
 Local machines skip this step; the hook runs only on the remote hub.
 
-### 6.4 Rsync rules
+### 6.5 Rsync rules
 
 The hook uses a fail-closed allowlist: only paths named explicitly in the `--include` list are published; the trailing `--exclude='*'` denies everything else.
 
@@ -357,9 +370,9 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 | `VAULT` resolution | Read from `git rev-parse --show-toplevel`; the hook works in any clone regardless of filesystem location |
 | `PUBLIC` resolution | Read from `git config vault.publicPath`, falling back to `$HOME/projects/repos/templates/vault-template`. Forks override via `git config vault.publicPath /their/path` |
 
-**Public-mirror constraint**: `--delete` plus the orphan cleanup loop mean the public repo is strictly a derived view of the private vault's allowlisted set. Any file or directory that exists only in the public repo will be wiped on the next sync unless explicitly protected. Use an rsync protect filter to preserve it: add a line like `--filter='P /.github/'` inside the `rsync` invocation in `.githooks/post-commit`.
+**Public-mirror constraint**: `--delete` plus the cleanup loops mean the public repo is strictly a derived view of the private vault's allowlisted set. Any file or directory that exists only in the public repo will be wiped on the next sync unless explicitly protected. To preserve a public-only item, three places in `.githooks/post-commit` must be updated: (1) add an rsync protect filter (e.g., `--filter='P /.github/'`), (2) add the directory name to the orphan-directory skip list, and (3) add the filename to the `ALLOWED_ROOT_FILES` list for root files.
 
-### 6.5 Testing
+### 6.6 Testing
 
 Verify no private content leaks:
 

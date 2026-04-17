@@ -1,6 +1,6 @@
-# vault
+# vault: Zettelkasten template for Obsidian and Neovim
 
-A Zettelkasten vault template for [Obsidian](https://obsidian.md) and [Neovim](https://github.com/obsidian-nvim/obsidian.nvim). Opinionated structure, templates for every note type, multi-device sync, and optional encrypted backup.
+Opinionated structure, templates for every note type, multi-device sync, and optional encrypted backup. Works with [Obsidian](https://obsidian.md) (desktop/mobile) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal).
 
 ## What you get
 
@@ -17,9 +17,10 @@ A Zettelkasten vault template for [Obsidian](https://obsidian.md) and [Neovim](h
 
 ```bash
 git clone https://github.com/peregrinus879/vault-template.git ~/vault
+cd ~/vault && rm -rf .git
 ```
 
-Open `~/vault` in Obsidian as a vault. Press `Ctrl+N`. Write a thought. See [GETTING-STARTED.md](GETTING-STARTED.md) for the full setup, including Neovim and multi-device sync.
+Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`. Write a thought. See [GETTING-STARTED.md](GETTING-STARTED.md) for the full setup, including version history, Neovim, and multi-device sync.
 
 ## Structure
 
@@ -59,10 +60,12 @@ Source notes carry an informational `status` field: `unread`, `reading`, `read`,
 
 | Doc | What it covers |
 |-----|---------------|
-| [GETTING-STARTED.md](GETTING-STARTED.md) | Clone, open in Obsidian, add Neovim, add multi-device sync |
+| [GETTING-STARTED.md](GETTING-STARTED.md) | Clone, open in Obsidian, version history, add Neovim, multi-device sync |
 | [WORKFLOW.md](WORKFLOW.md) | Zettelkasten method, naming conventions, capture loop, keybindings |
 | [FEATURES.md](FEATURES.md) | Detailed feature showcase |
 | [SELF-HOSTING.md](SELF-HOSTING.md) | Encryption, automated backup, public template mirroring |
+| [AGENTS.md](AGENTS.md) | AI assistant context for working with this repo |
+| [CLAUDE.md](CLAUDE.md) | Claude Code wrapper for AGENTS.md |
 
 ## Stack
 
