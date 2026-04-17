@@ -3,10 +3,14 @@
     "AGENTS.md",
     "CHANGELOG.md",
     "CLAUDE.md",
+    "FEATURES.md",
+    "GETTING-STARTED.md",
     "README.md",
-    "SETUP.md",
+    "SELF-HOSTING.md",
     "WORKFLOW.md",
-    "LICENSE"
+    "LICENSE",
+    "nvim-vault",
+    "self-hosting"
   ],
   "mobilePullAction": "insert-template",
   "newFileLocation": "folder",

@@ -46,15 +46,20 @@ rsync -a --delete \
   \
   --include='/README.md' \
   --include='/WORKFLOW.md' \
-  --include='/SETUP.md' \
+  --include='/GETTING-STARTED.md' \
+  --include='/SELF-HOSTING.md' \
+  --include='/FEATURES.md' \
   --include='/AGENTS.md' \
   --include='/CLAUDE.md' \
-  --include='/CHANGELOG.md' \
   --include='/LICENSE' \
   --include='/.gitignore' \
   --include='/.gitattributes' \
   --include='/.stignore' \
   \
+  --include='/nvim-vault/' \
+  --include='/nvim-vault/**' \
+  --include='/self-hosting/' \
+  --include='/self-hosting/**' \
   --include='/6-templates/' \
   --include='/6-templates/**' \
   --include='/.githooks/' \
@@ -90,7 +95,7 @@ for dir in "$PUBLIC"/*/ "$PUBLIC"/.*/; do
   [ -d "$dir" ] || continue
   name="$(basename "$dir")"
   case "$name" in
-    . | .. | .git | .obsidian | .githooks) continue ;;
+    . | .. | .git | .obsidian | .githooks | nvim-vault | self-hosting) continue ;;
   esac
   [ -d "$VAULT/$name" ] || rm -rf "$dir"
 done

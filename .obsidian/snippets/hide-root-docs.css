@@ -1,14 +1,23 @@
-/* Hide repo documentation and license from Obsidian's file explorer.
-   userIgnoreFilters (.obsidian/app.json) only hides these from search,
-   graph, and link autocomplete, not from the file explorer itself.
-   Enable via Settings > Appearance > CSS snippets. */
+/* Hide repo documentation, license, and infrastructure directories from
+   Obsidian's file explorer. userIgnoreFilters (.obsidian/app.json) hides
+   these from search, graph, and link autocomplete. This snippet handles
+   the file explorer sidebar. Enable via Settings > Appearance > CSS snippets. */
 
+/* Root documentation files */
 .nav-file-title[data-path="README.md"],
 .nav-file-title[data-path="WORKFLOW.md"],
-.nav-file-title[data-path="SETUP.md"],
+.nav-file-title[data-path="GETTING-STARTED.md"],
+.nav-file-title[data-path="CHANGELOG.md"],
+.nav-file-title[data-path="SELF-HOSTING.md"],
+.nav-file-title[data-path="FEATURES.md"],
 .nav-file-title[data-path="AGENTS.md"],
 .nav-file-title[data-path="CLAUDE.md"],
-.nav-file-title[data-path="CHANGELOG.md"],
 .nav-file-title[data-path="LICENSE"] {
+  display: none;
+}
+
+/* Infrastructure directories (visible, not dot-prefixed) */
+.nav-folder-title[data-path="nvim-vault"],
+.nav-folder-title[data-path="self-hosting"] {
   display: none;
 }

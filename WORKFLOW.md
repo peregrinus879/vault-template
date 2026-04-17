@@ -1,6 +1,6 @@
 # Vault Workflow
 
-A hands-on tutorial for running a Zettelkasten in this vault. It covers two editors: [Obsidian](https://obsidian.md) (desktop and mobile GUI) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal, inside Neovim). Both read the same markdown files in the same folder. You do not need to pick one; use Neovim at the keyboard, Obsidian mobile for capture on the go, Obsidian desktop when you want the graph view. For installation and device setup, see [SETUP.md](SETUP.md).
+A hands-on tutorial for running a Zettelkasten in this vault. It covers two editors: [Obsidian](https://obsidian.md) (desktop and mobile GUI) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal, inside Neovim). Both read the same markdown files in the same folder. You do not need to pick one; use Obsidian on desktop and mobile, Neovim at the keyboard, Obsidian when you want the graph view. For installation and device setup, see [GETTING-STARTED.md](GETTING-STARTED.md).
 
 ## The Method
 
@@ -48,10 +48,10 @@ A naming system drawn from Ahrens' *How to Take Smart Notes*, adapted for this v
 
 ### How It Works
 
-obsidian.nvim auto-generates filenames and aliases from the title you type:
+When you create a note (via obsidian.nvim or Obsidian), the filename is auto-generated as a slug:
 
 1. You type a title (e.g., "Risk appetite is a board-level choice")
-2. `note_id_func` creates a slug filename: `risk-appetite-is-a-board-level-choice.md`
+2. The slug function creates a filename: `risk-appetite-is-a-board-level-choice.md`
 3. The `aliases` frontmatter field preserves your original title for search and `[[link]]` autocomplete
 
 You never need to think about the filename. Type the title naturally; the slug is generated for you.
@@ -59,7 +59,7 @@ You never need to think about the filename. Type the title naturally; the slug i
 ### Design Principles
 
 - **Title as claim**: a permanent note's title is its assertion, written as a full declarative sentence. Source titles identify the work. Literature titles identify the scope of the paraphrase (often by chapter or section). Fleeting titles are disposable.
-- **Picker-first**: titles are the primary search key in `<leader>oo` and `[[` autocomplete. Start with the content-bearing word, not a date or tag.
+- **Picker-first**: titles are the primary search key in Quick Switcher (`Ctrl+O`) and `[[` autocomplete. Start with the content-bearing word, not a date or tag.
 - **Slug filenames, readable aliases**: all notes get auto-generated lowercase-hyphenated filenames. The human-readable title lives in the `aliases` frontmatter field, which powers search and link autocomplete.
 - **Cross-platform safety**: Syncthing moves files across Linux, Windows (WSL), and Android. Slug filenames avoid all platform-specific character issues by design (lowercase, hyphens, alphanumeric only).
 - **Aliases are the single source of truth for display**: the `aliases` field is what appears in search, autocomplete, and link resolution. Both obsidian.nvim and Obsidian rewrite every `[[link]]` on rename, so titles can evolve freely.
@@ -100,29 +100,23 @@ The vault has no daily anchor note. Capture is continuous; triage is daily.
 
 When a thought appears, capture it immediately. Speed matters more than structure.
 
-**In Neovim:**
-
-```
-<leader>on
-```
-
-Type a short title, press Enter. The note lands in `0-fleeting/` with the fleeting template applied: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
-
-The filename is a slug (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). Your original title is preserved in the `aliases` field for search and link autocomplete.
-
 **In Obsidian desktop:** press `Ctrl+N` to create a new note. It lands in `0-fleeting/` (configured in Settings > Files and links > Default location). Type the thought.
 
 **In Obsidian mobile:** tap the `+` icon or new-note button. Confirm the default folder is `0-fleeting/` (Settings > Files and links > Default location for new notes > In the folder specified below > `0-fleeting`). Type, save. Syncthing pushes it to the hub within seconds to minutes.
 
 Mobile captures will not have the fleeting template applied automatically. That is fine; you will process them during triage.
 
+**In Neovim** *(skip if you don't use Neovim)*: press `<leader>on`. Type a short title, press Enter. The note lands in `0-fleeting/` with the fleeting template applied: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
+
+The filename is a slug (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). Your original title is preserved in the `aliases` field for search and link autocomplete.
+
 ### End of Day: Triage (2-5 minutes)
 
 Open the fleeting folder.
 
-**In Neovim:** `nvim ~/vault/0-fleeting/`
-
 **In Obsidian:** expand `0-fleeting/` in the file explorer sidebar.
+
+**In Neovim:** `nvim ~/vault/0-fleeting/`
 
 For each note, make one decision:
 
@@ -153,15 +147,20 @@ Every note has two parts separated by `---` fences:
 1. **Frontmatter** (between the `---` lines): metadata like `id`, `aliases`, and `tags`. Do not write content here.
 2. **Body** (everything after the closing `---`): your actual content. The title heading, template sections, and your writing live here.
 
-When you create a note with `<leader>on`, the fleeting template is applied automatically. When you create a note with `<leader>oN`, you pick a template and the note is routed to the correct folder. In both cases, obsidian.nvim generates the base frontmatter:
+**In Obsidian:** press `Ctrl+N` for a new note (lands in `0-fleeting/`), or right-click a folder and choose **New note**, then insert a template via `Ctrl+P` > "Insert template."
+
+**In Neovim:** press `<leader>on` for a new fleeting note (template auto-applied), or `<leader>oN` to pick a template and route to the correct folder. obsidian.nvim generates the base frontmatter automatically.
+
+All templates set these fields:
 
 - **`id`**: the slugified filename (e.g., `quis-custodiet-ipsos-custodes`). Used internally for linking.
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
 - **`tags`**: empty by default. Add tags as needed.
+- **`type`**: matches the folder name (`fleeting`, `source`, `literature`, `permanent`, `writing`, `index`).
 
-All templates set `type:` to match the folder name (`fleeting`, `source`, `literature`, `permanent`, `writing`, `index`). Type-specific fields: source notes add `medium`, `author`, `year`, `title`, `publisher`, `identifier`, `status`; literature notes add `source:` (wiki-link to the source note); writing notes add `status:`. Enum-valued fields carry an inline `# v1 | v2 | ...` YAML comment for reference. Write your content in the body, below any instructional comments.
+Type-specific fields: source notes add `medium`, `author`, `year`, `title`, `publisher`, `identifier`, `status`; literature notes add `source:` (wiki-link to the source note); writing notes add `status:`. Enum-valued fields carry an inline `# v1 | v2 | ...` YAML comment for reference. Write your content in the body, below any instructional comments.
 
-**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The `.githooks/pre-commit` hook catches the resulting gaps on commit: it fills missing `id`, `aliases`, `tags`, and `type` (derived from the folder name) and re-stages the file. What the hook does **not** do is slugify the filename or rewrite any existing frontmatter values. For slug normalization (renaming the file and rewriting wiki-links vault-wide), use `<leader>or` in obsidian.nvim.
+**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The `.githooks/pre-commit` hook catches the resulting gaps on commit: it fills missing `id`, `aliases`, `tags`, and `type` (derived from the folder name) and re-stages the file. What the hook does **not** do is slugify the filename or rewrite any existing frontmatter values. For slug normalization in Neovim, use `<leader>or`.
 
 ### Fleeting Notes
 
@@ -179,9 +178,9 @@ One source note per work (book, article, paper, podcast episode, video, talk, we
 
 **Creating the note:**
 
-*In Neovim:* press `<leader>oN`. Pick the `source` template. Type the title, conventionally `Author Year - Title` (e.g., `Ahrens 2017 - How to Take Smart Notes`). The note is created in `1-sources/`.
-
 *In Obsidian:* right-click `1-sources/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `source`.
+
+*In Neovim:* press `<leader>oN`. Pick the `source` template. Type the title, conventionally `Author Year - Title` (e.g., `Ahrens 2017 - How to Take Smart Notes`). The note is created in `1-sources/`.
 
 **Filling in the template:**
 
@@ -195,7 +194,7 @@ One source note per work (book, article, paper, podcast episode, video, talk, we
 | Summary | One paragraph in your own words once you finish |
 | Connections | Other source notes in conversation with this one |
 
-**Source-first vs lazy create.** Recommended flow: create the source note at the start of reading a new work. Alternative: when writing a literature note, type `source: "[[author-year-title]]"` even if the source does not yet exist. The link renders as unresolved; place cursor on it and press `gf` in nvim (or click in Obsidian) to create a stub source note, then fill in the metadata.
+**Source-first vs lazy create.** Recommended flow: create the source note at the start of reading a new work. Alternative: when writing a literature note, type `source: "[[author-year-title]]"` even if the source does not yet exist. The link renders as unresolved; click it in Obsidian or press `gf` in Neovim to create a stub source note, then fill in the metadata.
 
 ### Literature Notes
 
@@ -205,9 +204,9 @@ One source can have many literature notes (one per chapter, section, or theme yo
 
 **Creating the note:**
 
-*In Neovim:* press `<leader>oN`. Pick the `literature` template. Type the title, conventionally `Author Year Ch/§ - theme` (e.g., `Ahrens 2017 Ch3 - The slip-box is a thinking partner`). The note is created in `2-literature/`.
-
 *In Obsidian:* right-click `2-literature/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `literature`.
+
+*In Neovim:* press `<leader>oN`. Pick the `literature` template. Type the title, conventionally `Author Year Ch/§ - theme` (e.g., `Ahrens 2017 Ch3 - The slip-box is a thinking partner`). The note is created in `2-literature/`.
 
 **Filling in the template:**
 
@@ -239,9 +238,9 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 
 **Creating the note:**
 
-*In Neovim:* press `<leader>oN`. Pick the `permanent` template. Type the title as a full declarative sentence, sentence case. The note is created in `3-permanent/`.
-
 *In Obsidian:* right-click `3-permanent/` in the file explorer, select **New note**. Title as a claim. Press `Ctrl+P`, type "Insert template", choose `permanent`.
+
+*In Neovim:* press `<leader>oN`. Pick the `permanent` template. Type the title as a full declarative sentence, sentence case. The note is created in `3-permanent/`.
 
 **Filling in the template:**
 
@@ -264,7 +263,7 @@ If your note title contains "and" or "also" at the top level, split it.
 
 ### Writing Notes
 
-Writing notes hold compositions of any size from tweets to book chapters. All three variants route to `4-writing/` and share `status: draft | published | abandoned`. Press `<leader>oN`, pick the right length, type a title.
+Writing notes hold compositions of any size from tweets to book chapters. All route to `4-writing/` and share `status: draft | published | abandoned`. In Obsidian, create a note in `4-writing/` and insert a template. In Neovim, press `<leader>oN` and pick the right template.
 
 | Template | Budget | Typical venues |
 |---|---|---|
@@ -284,8 +283,8 @@ Pick by what the piece actually will be, not what you hope it becomes. A draft t
 
 Do not create index notes up front. When you notice 5-10 permanent notes circling the same theme, create one in `5-index/`:
 
-1. *Neovim:* press `<leader>oN`, pick the `index` template, type the theme as a title.
-   *Obsidian:* right-click `5-index/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
+1. *In Obsidian:* right-click `5-index/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
+   *In Neovim:* press `<leader>oN`, pick the `index` template, type the theme as a title.
 2. Write it as a **guided tour**, not a list:
    - **Path**: sequence notes in a reading order that tells a story or builds an argument.
    - **Gaps**: missing coverage in the cluster. These are seeds for future permanent notes.
@@ -296,9 +295,18 @@ If you find yourself writing "see also" followed by 30 bullets, you are making a
 
 This is the most frequent workflow: turning a fleeting note into a source+literature pair or a permanent note.
 
-### Side-by-side method
+### In Obsidian
 
-Best when you need to reference the fleeting note while writing.
+1. Open the fleeting note from the file explorer or Quick Switcher (`Ctrl+O`).
+2. Read the thought. Decide its destination (source+literature, permanent, or discard).
+3. Right-click the target folder (e.g., `3-permanent/`), select **New note**. Type the title.
+4. Press `Ctrl+P`, type "Insert template", choose the matching template.
+5. Write the content. Add at least one `[[link]]` for permanent notes. For literature notes, set the `source:` field.
+6. Go back to the fleeting note and delete it (right-click > Delete in the file explorer, or `Ctrl+P` > "Delete current file").
+
+### In Neovim
+
+**Side-by-side method** (best when you need to reference the fleeting note while writing):
 
 1. Open the fleeting note (from neo-tree or `<leader>oo`).
 2. Split the screen: `<leader>|` (vertical split, side by side).
@@ -308,9 +316,7 @@ Best when you need to reference the fleeting note while writing.
 6. Close the left pane: `<leader>wd` (closes the window, not the buffer).
 7. Delete the fleeting note: `<leader>e` to open neo-tree, navigate to it in `0-fleeting/`, press `d`.
 
-### Quick method
-
-Best when the fleeting note is short and you can hold the idea.
+**Quick method** (best when the fleeting note is short and you can hold the idea):
 
 1. Open the fleeting note, read it, close it (`<leader>bd`).
 2. Press `<leader>oN`, pick the template, type the title.
@@ -323,9 +329,9 @@ Fleeting notes rarely have backlinks, so nothing is lost by deleting them.
 
 Linking is the core habit. Do it every time you write in `3-permanent/`.
 
-**In Neovim:** type `[[` in Insert mode. obsidian.nvim opens a fuzzy picker over all note names. Start typing to filter, select a note, press Enter. The link inserts as `[[Note Title]]`.
-
 **In Obsidian:** type `[[`. An autocomplete dropdown appears. Start typing to filter. Select the target.
+
+**In Neovim:** type `[[` in Insert mode. obsidian.nvim opens a fuzzy picker over all note names. Start typing to filter, select a note, press Enter. The link inserts as `[[Note Title]]`.
 
 After inserting the link, write a short because-clause. A link without reasoning is decoration.
 
@@ -337,13 +343,13 @@ not the board.
 
 **Discovery tools for finding connections:**
 
-| Action | Neovim | Obsidian desktop |
+| Action | Obsidian desktop | Neovim |
 |---|---|---|
-| Backlinks (who links here?) | `<leader>ob` | Right sidebar > Backlinks panel |
-| Outgoing links (where does this point?) | `<leader>ol` | Right sidebar > Outgoing links panel |
-| Search vault content | `<leader>os` | `Ctrl+Shift+F` |
-| Find note by name | `<leader>oo` | `Ctrl+O` (Quick Switcher) |
-| Visual link map | N/A | `Ctrl+G` (Graph view) |
+| Backlinks (who links here?) | Right sidebar > Backlinks panel | `<leader>ob` |
+| Outgoing links (where does this point?) | Right sidebar > Outgoing links panel | `<leader>ol` |
+| Search vault content | `Ctrl+Shift+F` | `<leader>os` |
+| Find note by name | `Ctrl+O` (Quick Switcher) | `<leader>oo` |
+| Visual link map | `Ctrl+G` (Graph view) | N/A |
 
 Check backlinks every time you open a permanent note or a source note. Source backlinks show every literature note drawn from that work; unexpected permanent-note backlinks are the Zettelkasten's serendipity engine.
 
@@ -357,11 +363,11 @@ Check backlinks every time you open a permanent note or a source note. Source ba
 | Copy-pasting from sources into permanent notes | That is a literature note. Permanent notes must be in your words. |
 | Re-entering bibliographic data in each literature note | Create the source note once in `1-sources/`; reference it via `source: "[[slug]]"` in every literature note from that work. |
 | Creating sub-folders inside `3-permanent/` | Links are the structure. Folders are storage. Keep `3-permanent/` flat. |
-| Renaming files with `mv` in the terminal | Use neo-tree or Obsidian's file explorer. Links break otherwise. |
+| Renaming files with `mv` in the terminal | Use Obsidian's file explorer or neo-tree. Links break otherwise. |
 | Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. |
 | Waiting for the "right" title before writing | Write the note, title later. Rename is cheap; both editors update links. |
 | Creating permanent notes with `<leader>on` instead of `<leader>oN` | `<leader>on` creates fleeting notes. Use `<leader>oN` to pick the target template and route directly. |
-| Ignoring backlinks | Check backlinks (`<leader>ob` or Obsidian's right sidebar) on source, literature, and permanent notes. |
+| Ignoring backlinks | Check backlinks (Obsidian right sidebar or `<leader>ob`) on source, literature, and permanent notes. |
 
 ## Using Obsidian
 
@@ -373,7 +379,7 @@ Key actions: `Ctrl+O` (Quick Switcher), `Ctrl+Shift+F` (search), `Ctrl+G` (graph
 
 Keep the **Backlinks panel** visible in the right sidebar while writing permanent notes. It shows every note that links to the current note.
 
-**Note:** repo docs (README.md, WORKFLOW.md, SETUP.md, AGENTS.md, CLAUDE.md, CHANGELOG.md, LICENSE) are hidden from search, graph, and link suggestions via `userIgnoreFilters` in `.obsidian/app.json`, and hidden from the file explorer sidebar via the `hide-root-docs` CSS snippet (enabled in `.obsidian/appearance.json`; per-device toggle in Settings > Appearance > CSS snippets if it doesn't auto-load).
+**Note:** repo docs and infrastructure directories are hidden from search, graph, and link suggestions via `userIgnoreFilters` in `.obsidian/app.json`, and hidden from the file explorer sidebar via the `hide-root-docs` CSS snippet (enabled in `.obsidian/appearance.json`; per-device toggle in Settings > Appearance > CSS snippets if it doesn't auto-load).
 
 ### Mobile
 
@@ -389,7 +395,9 @@ Obsidian mobile is for capture, not composition.
 
 ## Using Neovim
 
-This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the vault workflow. It assumes [LazyVim](https://www.lazyvim.org/) as the Neovim distribution.
+*Skip this entire section if you don't use Neovim. Everything above works with Obsidian alone.*
+
+This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the vault workflow. It assumes [LazyVim](https://www.lazyvim.org/) as the Neovim distribution with the vault's `nvim-vault/` overlay installed (see [GETTING-STARTED.md](GETTING-STARTED.md) §2).
 
 ### Starting a Session
 
@@ -488,7 +496,7 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 | Keys | Action |
 |---|---|
 | `a` | Create new file (add trailing `/` for a directory) |
-| `r` | Rename (obsidian.nvim updates all wiki-links) |
+| `r` | Rename (does NOT update wiki-links; use `:Obsidian rename` instead) |
 | `d` | Delete (confirms before deleting) |
 | `m` | Move (prompts for destination path) |
 | `s` | Open in a vertical split (side by side) |
@@ -498,11 +506,25 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 ### Moving and Renaming Notes Safely
 
-Only rename or move notes through neo-tree or Obsidian's file explorer. Both editors rewrite all `[[wiki-links]]` that point to the file. To re-slug a note created outside obsidian.nvim (e.g., on mobile), open it in Neovim and press `<leader>or`. This renames the file to kebab-case, updates the `id` frontmatter, and preserves the original title as an alias.
+**Obsidian's file explorer** is the safest way to rename or move notes. It rewrites all `[[wiki-links]]` that point to the file automatically.
+
+**In Neovim**, use `:Obsidian rename <new-title>` for link-aware renames, or `<leader>or` to re-slug a note to kebab-case (updates `id` frontmatter and preserves the original title as an alias).
+
+**Neo-tree renames (`r`) and moves (`m`) do NOT update wiki-links.** They are plain filesystem operations. Use them only when you intend to fix links manually afterward, or when the note has no backlinks (e.g., new fleeting notes).
 
 **Never** use terminal `mv`, `rm`, ranger, or OS file managers for vault notes. They do not know about wiki-links. Every link pointing to the file will silently break.
 
 ## Quick Reference
+
+### Obsidian Desktop
+
+| Keys | Action |
+|------|--------|
+| `Ctrl+N` | New note |
+| `Ctrl+O` | Quick Switcher (find note by name) |
+| `Ctrl+Shift+F` | Search vault |
+| `Ctrl+G` | Graph view |
+| `Ctrl+P` | Command palette |
 
 ### obsidian.nvim
 
@@ -550,7 +572,7 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 |------|--------|
 | `<leader>e` | Toggle file explorer |
 | `a` | Create file |
-| `r` | Rename (updates wiki-links) |
+| `r` | Rename (does NOT update wiki-links) |
 | `d` | Delete |
 | `m` | Move |
 | `s` | Open in vertical split |
@@ -577,17 +599,7 @@ Only rename or move notes through neo-tree or Obsidian's file explorer. Both edi
 | `<leader>uz` | Zen mode |
 | `<leader>uw` | Toggle word wrap |
 | `<leader>us` | Toggle spell check |
-| `<leader>um` | Toggle rendered markdown |
-
-### Obsidian Desktop
-
-| Keys | Action |
-|------|--------|
-| `Ctrl+N` | New note |
-| `Ctrl+O` | Quick Switcher (find note by name) |
-| `Ctrl+Shift+F` | Search vault |
-| `Ctrl+G` | Graph view |
-| `Ctrl+P` | Command palette |
+| `:RenderMarkdown toggle` | Toggle rendered markdown |
 
 ## The Minimum Viable Habit
 
