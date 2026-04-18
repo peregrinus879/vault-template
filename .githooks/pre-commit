@@ -8,7 +8,7 @@
 #   id       = filename stem (single-quoted)
 #   aliases  = filename stem (single-quoted)
 #   tags     = []
-#   type     = folder-derived (e.g., 3-permanent/foo.md -> "permanent")
+#   type     = folder-derived (e.g., 2-permanent/foo.md -> "permanent")
 #              empty if the folder does not match the N-name pattern
 #
 # The hook does NOT slugify filenames or rewrite existing frontmatter.
@@ -29,8 +29,8 @@ cd "$VAULT" || exit 0
 # Derive content directories from .gitattributes (git-crypt rules), the same
 # source post-commit uses. Adding a new content directory requires only a
 # .gitattributes update; this hook picks it up automatically. The trailing
-# \.md$ filter naturally excludes 7-assets (binary attachments) and
-# 6-templates (not listed in .gitattributes).
+# \.md$ filter naturally excludes 6-assets (binary attachments) and
+# 5-templates (not listed in .gitattributes).
 mapfile -t CONTENT_DIRS < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes" | sed 's|/\*\*$||')
 if [ "${#CONTENT_DIRS[@]}" -eq 0 ]; then
   exit 0

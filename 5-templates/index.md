@@ -2,8 +2,9 @@
 id: {{id}}
 aliases:
   - {{title}}
-tags: []
 type: index
+tags: []
+created: {{date}}
 scope:
 ---
 
