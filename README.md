@@ -4,7 +4,7 @@ Opinionated structure, templates for every note type, multi-device sync, and opt
 
 ## What you get
 
-- **7 note templates** covering the full Zettelkasten lifecycle: fleeting, source, literature, permanent, writing (short/long), and index
+- **6 note templates** covering the full Zettelkasten lifecycle: fleeting, literature, permanent, MOC, index, and writing
 - **Dual-editor support**: same files in Obsidian (desktop/mobile) and Neovim (terminal via obsidian.nvim); no import, no format conversion
 - **Neovim overlay** (`nvim-vault/`): a LazyVim-compatible stow package with obsidian.nvim config, template routing, slug filenames, and a custom rename command
 - **Slug filenames with readable aliases**: auto-generated cross-platform-safe filenames; human-readable titles preserved in `aliases` for search and `[[link]]` autocomplete
@@ -25,14 +25,13 @@ Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`
 ## Structure
 
 ```text
-0-fleeting/       Fleeting notes (capture, processing queue)
-1-sources/        Source notes (bibliographic records, one per work cited)
-2-literature/     Literature notes (paraphrase tied to a source)
-3-permanent/      Permanent notes (atomic, your words, linked)
-4-writing/        Long-form compositions (drafts, published, abandoned)
-5-index/          Index notes (curated entry points, emergent)
-6-templates/      Note templates (7 templates, one per note type)
-7-assets/         Images and attachments
+0-fleeting/       Capture and triage (process or discard within 48h)
+1-literature/     Source records with brief pointers to key ideas
+2-permanent/      Atomic evergreen notes (the core of the slip-box)
+3-structure/      MOCs (curated tours) and indexes (flat lookups)
+4-writing/        Long-form output from the slip-box
+5-templates/      Note templates (one per note type)
+6-assets/         Images, PDFs, and attachments
 nvim-vault/       Neovim overlay (LazyVim stow package)
 self-hosting/     Reference files for encryption and backup setup
 .obsidian/        Obsidian app configuration
@@ -44,17 +43,19 @@ self-hosting/     Reference files for encryption and backup setup
 | Type | Folder | Purpose | Lifespan |
 |------|--------|---------|----------|
 | **Fleeting** | `0-fleeting/` | Quick captures, half-formed ideas | Temporary; promote or discard within 48h |
-| **Source** | `1-sources/` | Bibliographic record of a cited work | Lasting; one per source |
-| **Literature** | `2-literature/` | Paraphrased content tied to a source | Lasting; may seed many permanent notes |
-| **Permanent** | `3-permanent/` | Your own refined ideas, one atomic claim per note | Permanent; the core of the Zettelkasten |
-| **Writing** | `4-writing/` | Long-form compositions (posts, articles, essays) | Active until published or abandoned |
-| **Index** | `5-index/` | Curated entry points linking clusters of related notes | Emergent; created when patterns form |
+| **Literature** | `1-literature/` | Source record with brief pointers to key ideas | Lasting; one per source, a processing bridge to permanent notes |
+| **Permanent** | `2-permanent/` | Atomic evergreen claims, one per note, in your own words | Permanent; the core of the slip-box |
+| **MOC** | `3-structure/` | Curated narrative tour through a topic | Emergent; created when 5+ notes cluster |
+| **Index** | `3-structure/` | Exhaustive flat enumeration for a category | Emergent; created when completeness matters |
+| **Writing** | `4-writing/` | Long-form output assembled from permanent notes | Active until published or abandoned |
 
 ### Status lifecycle
 
+Permanent notes carry a `status` field: `draft`, `stable`, or `superseded`.
+
 Writing notes carry a `status` field: `draft`, `published`, or `abandoned`.
 
-Source notes carry an informational `status` field: `unread`, `reading`, `read`, `abandoned`, `reference`. This is progress tracking, not a state machine.
+Literature notes carry a `status` field: `unread`, `reading`, `read`, `abandoned`, `reference`. This is progress tracking, not a state machine.
 
 ## Documentation
 

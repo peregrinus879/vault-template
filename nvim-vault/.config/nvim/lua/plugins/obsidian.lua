@@ -43,16 +43,15 @@ return {
       notes_subdir = "0-fleeting",
       new_notes_location = "notes_subdir",
       templates = {
-        folder = "6-templates",
+        folder = "5-templates",
         date_format = "%Y-%m-%d",
         time_format = "%H:%M",
         customizations = {
-          source = { notes_subdir = "1-sources" },
-          literature = { notes_subdir = "2-literature" },
-          permanent = { notes_subdir = "3-permanent" },
-          ["writing-short"] = { notes_subdir = "4-writing" },
-          ["writing-long"] = { notes_subdir = "4-writing" },
-          index = { notes_subdir = "5-index" },
+          literature = { notes_subdir = "1-literature" },
+          permanent = { notes_subdir = "2-permanent" },
+          moc = { notes_subdir = "3-structure" },
+          index = { notes_subdir = "3-structure" },
+          writing = { notes_subdir = "4-writing" },
         },
       },
       note = {
@@ -67,7 +66,7 @@ return {
         enable = false,
       },
       attachments = {
-        folder = "7-assets",
+        folder = "6-assets",
       },
       note_id_func = function(title)
         if title ~= nil then

@@ -12,7 +12,7 @@
 # Content-directory contents are excluded by default because content dirs
 # are never in the allowlist.
 #
-# Structural content dirs (0-fleeting, 1-sources, ..., 7-assets) are
+# Structural content dirs (0-fleeting, 1-literature, ..., 6-assets) are
 # recreated in the public repo by the .gitkeep loop further down, so the
 # public mirror shows the layout without any private content.
 
@@ -60,8 +60,8 @@ rsync -a --delete \
   --include='/nvim-vault/**' \
   --include='/self-hosting/' \
   --include='/self-hosting/**' \
-  --include='/6-templates/' \
-  --include='/6-templates/**' \
+  --include='/5-templates/' \
+  --include='/5-templates/**' \
   --include='/.githooks/' \
   --include='/.githooks/**' \
   \

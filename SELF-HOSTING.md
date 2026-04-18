@@ -100,9 +100,9 @@ git-crypt encrypts file contents in git objects. Encryption rules are defined in
 
 ```text
 0-fleeting/** filter=git-crypt diff=git-crypt
-1-sources/** filter=git-crypt diff=git-crypt
+1-literature/** filter=git-crypt diff=git-crypt
 ...
-7-assets/** filter=git-crypt diff=git-crypt
+6-assets/** filter=git-crypt diff=git-crypt
 ```
 
 Adding a new content directory requires adding a rule to `.gitattributes`. The post-commit hook derives content directories from these same rules.
@@ -244,7 +244,7 @@ GitHub will show a single synthetic commit ("Initial commit" by root@localhost, 
 
 ### 3.6 Performance note
 
-git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `7-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically.
+git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `6-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically.
 
 ## 4. Deploy key
 
@@ -360,7 +360,7 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 
 | Rule | Effect |
 |---|---|
-| Explicit `--include` allowlist | Only named root files (docs, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`), `nvim-vault/**`, `self-hosting/**`, `6-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
+| Explicit `--include` allowlist | Only named root files (docs, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`), `nvim-vault/**`, `self-hosting/**`, `5-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
 | Trailing `--exclude='*'` | Anything not in the allowlist is denied; a new top-level file or directory will not publish unless its path is added to the filter |
 | Sentinel check (`.vault-template-marker`) | Hook refuses to sync unless `$PUBLIC` contains the marker file. Guards against a wrong `vault.publicPath` trashing an unrelated repo |
 | `--filter='P /.vault-template-marker'` | Protects the sentinel file from `--delete` (the marker lives only in vault-template, not in the private vault) |
@@ -394,15 +394,15 @@ Verify template sync works:
 
 ```bash
 # Modify a template
-echo "<!-- test -->" >> ~/vault/6-templates/fleeting.md
+echo "<!-- test -->" >> ~/vault/5-templates/fleeting.md
 cd ~/vault && git add -A && git commit -m "test: sync check"
 
 # Verify it appeared in the public repo
-tail -1 ~/projects/repos/templates/vault-template/6-templates/fleeting.md
+tail -1 ~/projects/repos/templates/vault-template/5-templates/fleeting.md
 # Expected: <!-- test -->
 
 # Clean up
-sed -i '$ d' ~/vault/6-templates/fleeting.md
+sed -i '$ d' ~/vault/5-templates/fleeting.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 

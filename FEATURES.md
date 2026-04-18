@@ -4,11 +4,11 @@ What this vault template provides out of the box and why each piece matters.
 
 ## Opinionated Zettelkasten structure
 
-Seven numbered directories enforce a knowledge lifecycle: capture, cite, paraphrase, synthesize, compose, navigate. Each directory has a dedicated template with pre-filled frontmatter. The numbered prefix keeps folders sorted in every file explorer and picker, across every platform.
+Seven numbered directories enforce a knowledge lifecycle: capture, process, synthesize, navigate, compose. Each directory has a dedicated template with pre-filled frontmatter. The numbered prefix keeps folders sorted in every file explorer and picker, across every platform.
 
 ## Templates for every note type
 
-Seven templates cover the full Zettelkasten workflow: fleeting, source, literature, permanent, writing (short and long), and index. Each template sets `type`, `id`, `aliases`, `tags`, and type-specific fields. Enum-valued fields carry inline YAML comments for reference. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
+Six templates cover the full Zettelkasten workflow: fleeting, literature, permanent, MOC, index, and writing. Each template sets `type`, `id`, `aliases`, `tags`, and type-specific fields. Enum-valued fields carry inline YAML comments for reference. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
 
 ## Dual-editor support
 
@@ -37,7 +37,7 @@ Together, GitHub sees only opaque encrypted data. Neither layer alone provides f
 
 ## Automated backup (self-hosting)
 
-A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist at the root level: new root files and directories do not publish unless explicitly added. Files inside already-allowlisted subtrees (e.g., `6-templates/`, `nvim-vault/`) publish automatically.
+A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist at the root level: new root files and directories do not publish unless explicitly added. Files inside already-allowlisted subtrees (e.g., `5-templates/`, `nvim-vault/`) publish automatically.
 
 ## Public template mirroring (self-hosting)
 

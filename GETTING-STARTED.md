@@ -68,7 +68,7 @@ Open Obsidian. Choose **Open folder as vault** (not "Create new vault"). Select 
 Settings to verify (Settings > Files and links):
 
 - **Default location for new notes**: In the folder specified below > `0-fleeting`
-- **Attachment folder path**: `7-assets`
+- **Attachment folder path**: `6-assets`
 
 These should already be set from the included `.obsidian/app.json`.
 

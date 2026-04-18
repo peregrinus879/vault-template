@@ -1,7 +1,6 @@
 0-fleeting/** filter=git-crypt diff=git-crypt
-1-sources/** filter=git-crypt diff=git-crypt
-2-literature/** filter=git-crypt diff=git-crypt
-3-permanent/** filter=git-crypt diff=git-crypt
+1-literature/** filter=git-crypt diff=git-crypt
+2-permanent/** filter=git-crypt diff=git-crypt
+3-structure/** filter=git-crypt diff=git-crypt
 4-writing/** filter=git-crypt diff=git-crypt
-5-index/** filter=git-crypt diff=git-crypt
-7-assets/** filter=git-crypt diff=git-crypt
+6-assets/** filter=git-crypt diff=git-crypt
