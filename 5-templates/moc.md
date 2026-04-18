@@ -2,15 +2,15 @@
 id: {{id}}
 aliases:
   - {{title}}
-tags: []
 type: moc
-scope:
+created: {{date}}
+updated:
+tags: []
 ---
 
+# {{title}}
 <!-- Curated narrative tour. Prose between links. Not exhaustive;
      for flat enumeration, use an index. -->
-
-# {{title}}
 
 ## Orientation
 <!-- 2-4 sentences: what this covers, where to start. -->
@@ -36,4 +36,5 @@ scope:
 ## Related
 <!-- Sibling MOCs and indexes. -->
 
-- [[]]
+- [[moc-]]
+- [[index-]]

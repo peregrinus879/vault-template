@@ -128,6 +128,9 @@ return {
             local in_fm = false
             local found_aliases = false
             local found_type = false
+            local found_created = false
+            local found_updated = false
+            local found_tags = false
             local i = 1
             while i <= #lines do
               local line = lines[i]
@@ -142,6 +145,15 @@ return {
                 if not found_type then
                   new_lines[#new_lines + 1] = "type:"
                 end
+                if not found_created then
+                  new_lines[#new_lines + 1] = "created: " .. os.date("%Y-%m-%d")
+                end
+                if not found_updated then
+                  new_lines[#new_lines + 1] = "updated:"
+                end
+                if not found_tags then
+                  new_lines[#new_lines + 1] = "tags: []"
+                end
                 in_fm = false
                 new_lines[#new_lines + 1] = line
               elseif in_fm and line:match("^id:") then
@@ -151,6 +163,15 @@ return {
                 end
               elseif in_fm and line:match("^type:") then
                 found_type = true
+                new_lines[#new_lines + 1] = line
+              elseif in_fm and line:match("^created:") then
+                found_created = true
+                new_lines[#new_lines + 1] = line
+              elseif in_fm and line:match("^updated:") then
+                found_updated = true
+                new_lines[#new_lines + 1] = line
+              elseif in_fm and line:match("^tags:") then
+                found_tags = true
                 new_lines[#new_lines + 1] = line
               elseif in_fm and line:match("^aliases:") then
                 local rest = line:match("^aliases:%s*(.*)$")
@@ -189,8 +210,10 @@ return {
               "id: " .. slug,
               "aliases:",
               "  - " .. stem,
-              "tags: []",
               "type:",
+              "created: " .. os.date("%Y-%m-%d"),
+              "updated:",
+              "tags: []",
               "---",
             })
             vim.list_extend(new_lines, lines)

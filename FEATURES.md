@@ -8,7 +8,7 @@ Seven numbered directories enforce a knowledge lifecycle: capture, process, synt
 
 ## Templates for every note type
 
-Six templates cover the full Zettelkasten workflow: fleeting, literature, permanent, MOC, index, and writing. Each template sets `type`, `id`, `aliases`, `tags`, and type-specific fields. Enum-valued fields carry inline YAML comments for reference. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
+Six templates cover the full Zettelkasten workflow: fleeting, literature, permanent, MOC, index, and writing. All share the same universal frontmatter (`id`, `aliases`, `type`, `created`, `updated`, `tags`). Literature notes carry bibliographic metadata in the body, not in frontmatter. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
 
 ## Dual-editor support
 

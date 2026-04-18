@@ -131,7 +131,7 @@ No enforced cadence. When you notice the vault getting stale (once a month, once
 1. **Fleeting age.** Any fleeting notes older than 48 hours? Process or delete now.
 2. **Orphan permanent notes.** Any permanent notes with zero outgoing links? Find a link or move them back to fleeting. Use the Obsidian graph view or grep for notes with no `[[...]]` in the body.
 3. **Emerging clusters.** Any theme with 5+ interconnected permanent notes? Start a structure note (MOC or index) in `3-structure/`.
-4. **Stalled literature notes.** Any `status: reading` literature notes you haven't touched in months? Decide: resume, mark `abandoned`, or keep as `reference`.
+4. **Stalled literature notes.** Any literature notes with few key ideas that you haven't touched in months? Decide: resume reading, or move on.
 5. **Unexpected backlinks.** Open a few recent permanent notes and check backlinks. Surprise connections are the slip-box's serendipity engine.
 
 ## Writing Notes
@@ -147,30 +147,32 @@ Every note has two parts separated by `---` fences:
 
 **In Neovim:** press `<leader>on` for a new fleeting note (template auto-applied), or `<leader>oN` to pick a template and route to the correct folder. obsidian.nvim generates the base frontmatter automatically.
 
-All templates set these fields:
+All templates share the same frontmatter:
 
 - **`id`**: the slugified filename (e.g., `quis-custodiet-ipsos-custodes`). Used internally for linking.
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
-- **`tags`**: empty by default. Add tags as needed.
 - **`type`**: matches the note type (`fleeting`, `literature`, `permanent`, `moc`, `index`, `writing`).
+- **`created`**: date the note was created (auto-filled by template as `YYYY-MM-DD`).
+- **`updated`**: date of last meaningful revision (empty at creation; user-managed).
+- **`tags`**: empty by default. Add tags as needed.
 
-Type-specific fields: literature notes add `medium`, `author`, `year`, `identifier`, `status`; permanent notes add `status`; MOC and index notes add `scope`; writing notes add `status`, `venue`. Enum-valued fields carry an inline `# v1 | v2 | ...` YAML comment for reference. Write your content in the body, below any instructional comments.
+No type-specific frontmatter. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`, not in frontmatter. Write your content in the body, below any instructional comments.
 
-**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The `.githooks/pre-commit` hook catches the resulting gaps on commit: it fills missing `id`, `aliases`, `tags`, and `type` (derived from the folder name) and re-stages the file. What the hook does **not** do is slugify the filename or rewrite any existing frontmatter values. For slug normalization in Neovim, use `<leader>or`.
+**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The `.githooks/pre-commit` hook catches the resulting gaps on commit: it fills missing `id`, `aliases`, `type` (derived from the folder name), `created` (commit date), `updated` (empty), and `tags` (`[]`), then re-stages the file. The `<leader>or` command in obsidian.nvim fills the same fields when slugifying a filename. Neither the hook nor `or` slugify filenames automatically; slug normalization requires `<leader>or` per file.
 
 ### Fleeting Notes
 
 Fleeting notes exist to get thoughts out of your head. They have no quality bar.
 
-The template (`5-templates/fleeting.md`) has minimal structure: `id`, `aliases`, `tags`, and a title heading. The comment reminds you to process within 48h.
+The template (`5-templates/fleeting.md`) has minimal structure: the universal frontmatter and a title heading. The comment reminds you to process within 48h.
 
-Write fast. Do not format, link, or title carefully. The note dies within 48 hours: it either becomes a literature pointer and permanent note, or it gets deleted.
+Write rapidly. Do not format, link, or title carefully. The note dies within 48 hours: it either becomes a literature pointer and permanent note, or it gets deleted.
 
 ### Literature Notes
 
 A literature note answers: **what is this source, and what ideas in it are worth developing?**
 
-One literature note per source (book, article, paper, podcast episode, video, talk, web page). The frontmatter captures bibliographic metadata (author, year, medium). The body contains a brief summary and a list of pointers to key ideas, each with a locator (page number, timestamp, section heading). The literature note is a processing bridge: ideas that deserve full development are extracted as permanent notes.
+One literature note per source (book, article, paper, podcast episode, video, talk, web page). The body contains bibliographic metadata under `## Source`, a brief summary, and a list of pointers to key ideas, each with a locator (page number, timestamp, section heading). The literature note is a processing bridge: ideas that deserve full development are extracted as permanent notes.
 
 **Creating the note:**
 
@@ -180,15 +182,11 @@ One literature note per source (book, article, paper, podcast episode, video, ta
 
 **Filling in the template:**
 
-| Field | Fill with |
+| Section | Fill with |
 |---|---|
-| `medium` | `book`, `article`, `paper`, `podcast`, `video`, `talk`, `web`, `other` |
-| `author`, `year` | Bibliographic metadata |
-| `identifier` | ISBN, DOI, or URL |
-| `status` | `unread`, `reading`, `read`, `abandoned`, `reference` |
-| Summary | 1-3 sentences: the source's core argument in your own words |
-| Key ideas | Brief pointers with locators. Link to permanent notes as you extract them. |
-| Quotes | Only when exact wording matters: definitions, contested claims |
+| Source | Medium, author, year, identifier (ISBN/DOI/URL) |
+| Summary | What this source covers, in your own words |
+| Key ideas | Quote or paraphrase per idea with locator. Add `[[permanent-note]]` link when extracted. |
 
 **Inline locator conventions** (goes in parentheses next to each pointer):
 
@@ -222,6 +220,7 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 | **Claim** | 1-2 sentences restating the claim. Sharpen what the title asserts. |
 | **Development** | Your reasoning in your own words. Cite sources with `[[literature-note]]` where claims depend on them. |
 | **Connections** | Link to at least one other note. State the relationship: supports, contradicts, extends, or is prerequisite to. |
+| **Sources** | Literature notes this claim draws from. |
 
 **The one rule:** every permanent note must link to at least one other permanent or literature note. An unlinked note is a dead end. If you cannot find a link, move the note back to `0-fleeting/` until you can.
 
@@ -236,7 +235,7 @@ If your note title contains "and" or "also" at the top level, split it.
 
 ### Writing Notes
 
-Writing notes hold long-form output assembled from permanent notes. All route to `4-writing/` and share `status: draft | published | abandoned`. In Obsidian, create a note in `4-writing/` and insert a template. In Neovim, press `<leader>oN` and pick the `writing` template.
+Writing notes hold long-form output assembled from permanent notes. All route to `4-writing/`. In Obsidian, create a note in `4-writing/` and insert a template. In Neovim, press `<leader>oN` and pick the `writing` template.
 
 **No bibliography section.** Sources are already tracked in `1-literature/` and connections via `## Connections`. For a piece that needs a formal reference list (academic journal, formatted citations), add `## References` at the bottom of that specific piece by hand, in whatever citation style the venue requires.
 

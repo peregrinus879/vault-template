@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Frontmatter filler for missing required fields.
 # Ensures staged markdown notes in content directories carry the required
-# frontmatter fields: id, aliases, tags, type. Missing fields are added;
-# existing values are never rewritten.
+# frontmatter fields: id, aliases, type, created, updated, tags. Missing
+# fields are added; existing values are never rewritten.
 #
 # Values when fields are missing:
 #   id       = filename stem (single-quoted)
 #   aliases  = filename stem (single-quoted)
-#   tags     = []
 #   type     = folder-derived (e.g., 2-permanent/foo.md -> "permanent")
 #              empty if the folder does not match the N-name pattern
+#   created  = commit date (YYYY-MM-DD)
+#   updated  = empty (user-managed)
+#   tags     = []
 #
 # The hook does NOT slugify filenames or rewrite existing frontmatter.
 # Slug normalization (renaming the file and updating frontmatter id)
@@ -45,6 +47,7 @@ if [ "${#staged_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
+TODAY="$(date +%Y-%m-%d)"
 modified=0
 
 for f in "${staged_files[@]}"; do
@@ -74,12 +77,14 @@ for f in "${staged_files[@]}"; do
       printf -- '---\n'
       printf -- "id: '%s'\n" "$stem_q"
       printf -- "aliases:\n  - '%s'\n" "$stem_q"
-      printf -- 'tags: []\n'
       if [ -n "$type_val" ]; then
         printf -- 'type: %s\n' "$type_val"
       else
         printf -- 'type:\n'
       fi
+      printf -- 'created: %s\n' "$TODAY"
+      printf -- 'updated:\n'
+      printf -- 'tags: []\n'
       printf -- '---\n\n'
       cat "$f"
     } > "$tmp"
@@ -101,8 +106,10 @@ for f in "${staged_files[@]}"; do
   missing=()
   grep -q '^id:'      <<< "$fm" || missing+=('id')
   grep -q '^aliases:' <<< "$fm" || missing+=('aliases')
-  grep -q '^tags:'    <<< "$fm" || missing+=('tags')
   grep -q '^type:'    <<< "$fm" || missing+=('type')
+  grep -q '^created:' <<< "$fm" || missing+=('created')
+  grep -q '^updated:' <<< "$fm" || missing+=('updated')
+  grep -q '^tags:'    <<< "$fm" || missing+=('tags')
 
   if [ "${#missing[@]}" -eq 0 ]; then
     continue
@@ -113,7 +120,6 @@ for f in "${staged_files[@]}"; do
     case "$field" in
       id)      additions+="id: '${stem_q}'"$'\n' ;;
       aliases) additions+="aliases:"$'\n'"  - '${stem_q}'"$'\n' ;;
-      tags)    additions+="tags: []"$'\n' ;;
       type)
         if [ -n "$type_val" ]; then
           additions+="type: ${type_val}"$'\n'
@@ -121,6 +127,9 @@ for f in "${staged_files[@]}"; do
           additions+="type:"$'\n'
         fi
         ;;
+      created) additions+="created: ${TODAY}"$'\n' ;;
+      updated) additions+="updated:"$'\n' ;;
+      tags)    additions+="tags: []"$'\n' ;;
     esac
   done
 

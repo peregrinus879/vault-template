@@ -2,16 +2,15 @@
 id: {{id}}
 aliases:
   - {{title}}
-tags: []
 type: writing
-status: draft    # draft | published | abandoned
-venue:           # blog | magazine | journal | report | chapter | book | social | other
+created: {{date}}
+updated:
+tags: []
 ---
 
+# {{title}}
 <!-- Long-form output from the slip-box. Assemble permanent notes
      into continuous text. -->
-
-# {{title}}
 
 ## Audience
 <!-- Who is this for? What do they already know? -->

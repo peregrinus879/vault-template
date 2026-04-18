@@ -49,13 +49,9 @@ self-hosting/     Reference files for encryption and backup setup
 | **Index** | `3-structure/` | Exhaustive flat enumeration for a category | Emergent; created when completeness matters |
 | **Writing** | `4-writing/` | Long-form output assembled from permanent notes | Active until published or abandoned |
 
-### Status lifecycle
+### Frontmatter
 
-Permanent notes carry a `status` field: `draft`, `stable`, or `superseded`.
-
-Writing notes carry a `status` field: `draft`, `published`, or `abandoned`.
-
-Literature notes carry a `status` field: `unread`, `reading`, `read`, `abandoned`, `reference`. This is progress tracking, not a state machine.
+All templates share the same frontmatter: `id`, `aliases`, `type`, `created`, `updated`, `tags`. No type-specific frontmatter. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`.
 
 ## Documentation
 

@@ -2,9 +2,11 @@
 id: {{id}}
 aliases:
   - {{title}}
-tags: []
 type: fleeting
+created: {{date}}
+updated:
+tags: []
 ---
 
 # {{title}}
-<!-- Capture fast. Process within 48h: promote to permanent, fold into literature, or delete. -->
+<!-- Rapid capture. Process within 48h: promote to permanent, fold into literature, or delete. -->
