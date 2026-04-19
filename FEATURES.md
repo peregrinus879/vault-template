@@ -20,7 +20,12 @@ Note filenames are auto-generated lowercase-hyphenated slugs (e.g., `risk-appeti
 
 ## Frontmatter normalization
 
-A pre-commit hook (`.githooks/pre-commit`) fills missing `id`, `aliases`, `tags`, and `type` fields on staged notes. Notes created outside templates (mobile captures, file manager, copy-paste) get correct metadata automatically on commit. The `type` field is derived from the folder name.
+A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the six canonical fields (`id`, `aliases`, `type`, `created`, `updated`, `tags`) and runs in two contexts:
+
+- **`.githooks/pre-commit`** runs the normalizer on every staged note in a content directory. Notes created outside templates (mobile captures, file manager, copy-paste) get correct metadata automatically on commit.
+- **`<leader>or`** in obsidian.nvim runs it after `:Obsidian rename` so a slug rename also refreshes frontmatter.
+
+`id` always tracks the filename stem. `type` is derived from the folder name. `aliases` falls back through a chain of `H1 heading > caller-supplied fallback > filename stem`, so a human-readable title populates even for notes without templates. Running the normalizer twice produces no further changes (idempotent). See [DESIGN.md](DESIGN.md) §9.
 
 ## Multi-device sync
 

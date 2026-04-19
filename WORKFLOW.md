@@ -157,7 +157,7 @@ All templates share the same frontmatter:
 
 No type-specific frontmatter. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`, not in frontmatter. Write your content in the body, below any instructional comments.
 
-**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The `.githooks/pre-commit` hook catches the resulting gaps on commit: it fills missing `id`, `aliases`, `type` (derived from the folder name), `created` (commit date), `updated` (empty), and `tags` (`[]`), then re-stages the file. The `<leader>or` command in obsidian.nvim fills the same fields when slugifying a filename. Neither the hook nor `or` slugify filenames automatically; slug normalization requires `<leader>or` per file.
+**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The shared normalizer `.githooks/lib/normalize.py` holds the rules in one place and runs in two contexts: the `.githooks/pre-commit` hook invokes it with `--fill` on every staged note in a content directory, and `<leader>or` invokes it after `:Obsidian rename` to sync `id` to the new slug. Both paths fill missing `id`, `aliases` (H1 heading > fallback > filename stem), `type` (derived from the folder name), `created` (today), `updated` (empty), and `tags` (`[]`). The hook does not slugify filenames; use `<leader>or` per file for that. See [DESIGN.md](DESIGN.md) §9 for the rationale behind the unified schema.
 
 ### Fleeting Notes
 
@@ -410,7 +410,7 @@ Treat neo-tree as a *sometimes tool*: renames, moves, visual triage of `0-fleeti
 │ 0-fleeti.│  Editor area                     │
 │ 1-litera.│  (your note content goes here)   │
 │ 2-perman.│                                  │
-│ 3-struct.│                                  │
+│ 3-overvi.│                                  │
 │ ...      │                                  │
 │          ├──────────────────────────────────┤
 │          │  Status line (mode, filename)    │
@@ -471,7 +471,10 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 **Obsidian's file explorer** is the safest way to rename or move notes. It rewrites all `[[wiki-links]]` that point to the file automatically.
 
-**In Neovim**, use `:Obsidian rename <new-title>` for link-aware renames, or `<leader>or` to re-slug a note to kebab-case (updates `id` frontmatter and preserves the original title as an alias).
+**In Neovim**, two paths:
+
+- `<leader>or` (recommended for slug renames). Slugifies the filename, invokes `:Obsidian rename` under the hood so backlinks update vault-wide, then runs `.githooks/lib/normalize.py` to sync `id` to the new stem and fill any missing frontmatter. Works on a note that is already a slug too: the rename step is skipped and only normalization runs.
+- `:Obsidian rename <new-title>` (for free-form renames where you want a new title that is not just a slug of the old one). Updates backlinks and frontmatter `id` but does not trigger the normalizer.
 
 **Neo-tree renames (`r`) and moves (`m`) do NOT update wiki-links.** They are plain filesystem operations. Use them only when you intend to fix links manually afterward, or when the note has no backlinks (e.g., new fleeting notes).
 
