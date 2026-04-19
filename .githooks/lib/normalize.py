@@ -83,6 +83,7 @@ FM_DELIM = "---"
 FOLDER_TYPE_RE = re.compile(r"^\d+-(.+)$")
 H1_RE = re.compile(r"^#\s+(.+?)\s*$")
 KEY_LINE_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*)\s*:(.*)$")
+TEMPLATES_SUBDIR = "5-templates"
 
 
 def yaml_single_quote(value: str) -> str:
@@ -410,6 +411,104 @@ def fill_file(
     return True
 
 
+def substitute_placeholders(
+    text: str,
+    *,
+    title: str,
+    stem: str,
+    today: str,
+) -> str:
+    """Replace {{title}}, {{id}}, {{date}} in a template text.
+
+    Matches the subset of obsidian.nvim's template placeholders that
+    the vault uses. Other placeholders (e.g. {{time}}) pass through
+    unchanged.
+    """
+    return (text
+        .replace("{{title}}", title)
+        .replace("{{id}}", stem)
+        .replace("{{date}}", today))
+
+
+def apply_file(
+    path: str,
+    vault_root: str,
+    today: str,
+    fallback_alias: str | None = None,
+) -> bool:
+    """Apply canonical template + frontmatter to a note.
+
+    If the file already has frontmatter, delegates to fill_file
+    (which handles the aliases[0] ↔ H1 sync). Otherwise reads the
+    folder-matched template from 5-templates/, substitutes
+    placeholders, prepends it to the file, and wraps any pre-
+    existing body content in a `## Capture` section at the end.
+
+    Returns True if the file was modified, False if unchanged.
+    """
+    with open(path, "r", encoding="utf-8") as fh:
+        original = fh.read()
+    lines = original.splitlines(keepends=False)
+
+    fm_lines, body_start = split_frontmatter(lines)
+    if body_start == -1:
+        print(f"[normalize] warning: {path} has unclosed frontmatter; skipping.",
+              file=sys.stderr)
+        return False
+
+    # Frontmatter present → delegate to fill (no body template rework).
+    if fm_lines is not None:
+        return fill_file(path, vault_root, today, fallback_alias)
+
+    folder_type = derive_folder_type(path, vault_root)
+    if not folder_type:
+        # Not in a recognized content folder; fill handles bare notes.
+        return fill_file(path, vault_root, today, fallback_alias)
+
+    template_path = os.path.join(vault_root, TEMPLATES_SUBDIR, f"{folder_type}.md")
+    if not os.path.isfile(template_path):
+        print(f"[normalize] warning: template {template_path} not found; "
+              f"falling back to fill mode.", file=sys.stderr)
+        return fill_file(path, vault_root, today, fallback_alias)
+
+    with open(template_path, "r", encoding="utf-8") as fh:
+        template_text = fh.read()
+
+    stem = os.path.splitext(os.path.basename(path))[0]
+    title = fallback_alias or stem
+
+    substituted = substitute_placeholders(
+        template_text, title=title, stem=stem, today=today
+    )
+
+    existing_body = original.strip()
+    if existing_body:
+        new_content = (
+            substituted.rstrip("\n")
+            + "\n\n## Capture\n\n"
+            + existing_body
+            + "\n"
+        )
+    else:
+        new_content = substituted
+        if not new_content.endswith("\n"):
+            new_content += "\n"
+
+    if new_content == original:
+        return False
+
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(new_content)
+
+    # Post-apply: run fill to sync aliases[0] ↔ H1 (the substituted
+    # template may have aliases[0] as fallback/stem, but the H1 is the
+    # same substitution — they should already match). Fill also
+    # reconciles any edge case where the template's aliases differ.
+    fill_file(path, vault_root, today, fallback_alias)
+
+    return True
+
+
 def check_file(path: str, vault_root: str) -> list[str]:
     """Return a list of human-readable issues with the file.
 
@@ -473,6 +572,9 @@ def main() -> int:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--fill", action="store_true",
                        help="Normalize frontmatter and ensure body H1 in-place.")
+    group.add_argument("--apply", action="store_true",
+                       help="Apply folder-matched template to notes missing "
+                            "frontmatter; otherwise equivalent to --fill.")
     group.add_argument("--check", action="store_true",
                        help="Report issues; exit non-zero if any found.")
     parser.add_argument("paths", nargs="+",
@@ -507,13 +609,21 @@ def main() -> int:
             except OSError as exc:
                 print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
                 return 1
+        elif args.apply:
+            try:
+                if apply_file(p, vault_root, today, args.fallback_alias):
+                    print(p)
+                    changed += 1
+            except OSError as exc:
+                print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
+                return 1
         else:  # --check
             for issue in check_file(p, vault_root):
                 print(issue, file=sys.stderr)
                 issues_found += 1
 
-    if args.fill and changed > 0:
-        print(f"[normalize] filled {changed} file(s).", file=sys.stderr)
+    if (args.fill or args.apply) and changed > 0:
+        print(f"[normalize] modified {changed} file(s).", file=sys.stderr)
 
     return 1 if issues_found > 0 else 0
 
