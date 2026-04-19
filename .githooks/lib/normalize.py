@@ -41,12 +41,23 @@ the canonical six, in the order they appear in the source.
 Idempotent: running --fill twice on the same file produces no further
 changes on the second run.
 
+When --fill modifies a file, its path is printed to stdout, one per
+line. Callers (pre-commit hook, editor orchestrators) can read stdout
+to re-stage or refresh only the files that actually changed.
+
 Design notes:
     The parser is intentionally tolerant of the vault's known YAML
     subset (flat key: value pairs plus a single block-style list for
     `aliases`). It does not handle general YAML. Files with malformed
     frontmatter (unclosed `---`, inline flow mappings) are skipped
     with a warning rather than mangled.
+
+    YAML comments inside frontmatter (lines starting with `#`) are
+    NOT preserved: they are merged into the preceding field's value
+    lines during parsing and dropped when that field is rewritten in
+    canonical order. The vault's schema has no use case for inline
+    comments; if one arises, the parser must change to track
+    comments as first-class top-level entries.
 """
 
 from __future__ import annotations
@@ -402,6 +413,10 @@ def main() -> int:
         if args.fill:
             try:
                 if fill_file(p, vault_root, today, args.fallback_alias):
+                    # stdout is reserved for modified paths so the
+                    # pre-commit hook (and any other caller) can
+                    # re-stage only the files that actually changed.
+                    print(p)
                     changed += 1
             except OSError as exc:
                 print(f"[normalize] error: {p}: {exc}", file=sys.stderr)

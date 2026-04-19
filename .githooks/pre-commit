@@ -37,25 +37,18 @@ if [ "${#staged_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# Track originals to detect which files the normalizer changed and
-# re-stage only those.
-changed=()
-for f in "${staged_files[@]}"; do
-  [ -f "$f" ] || continue
-  before="$(sha1sum "$f" | awk '{print $1}')"
-  if ! python3 "$VAULT/.githooks/lib/normalize.py" --fill --vault-root "$VAULT" "$f"; then
-    printf -- '[pre-commit] normalize failed on %s; continuing.\n' "$f" >&2
-    continue
-  fi
-  after="$(sha1sum "$f" | awk '{print $1}')"
-  if [ "$before" != "$after" ]; then
-    changed+=("$f")
-    git add "$f"
-  fi
-done
+# normalize.py prints the path of each file it modified to stdout.
+# We collect those and re-stage them. Batching all staged files into
+# one invocation halves Python startup cost on large commits.
+changed=0
+while IFS= read -r modified_path; do
+  [ -n "$modified_path" ] || continue
+  git add "$modified_path"
+  changed=$((changed + 1))
+done < <(python3 "$VAULT/.githooks/lib/normalize.py" --fill --vault-root "$VAULT" "${staged_files[@]}")
 
-if [ "${#changed[@]}" -gt 0 ]; then
-  printf -- '[pre-commit] normalized %d file(s).\n' "${#changed[@]}" >&2
+if [ "$changed" -gt 0 ]; then
+  printf -- '[pre-commit] normalized %d file(s).\n' "$changed" >&2
 fi
 
 exit 0
