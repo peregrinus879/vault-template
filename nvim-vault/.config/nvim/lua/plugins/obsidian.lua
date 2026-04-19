@@ -114,6 +114,7 @@ return {
           end
 
           local final_path = old_path
+          local renamed = false
 
           if stem ~= slug then
             local dir = vim.fn.fnamemodify(old_path, ":h")
@@ -137,14 +138,24 @@ return {
               return
             end
             final_path = vim.api.nvim_buf_get_name(0)
+            renamed = true
             pcall(vim.cmd, "write")
           end
 
+          -- When a rename fired, the pre-rename stem carried the
+          -- human-readable title (before slugification). Pass it as
+          -- the alias fallback so normalize.py can recover it if no
+          -- H1 heading exists and aliases is empty.
           local normalize = vault_path .. "/.githooks/lib/normalize.py"
-          local result = vim.fn.system({
+          local cmd = {
             "python3", normalize, "--fill",
-            "--vault-root", vault_path, final_path,
-          })
+            "--vault-root", vault_path,
+          }
+          if renamed then
+            vim.list_extend(cmd, { "--fallback-alias", stem })
+          end
+          table.insert(cmd, final_path)
+          local result = vim.fn.system(cmd)
           if vim.v.shell_error ~= 0 then
             vim.notify("normalize.py failed: " .. result, vim.log.levels.ERROR)
             return

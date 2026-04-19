@@ -19,9 +19,12 @@ Canonical field order written by --fill:
 Field rules (--fill):
     id       : always rewritten to match the filename stem
                (tautological with filename; kept in sync)
-    aliases  : if field absent, added with a single entry chosen as
-               the first populated of: first-line H1 heading, filename
-               stem. If field present, preserved verbatim.
+    aliases  : if field absent OR present but empty (`aliases: []`
+               or block-form with no list items), filled with a
+               single entry chosen as the first populated of:
+               first-line H1 heading, --fallback-alias argument,
+               filename stem. If the field has list items, they are
+               preserved verbatim.
     type     : if field absent or empty value, set to the folder-
                derived type (first path component, stripping the
                leading 'N-' prefix). Otherwise preserved.
@@ -122,6 +125,30 @@ def field_has_value(field_lines: list[str]) -> bool:
     return m.group(2).strip() != ""
 
 
+def aliases_is_empty(field_lines: list[str]) -> bool:
+    """True if an aliases field is present but carries no entries.
+
+    Covers both inline-empty (`aliases:` with no value, `aliases: []`)
+    and block-form with no list items following. A block-form field
+    with at least one `- value` line is considered populated.
+    """
+    first = field_lines[0]
+    m = KEY_LINE_RE.match(first)
+    if m:
+        value = m.group(2).strip()
+        if value in ("", "[]"):
+            # Inline empty. But block-form continuation may still
+            # supply entries below; check following lines.
+            for line in field_lines[1:]:
+                stripped = line.strip()
+                if stripped.startswith("-") and stripped != "-":
+                    return False
+            return True
+    # Non-empty inline value (e.g., aliases: [one, two]) counts as
+    # populated; we leave such values untouched.
+    return False
+
+
 def extract_h1_title(body_lines: list[str]) -> str | None:
     """Return the first H1 heading text, skipping leading blank lines.
 
@@ -161,6 +188,7 @@ def build_canonical_fields(
     h1_title: str | None,
     folder_type: str,
     today: str,
+    fallback_alias: str | None = None,
 ) -> dict[str, list[str]]:
     """Return the field map after applying fill rules in canonical order.
 
@@ -172,11 +200,17 @@ def build_canonical_fields(
     # id: always synced to stem.
     out["id"] = [f"id: {yaml_single_quote(stem)}"]
 
-    # aliases: preserve if present, else fill from H1 or stem.
-    if "aliases" in existing:
+    # aliases: preserve only if present AND non-empty. Empty aliases
+    # (`aliases: []` or block-form with no items) are treated as
+    # missing and filled from the fallback chain: H1, caller-supplied
+    # fallback, filename stem.
+    has_alias_entries = (
+        "aliases" in existing and not aliases_is_empty(existing["aliases"])
+    )
+    if has_alias_entries:
         out["aliases"] = list(existing["aliases"])
     else:
-        title = h1_title if h1_title else stem
+        title = h1_title or fallback_alias or stem
         out["aliases"] = ["aliases:", f"  - {yaml_single_quote(title)}"]
 
     # type: preserve if populated, else fill from folder.
@@ -219,7 +253,12 @@ def render_frontmatter(fields: dict[str, list[str]]) -> list[str]:
     return rendered
 
 
-def fill_file(path: str, vault_root: str, today: str) -> bool:
+def fill_file(
+    path: str,
+    vault_root: str,
+    today: str,
+    fallback_alias: str | None = None,
+) -> bool:
     """Normalize the frontmatter of one file in place.
 
     Returns True if the file was modified, False if already canonical.
@@ -248,6 +287,7 @@ def fill_file(path: str, vault_root: str, today: str) -> bool:
         h1_title=h1_title,
         folder_type=folder_type,
         today=today,
+        fallback_alias=fallback_alias,
     )
 
     new_fm = render_frontmatter(new_fields)
@@ -334,6 +374,11 @@ def main() -> int:
                         help="Markdown files to process.")
     parser.add_argument("--vault-root", default=None,
                         help="Override vault root (defaults to git toplevel).")
+    parser.add_argument("--fallback-alias", default=None,
+                        help="Alias used when aliases is absent or empty and "
+                             "no H1 heading is present. Typically the "
+                             "pre-rename filename stem, supplied by the "
+                             "<leader>or orchestrator.")
     args = parser.parse_args()
 
     if args.vault_root:
@@ -353,7 +398,7 @@ def main() -> int:
             continue
         if args.fill:
             try:
-                if fill_file(p, vault_root, today):
+                if fill_file(p, vault_root, today, args.fallback_alias):
                     changed += 1
             except OSError as exc:
                 print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
