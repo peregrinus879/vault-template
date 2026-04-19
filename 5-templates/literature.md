@@ -1,9 +1,9 @@
 ---
-id: {{id}}
+id: '{{id}}'
 aliases:
-  - {{title}}
+  - '{{title}}'
 type: literature
-created: {{date}}
+created: '{{date}}'
 updated:
 tags: []
 ---

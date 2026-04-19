@@ -1,9 +1,9 @@
 ---
-id: {{id}}
+id: '{{id}}'
 aliases:
-  - {{title}}
+  - '{{title}}'
 type: index
-created: {{date}}
+created: '{{date}}'
 updated:
 tags: []
 ---
