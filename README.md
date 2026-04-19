@@ -4,7 +4,7 @@ Opinionated structure, templates for every note type, multi-device sync, and opt
 
 ## What you get
 
-- **6 note templates** covering the full Zettelkasten lifecycle: fleeting, literature, permanent, MOC, index, and writing
+- **5 note templates** covering the full Zettelkasten lifecycle: fleeting, literature, permanent, overview, and writing
 - **Dual-editor support**: same files in Obsidian (desktop/mobile) and Neovim (terminal via obsidian.nvim); no import, no format conversion
 - **Neovim overlay** (`nvim-vault/`): a LazyVim-compatible stow package with obsidian.nvim config, template routing, slug filenames, and a custom rename command
 - **Slug filenames with readable aliases**: auto-generated cross-platform-safe filenames; human-readable titles preserved in `aliases` for search and `[[link]]` autocomplete
@@ -28,7 +28,7 @@ Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`
 0-fleeting/       Capture and triage (process or discard within 48h)
 1-literature/     Source records with brief pointers to key ideas
 2-permanent/      Atomic evergreen notes (the core of the slip-box)
-3-structure/      MOCs (curated tours) and indexes (flat lookups)
+3-overview/       Curated narrative tours through topics
 4-writing/        Long-form output from the slip-box
 5-templates/      Note templates (one per note type)
 6-assets/         Images, PDFs, and attachments
@@ -45,8 +45,7 @@ self-hosting/     Reference files for encryption and backup setup
 | **Fleeting** | `0-fleeting/` | Quick captures, half-formed ideas | Temporary; promote or discard within 48h |
 | **Literature** | `1-literature/` | Source record with brief pointers to key ideas | Lasting; one per source, a processing bridge to permanent notes |
 | **Permanent** | `2-permanent/` | Atomic evergreen claims, one per note, in your own words | Permanent; the core of the slip-box |
-| **MOC** | `3-structure/` | Curated narrative tour through a topic | Emergent; created when 5+ notes cluster |
-| **Index** | `3-structure/` | Exhaustive flat enumeration for a category | Emergent; created when completeness matters |
+| **Overview** | `3-overview/` | Curated narrative tour through a topic | Emergent; created when 5+ notes cluster |
 | **Writing** | `4-writing/` | Long-form output assembled from permanent notes | Active until published or abandoned |
 
 ### Frontmatter

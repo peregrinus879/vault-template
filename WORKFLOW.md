@@ -12,7 +12,7 @@ A hands-on tutorial for running a Zettelkasten in this vault. It covers two edit
 | Literature | `1-literature/` | Source record with brief pointers to key ideas. One per source. A processing bridge, not a storage endpoint. |
 | Permanent | `2-permanent/` | What **you** think. One atomic claim per note, self-contained, linked to other notes. |
 
-Writing (`4-writing/`) and structure notes (`3-structure/`) are downstream outputs built from the core types. Master the core first. See [README.md](README.md) for the full directory layout and status lifecycles.
+Writing (`4-writing/`) and overview notes (`3-overview/`) are downstream outputs built from the core types. Master the core first. See [README.md](README.md) for the full directory layout and status lifecycles.
 
 ### The Flow
 
@@ -68,8 +68,7 @@ You never need to think about the filename. Type the title naturally; the slug i
 | Fleeting | `Contingency is not a buffer` | `contingency-is-not-a-buffer.md` |
 | Literature | `Ahrens 2022 - How to Take Smart Notes` | `ahrens-2022---how-to-take-smart-notes.md` |
 | Permanent | `Risk appetite is a board-level choice, not a risk-team calculation` | `risk-appetite-is-a-board-level-choice-not-a-risk-team-calculation.md` |
-| MOC | `Risk management in capital projects` | `risk-management-in-capital-projects.md` |
-| Index | `Notes on AACE standards` | `notes-on-aace-standards.md` |
+| Overview | `Risk management in capital projects` | `risk-management-in-capital-projects.md` |
 | Writing | `The case against stage-gate theatre` | `the-case-against-stage-gate-theatre.md` |
 
 ### Rules
@@ -130,7 +129,7 @@ No enforced cadence. When you notice the vault getting stale (once a month, once
 
 1. **Fleeting age.** Any fleeting notes older than 48 hours? Process or delete now.
 2. **Orphan permanent notes.** Any permanent notes with zero outgoing links? Find a link or move them back to fleeting. Use the Obsidian graph view or grep for notes with no `[[...]]` in the body.
-3. **Emerging clusters.** Any theme with 5+ interconnected permanent notes? Start a structure note (MOC or index) in `3-structure/`.
+3. **Emerging clusters.** Any theme with 5+ interconnected permanent notes? Start an overview note in `3-overview/`. For flat enumeration of all notes on a topic, tag them with a common tag instead of maintaining a hand-written list.
 4. **Stalled literature notes.** Any literature notes with few key ideas that you haven't touched in months? Decide: resume reading, or move on.
 5. **Unexpected backlinks.** Open a few recent permanent notes and check backlinks. Surprise connections are the slip-box's serendipity engine.
 
@@ -151,7 +150,7 @@ All templates share the same frontmatter:
 
 - **`id`**: the slugified filename (e.g., `quis-custodiet-ipsos-custodes`). Used internally for linking.
 - **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
-- **`type`**: matches the note type (`fleeting`, `literature`, `permanent`, `moc`, `index`, `writing`).
+- **`type`**: matches the note type (`fleeting`, `literature`, `permanent`, `overview`, `writing`).
 - **`created`**: date the note was created (auto-filled by template as `YYYY-MM-DD`).
 - **`updated`**: date of last meaningful revision (empty at creation; user-managed).
 - **`tags`**: empty by default. Add tags as needed.
@@ -241,25 +240,17 @@ Writing notes hold long-form output assembled from permanent notes. All route to
 
 **Where to put the piece content.** Fill `## Audience`, `## Outline`, then `## Draft`. For shorter pieces, leave Audience and Outline empty and write into `## Draft`.
 
-### Structure Notes
+### Overview Notes
 
-Structure notes provide entry points into the slip-box. They do not contain original claims; they organize and connect permanent notes. Do not create them up front. When you notice 5+ permanent notes circling the same theme, create one in `3-structure/`.
+Overview notes provide entry points into the slip-box. They do not contain original claims; they organize and connect permanent notes. Do not create them up front. When you notice 5+ permanent notes circling the same theme, create an overview in `3-overview/`.
 
-Two types:
+An overview is a **curated narrative tour through a topic**: prose between links, author's synthesis and opinion about the order and relationships. For a flat enumeration of notes on a topic (no narrative, no curation), **use tags** and rely on Obsidian's tag pane; do not maintain a hand-written list.
 
-**MOC (Map of Content):** a curated narrative tour through a topic. Prose between links. Author's synthesis and opinion about the order and relationships.
-
-1. *In Obsidian:* right-click `3-structure/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `moc`.
-   *In Neovim:* press `<leader>oN`, pick the `moc` template, type the theme as a title.
+1. *In Obsidian:* right-click `3-overview/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `overview`.
+   *In Neovim:* press `<leader>oN`, pick the `overview` template, type the theme as a title.
 2. Write an **Orientation** (what this covers, where to start), list **Starting points** (read these first), then build the **Core** as sections organized by your argument, with prose between links. Note **Open questions** (unresolved threads, candidates for future notes).
 
-**Index:** an exhaustive flat enumeration for a category. No narrative, no opinion. Alphabetical unless another order is semantically required.
-
-1. *In Obsidian:* right-click `3-structure/` in the file explorer, select **New note**. Press `Ctrl+P`, type "Insert template", choose `index`.
-   *In Neovim:* press `<leader>oN`, pick the `index` template, type the category as a title.
-2. Write a one-sentence **Scope** (what belongs, what doesn't), then list all matching notes.
-
-If you find yourself writing prose in an index, it should be an MOC. If you find yourself listing 30 bullets in an MOC without commentary, it should be an index.
+If an overview has little or no prose between the links, it is really a flat list; delete it and use tags instead. See [DESIGN.md](DESIGN.md) §3 for the rationale behind dropping Index as a separate type.
 
 ## Promoting Notes
 
@@ -280,7 +271,7 @@ This is the most frequent workflow: turning a fleeting note into a literature po
 
 1. Open the fleeting note (from neo-tree or `<leader>oo`).
 2. Split the screen: `<leader>|` (vertical split, side by side).
-3. In the new right pane, press `<leader>oN`. Pick the target template (`literature`, `permanent`, `moc`, `index`, or `writing`). Type the title. The new note is created in the correct folder with the template applied.
+3. In the new right pane, press `<leader>oN`. Pick the target template (`literature`, `permanent`, `overview`, or `writing`). Type the title. The new note is created in the correct folder with the template applied.
 4. You now have the fleeting note on the left, the new note on the right. Use `Ctrl+h` / `Ctrl+l` to move focus between panes. Copy lines with `yy` in one pane, switch panes, paste with `p`.
 5. Write the content in the new note. Add at least one `[[link]]` for permanent notes.
 6. Close the left pane: `<leader>wd` (closes the window, not the buffer).

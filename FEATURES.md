@@ -4,11 +4,11 @@ What this vault template provides out of the box and why each piece matters.
 
 ## Opinionated Zettelkasten structure
 
-Seven numbered directories enforce a knowledge lifecycle: capture, process, synthesize, navigate, compose. Each directory has a dedicated template with pre-filled frontmatter. The numbered prefix keeps folders sorted in every file explorer and picker, across every platform.
+Seven numbered directories enforce a knowledge lifecycle: capture, process, synthesize, navigate, compose. Each content directory has a dedicated template with pre-filled frontmatter. The numbered prefix keeps folders sorted in every file explorer and picker, across every platform. See [DESIGN.md](DESIGN.md) §1 for the rationale behind the numbering order.
 
 ## Templates for every note type
 
-Six templates cover the full Zettelkasten workflow: fleeting, literature, permanent, MOC, index, and writing. All share the same universal frontmatter (`id`, `aliases`, `type`, `created`, `updated`, `tags`). Literature notes carry bibliographic metadata in the body, not in frontmatter. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
+Five templates cover the full Zettelkasten workflow: fleeting, literature, permanent, overview, and writing. All share the same universal frontmatter (`id`, `aliases`, `type`, `created`, `updated`, `tags`). Literature notes carry bibliographic metadata in the body, not in frontmatter. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
 
 ## Dual-editor support
 

@@ -2,15 +2,15 @@
 id: '{{id}}'
 aliases:
   - '{{title}}'
-type: moc
+type: overview
 created: '{{date}}'
 updated:
 tags: []
 ---
 
 # {{title}}
-<!-- Curated narrative tour. Prose between links. Not exhaustive;
-     for flat enumeration, use an index. -->
+<!-- Curated narrative tour through a topic. Prose between links.
+     For flat enumeration of notes on a topic, use tags instead. -->
 
 ## Orientation
 <!-- 2-4 sentences: what this covers, where to start. -->
@@ -34,7 +34,6 @@ tags: []
 - 
 
 ## Related
-<!-- Sibling MOCs and indexes. -->
+<!-- Sibling overviews. -->
 
-- [[moc-]]
-- [[index-]]
+- [[]]

@@ -8,7 +8,7 @@ This repo is a knowledge base, not a code project. It holds notes, not source co
 
 It owns:
 
-- Zettelkasten fleeting notes, literature notes (source records with brief pointers), permanent notes (atomic evergreen claims), structure notes (MOCs and indexes), writing notes (long-form output)
+- Zettelkasten fleeting notes, literature notes (source records with brief pointers), permanent notes (atomic evergreen claims), overview notes (curated narrative tours through topics), writing notes (long-form output)
 - Obsidian app configuration (`.obsidian/`)
 - Note templates (`5-templates/`)
 - Vault-specific Neovim plugins (`nvim-vault/`): obsidian.nvim config and render-markdown.nvim (recommended companion). Canonical home for these files.
@@ -90,7 +90,7 @@ Two patterns visible at a glance:
 
 The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles whose handling is interesting. All other tracked files under `.obsidian/` (`appearance.json`, `core-plugins.json`, `graph.json`, `snippets/**`, `themes/**`) are fully shared, tracked in git, synced by Syncthing, included in `vault-template`.
 
-Private note content (files under `0-fleeting/`, `1-literature/`, `2-permanent/`, `3-structure/`, `4-writing/`, `6-assets/`) is tracked and synced but excluded from `vault-template` by the rsync allowlist (content dirs are not in the allowlist; structural `.gitkeep` stubs are recreated separately).
+Private note content (files under `0-fleeting/`, `1-literature/`, `2-permanent/`, `3-overview/`, `4-writing/`, `6-assets/`) is tracked and synced but excluded from `vault-template` by the rsync allowlist (content dirs are not in the allowlist; structural `.gitkeep` stubs are recreated separately).
 
 **When adding a new directory or file**, decide first whether it is per-device or shared, then update all three layers and the table above consistently. For visible infrastructure (no dot prefix), also update `userIgnoreFilters` in `.obsidian/app.json` and the CSS snippet at `.obsidian/snippets/hide-root-docs.css`. An inconsistency means one of the failure modes the layers exist to prevent.
 

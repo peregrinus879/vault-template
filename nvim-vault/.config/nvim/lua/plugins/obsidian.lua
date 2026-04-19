@@ -49,8 +49,7 @@ return {
         customizations = {
           literature = { notes_subdir = "1-literature" },
           permanent = { notes_subdir = "2-permanent" },
-          moc = { notes_subdir = "3-structure" },
-          index = { notes_subdir = "3-structure" },
+          overview = { notes_subdir = "3-overview" },
           writing = { notes_subdir = "4-writing" },
         },
       },
