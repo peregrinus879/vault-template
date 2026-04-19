@@ -1,15 +1,23 @@
 #!/usr/bin/env bash
-# Frontmatter filler. Delegates to .githooks/lib/frontmatter.py, which
-# holds the single source of truth for frontmatter rules (see the
-# module docstring and DESIGN.md §9).
+# Note normalizer. Delegates to .githooks/lib/normalize.py, which
+# holds the single source of truth for frontmatter rules and the
+# template application logic (see the module docstring and
+# DESIGN.md §9/§11).
 #
 # This hook collects staged markdown files under content directories
-# (derived from .gitattributes filter=git-crypt rules) and runs the
-# normalizer on each. Modified files are re-staged.
+# (derived from .gitattributes filter=git-crypt rules) and runs
+# normalize.py --apply on each. Modified files are re-staged.
+#
+# --apply handles two cases: if a file has no frontmatter, the
+# folder-matched template is applied and any pre-existing body
+# content is wrapped in ## Capture. If frontmatter is present,
+# it delegates to --fill (canonical fields + aliases[0] ↔ H1
+# sync + H1 insertion when missing).
 #
 # Auto-commit safe: non-interactive, exits 0 on success, warns on
 # malformed frontmatter but does not reject, so the hourly timer
-# stays unblocked.
+# stays unblocked. The hook never renames filenames — slug
+# normalization is user-driven via <leader>oS.
 
 set -uo pipefail
 
@@ -37,7 +45,7 @@ if [ "${#staged_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# frontmatter.py prints the path of each file it modified to stdout.
+# normalize.py prints the path of each file it modified to stdout.
 # We collect those and re-stage them. Batching all staged files into
 # one invocation halves Python startup cost on large commits.
 changed=0
@@ -45,7 +53,7 @@ while IFS= read -r modified_path; do
   [ -n "$modified_path" ] || continue
   git add "$modified_path"
   changed=$((changed + 1))
-done < <(python3 "$VAULT/.githooks/lib/frontmatter.py" --fill --vault-root "$VAULT" "${staged_files[@]}")
+done < <(python3 "$VAULT/.githooks/lib/normalize.py" --apply --vault-root "$VAULT" "${staged_files[@]}")
 
 if [ "$changed" -gt 0 ]; then
   printf -- '[pre-commit] normalized %d file(s).\n' "$changed" >&2
