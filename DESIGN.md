@@ -228,6 +228,31 @@ A uniform six-field schema makes the pre-commit normalizer a single implementati
 
 **When to revisit**. If a new mandatory cross-type field emerges (e.g., `provenance` if the vault ever needs to track which device captured a note). Otherwise, six is enough.
 
+## 10. External sync and version control (not the Obsidian Git plugin)
+
+**Decision**. Multi-device sync, version history, and public mirroring are handled by external infrastructure, not by the Obsidian Git community plugin or Obsidian Sync. Syncthing propagates file changes between devices in near real-time. A systemd timer on the hub commits and pushes to an encrypted GitHub backup hourly. A post-commit hook mirrors public-safe files to `vault-template`. Obsidian itself does not participate in the commit, push, or sync flow.
+
+**Rationale**. Four concerns drive the split:
+
+- **Automation must survive the editor being closed.** Mobile captures happen with Obsidian in the background; the hub commits while Obsidian is not running at all. Any plugin-based commit requires Obsidian to be open, which is incompatible with a headless hub and unreliable for devices that go to sleep.
+- **Plugin dependencies are moving targets.** The Obsidian Git community plugin is maintained out-of-tree and can break on Obsidian API changes. systemd, bash, and git are stable over decades. A backup system whose failure mode is "plugin stopped working after an Obsidian update" is not a backup system.
+- **Hub-centric architecture requires server-side commit.** The always-on Linux hub is the commit origin of record: it has the GPG key for gcrypt, the SSH deploy key, and the pinned GPG configuration. The Obsidian Git plugin is desktop-only and cannot run in this role. Commit must happen where the keys live.
+- **Syncthing and git are different layers; a plugin conflates them.** Syncthing propagates changes continuously between devices (peer-to-peer, near real-time). Git records history snapshots and provides off-site backup (central, periodic). Conflating them in a desktop plugin creates race conditions: a plugin commit on one device can race with a Syncthing-delivered change from another device, producing merge conflicts inside the commit flow rather than at the sync layer where they are recoverable.
+
+The result is a pipeline where each tool does one thing: Syncthing moves files between devices; git records history; rsync mirrors the public view; the Obsidian Git plugin is simply not part of it.
+
+**Alternatives considered**.
+
+| Alternative | Why not |
+|---|---|
+| Obsidian Git community plugin | Desktop-only; dependent on a community plugin staying compatible with Obsidian; conflates sync with version control; cannot commit when Obsidian is closed. |
+| Obsidian Sync (first-party paid service) | Paid subscription; closed vendor lock-in; no git history; no off-site backup we control; fine for users who only want "sync" but does not meet the backup or encryption goals here. |
+| Git only, no Syncthing | Mobile commit is fraught (Android git is awkward); pull-before-edit workflows defeat the "capture speed" requirement; concurrent edits on two devices become merge conflicts instead of transparent sync. |
+| Syncthing only, no git | No version history; no off-site backup; Syncthing's own conflict files accumulate with no authoritative source-of-truth to reconcile against. |
+| Cloud storage sync (iCloud, Dropbox, OneDrive) | File corruption and conflict patterns vary by provider; no history beyond the provider's retention; data leaves the Tailscale mesh; defeats the encryption posture. |
+
+**When to revisit**. If Obsidian ships a first-party automation API that exposes file-watcher hooks at the OS level (would let the plugin work headlessly); if the community Git plugin gains a headless server mode; or if the vault migrates off Obsidian entirely. Also revisit if the hub pattern is abandoned (e.g., moving to a per-device commit model), since that removes the main objection to a desktop-only plugin.
+
 ## Glossary
 
 **Folgezettel**. Luhmann's numeric ID scheme (`1`, `1a`, `1a1`). Not used here; `[[wikilinks]]` replace it.

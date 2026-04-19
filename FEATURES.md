@@ -29,7 +29,7 @@ A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single sourc
 
 ## Multi-device sync
 
-Syncthing over Tailscale provides real-time file sync across Linux desktops, Windows (native + WSL), and Android. A headless Linux server acts as the always-on hub so devices sync asynchronously. No cloud dependency; all traffic stays on the private Tailscale mesh.
+Syncthing over Tailscale provides real-time file sync across Linux desktops, Windows (native + WSL), and Android. A headless Linux server acts as the always-on hub so devices sync asynchronously. No cloud dependency; all traffic stays on the private Tailscale mesh. See [DESIGN.md](DESIGN.md) §10 for why Syncthing handles sync rather than the Obsidian Git plugin or Obsidian Sync.
 
 ## Dual-layer encryption (self-hosting)
 
@@ -42,7 +42,7 @@ Together, GitHub sees only opaque encrypted data. Neither layer alone provides f
 
 ## Automated backup (self-hosting)
 
-A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist at the root level: new root files and directories do not publish unless explicitly added. Files inside already-allowlisted subtrees (e.g., `5-templates/`, `nvim-vault/`) publish automatically.
+A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist at the root level: new root files and directories do not publish unless explicitly added. Files inside already-allowlisted subtrees (e.g., `5-templates/`, `nvim-vault/`) publish automatically. See [DESIGN.md](DESIGN.md) §10 for why the timer runs externally rather than through the Obsidian Git plugin.
 
 ## Public template mirroring (self-hosting)
 
