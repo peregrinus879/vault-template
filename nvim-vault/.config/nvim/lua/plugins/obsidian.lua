@@ -83,10 +83,11 @@ return {
       { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
       { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Links" },
       { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste image" },
-      -- Slug rename uses vim.fn.rename(), not :Obsidian rename. Old title is preserved
-      -- as an alias; both Obsidian and obsidian.nvim resolve [[wiki-links]] via aliases.
-      -- Upstream rename rewrites backlink text vault-wide, unnecessary for normalization.
-      -- Limitation: path-based markdown links [text](file.md) are not updated.
+      -- Slug rename orchestrator. Delegates the filename rename and
+      -- vault-wide [[wikilink]] rewrite to :Obsidian rename, then runs
+      -- .githooks/lib/normalize.py to fill any missing frontmatter.
+      -- Backlinks are updated correctly; frontmatter rules are shared
+      -- with the pre-commit hook (single source of truth).
       {
         "<leader>or",
         function()
@@ -104,128 +105,59 @@ return {
             return
           end
 
-          if stem == slug then
-            vim.notify("Filename already matches slug", vim.log.levels.INFO)
+          -- Save current buffer so disk reflects the latest edits
+          -- before any external tool reads the file.
+          local ok_write = pcall(vim.cmd, "write")
+          if not ok_write then
+            vim.notify("Could not save buffer", vim.log.levels.ERROR)
             return
           end
 
-          local dir = vim.fn.fnamemodify(old_path, ":h")
-          local new_path = dir .. "/" .. slug .. ".md"
+          local final_path = old_path
 
-          if vim.fn.filereadable(new_path) == 1 then
-            vim.notify("Target already exists: " .. slug .. ".md", vim.log.levels.ERROR)
-            return
-          end
-
-          local ok = vim.fn.confirm("Rename to " .. slug .. ".md?", "&Yes\n&No", 2)
-          if ok ~= 1 then return end
-
-          local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-          local new_lines = {}
-
-          if lines[1] == "---" then
-            local in_fm = false
-            local found_aliases = false
-            local found_type = false
-            local found_created = false
-            local found_updated = false
-            local found_tags = false
-            local i = 1
-            while i <= #lines do
-              local line = lines[i]
-              if i == 1 and line == "---" then
-                in_fm = true
-                new_lines[#new_lines + 1] = line
-              elseif in_fm and line == "---" then
-                if not found_aliases then
-                  new_lines[#new_lines + 1] = "aliases:"
-                  new_lines[#new_lines + 1] = "  - " .. stem
-                end
-                if not found_type then
-                  new_lines[#new_lines + 1] = "type:"
-                end
-                if not found_created then
-                  new_lines[#new_lines + 1] = "created: " .. os.date("%Y-%m-%d")
-                end
-                if not found_updated then
-                  new_lines[#new_lines + 1] = "updated:"
-                end
-                if not found_tags then
-                  new_lines[#new_lines + 1] = "tags: []"
-                end
-                in_fm = false
-                new_lines[#new_lines + 1] = line
-              elseif in_fm and line:match("^id:") then
-                new_lines[#new_lines + 1] = "id: " .. slug
-                while i + 1 <= #lines and lines[i + 1]:match("^%s") do
-                  i = i + 1
-                end
-              elseif in_fm and line:match("^type:") then
-                found_type = true
-                new_lines[#new_lines + 1] = line
-              elseif in_fm and line:match("^created:") then
-                found_created = true
-                new_lines[#new_lines + 1] = line
-              elseif in_fm and line:match("^updated:") then
-                found_updated = true
-                new_lines[#new_lines + 1] = line
-              elseif in_fm and line:match("^tags:") then
-                found_tags = true
-                new_lines[#new_lines + 1] = line
-              elseif in_fm and line:match("^aliases:") then
-                local rest = line:match("^aliases:%s*(.*)$")
-                if rest and rest ~= "" and rest ~= "[]" then
-                  vim.notify("Inline aliases not supported by slug rename; convert to block style first", vim.log.levels.WARN)
-                  return
-                end
-                found_aliases = true
-                new_lines[#new_lines + 1] = "aliases:"
-                local existing = {}
-                while i + 1 <= #lines and lines[i + 1]:match("^%s+%-") do
-                  i = i + 1
-                  local val = lines[i]:match("^%s+-%s+(.*)")
-                  if val and val ~= "" and val:lower() ~= "untitled" then
-                    existing[#existing + 1] = val
-                  end
-                end
-                local has_stem = false
-                for _, v in ipairs(existing) do
-                  if v == stem then has_stem = true end
-                end
-                if not has_stem then
-                  new_lines[#new_lines + 1] = "  - " .. stem
-                end
-                for _, v in ipairs(existing) do
-                  new_lines[#new_lines + 1] = "  - " .. v
-                end
-              else
-                new_lines[#new_lines + 1] = line
-              end
-              i = i + 1
+          if stem ~= slug then
+            local dir = vim.fn.fnamemodify(old_path, ":h")
+            local target = dir .. "/" .. slug .. ".md"
+            if vim.fn.filereadable(target) == 1 then
+              vim.notify("Target already exists: " .. slug .. ".md", vim.log.levels.ERROR)
+              return
             end
-          else
-            vim.list_extend(new_lines, {
-              "---",
-              "id: " .. slug,
-              "aliases:",
-              "  - " .. stem,
-              "type:",
-              "created: " .. os.date("%Y-%m-%d"),
-              "updated:",
-              "tags: []",
-              "---",
-            })
-            vim.list_extend(new_lines, lines)
+
+            local choice = vim.fn.confirm(
+              "Rename to " .. slug .. ".md and update backlinks?",
+              "&Yes\n&No", 2
+            )
+            if choice ~= 1 then return end
+
+            -- :Obsidian rename renames the file and rewrites every
+            -- [[wikilink]] in the vault that targets this note.
+            local ok_rename, err = pcall(vim.cmd, "Obsidian rename " .. slug)
+            if not ok_rename then
+              vim.notify("Rename failed: " .. tostring(err), vim.log.levels.ERROR)
+              return
+            end
+            final_path = vim.api.nvim_buf_get_name(0)
+            pcall(vim.cmd, "write")
           end
 
-          if vim.fn.rename(old_path, new_path) ~= 0 then
-            vim.notify("Rename failed", vim.log.levels.ERROR)
+          local normalize = vault_path .. "/.githooks/lib/normalize.py"
+          local result = vim.fn.system({
+            "python3", normalize, "--fill",
+            "--vault-root", vault_path, final_path,
+          })
+          if vim.v.shell_error ~= 0 then
+            vim.notify("normalize.py failed: " .. result, vim.log.levels.ERROR)
             return
           end
-          vim.api.nvim_buf_set_lines(0, 0, -1, false, new_lines)
-          vim.api.nvim_buf_set_name(0, new_path)
-          vim.cmd("write!")
-          vim.notify("Renamed: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
+
+          -- Reload so the buffer reflects normalize.py's disk changes.
+          vim.cmd("edit!")
+
+          if stem == slug then
+            vim.notify("Frontmatter normalized", vim.log.levels.INFO)
+          else
+            vim.notify("Renamed: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
+          end
         end,
         desc = "Rename note to slug",
       },
