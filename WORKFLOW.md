@@ -12,7 +12,7 @@ A hands-on tutorial for running a Zettelkasten in this vault. It covers two edit
 | Literature | `1-literature/` | Source record with brief pointers to key ideas. One per source. A processing bridge, not a storage endpoint. |
 | Permanent | `2-permanent/` | What **you** think. One atomic claim per note, self-contained, linked to other notes. |
 
-Writing (`4-writing/`) and overview notes (`3-overview/`) are downstream outputs built from the core types. Master the core first. See [README.md](README.md) for the full directory layout and status lifecycles.
+Writing (`4-writing/`) and overview notes (`3-overview/`) are downstream outputs built from the core types. Master the core first. See [README.md](README.md) for the full directory layout.
 
 ### The Flow
 
