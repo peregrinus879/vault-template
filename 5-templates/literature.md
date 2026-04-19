@@ -24,8 +24,8 @@ tags: []
 
 
 ## Key ideas
-<!-- Quote or paraphrase per idea with locator. Add [[permanent-note]] link when extracted. -->
-
-> "" (p. ) → [[]]
+<!-- Paraphrase in your own words, one idea per bullet, with a locator.
+     Add [[permanent-note]] link when the idea is extracted as a permanent note.
+     Quote only when exact wording matters (definitions, disputed phrasing). -->
 
 - (p. ) → [[]]

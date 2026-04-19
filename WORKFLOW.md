@@ -185,7 +185,9 @@ One literature note per source (book, article, paper, podcast episode, video, ta
 |---|---|
 | Source | Medium, author, year, identifier (ISBN/DOI/URL) |
 | Summary | What this source covers, in your own words |
-| Key ideas | Quote or paraphrase per idea with locator. Add `[[permanent-note]]` link when extracted. |
+| Key ideas | One bullet per idea, paraphrased in your own words, with a locator. Add `[[permanent-note]]` link when the idea is extracted as a permanent note. |
+
+**Paraphrase by default; quote only when wording matters.** Literature notes are processing bridges, not quote archives. Writing the idea in your own words is itself a learning act (Ahrens calls it "elaboration") and avoids the collector's fallacy (stockpiling quotes without engagement). Quote verbatim only when the exact wording is what you want to keep (definitions, disputed phrasings, language you may cite later). In those cases, use blockquote syntax: `> "exact phrase" (p.N) → [[]]`. See [DESIGN.md](DESIGN.md) §2 for the rationale.
 
 **Inline locator conventions** (goes in parentheses next to each pointer):
 
