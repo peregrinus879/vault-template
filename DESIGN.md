@@ -253,6 +253,82 @@ The result is a pipeline where each tool does one thing: Syncthing moves files b
 
 **When to revisit**. If Obsidian ships a first-party automation API that exposes file-watcher hooks at the OS level (would let the plugin work headlessly); if the community Git plugin gains a headless server mode; or if the vault migrates off Obsidian entirely. Also revisit if the hub pattern is abandoned (e.g., moving to a per-device commit model), since that removes the main objection to a desktop-only plugin.
 
+## 11. Identity and naming: filename, id, aliases, H1
+
+**Decision**. Every note carries four distinct identity slots, each with a fixed role and update rule:
+
+| Slot | Form | Role | Source of truth |
+|---|---|---|---|
+| Filename | Slug (lowercase-hyphens) | Filesystem primary key; cross-platform safe | User (`<leader>oS` or `:Obsidian rename`) |
+| `id` frontmatter | Slug, mirrors filename | Query key for Dataview/Bases; self-describing identifier inside the file | Auto-synced from filename stem |
+| `aliases[0]` | Readable | Primary link target; powers Quick Switcher and `[[` autocomplete | Bidirectional sync with body H1 (H1 wins) |
+| `aliases[1..]` | Readable | User-added synonyms, shorthand, historical names | User-controlled; preserved verbatim |
+| Body H1 (`# Title`) | Readable | Canonical display title in rendered views (reading mode, pandoc, GitHub, terminal) | User-controlled; drives aliases[0] |
+
+Two invariants run across these slots, auto-enforced by `normalize.py`:
+
+- **`id` = filename stem**, always.
+- **`aliases[0]` = body H1**, bidirectional (H1 wins when both present).
+
+**Rationale**. Each slot earns its place by solving a different problem:
+
+- **Filename (slug)** is the filesystem identifier and the unit of sync (git, Syncthing, rsync). Slugs are the intersection of legal characters across ext4, NTFS, exFAT, and APFS — lowercase ASCII + hyphens. A user-typed title with a colon ("PMO: Owner or not?") silently fails on NTFS; the slug never has that problem. See §5 for the broader argument.
+- **`id` frontmatter field** makes the canonical identifier visible *inside* the file. `head -5 note.md` shows the id without needing filesystem context. Dataview and Obsidian Bases queries use it as a stable filter key. obsidian.nvim's Note model references it. Redundancy with filename stem is intentional and cheap — auto-synced on every hook run.
+- **`aliases[0]` as human-readable primary** separates "what the machine sees" (slug) from "what you type when linking" (readable form). Slugs are ugly in prose: `[[risk-appetite-is-a-board-level-choice]]` reads badly. aliases[0] is the natural form: `[[Risk appetite is a board-level choice]]`. Obsidian and obsidian.nvim resolve `[[link]]` against filename stems *and* aliases, so a note answers to either.
+- **`aliases[1..]`** capture the real-world fact that one note often has multiple natural names: "PMO" and "Project Management Office," long claim-form and short reference form, historical names after renames, cross-language variants. A YAML list is the idiomatic shape.
+- **Body H1** is what renders as the big visible title in Obsidian reading view, pandoc exports, MkDocs sites, GitHub markdown preview, and `cat note.md` in a terminal. The filename (slug) is unreadable for these purposes; aliases live in frontmatter (invisible in rendered markdown). H1 is the only portable readable title.
+
+**Why H1 wins the sync**. When body H1 and `aliases[0]` disagree, the hook rewrites aliases[0] to match H1:
+
+- H1 is user-visible (rendered large at the top of the note) and user-edited when the claim changes.
+- aliases[0] is frontmatter — less visually salient, rarely edited directly.
+- Users reliably update H1 when they revise; they often forget the alias.
+- Making H1 authoritative minimizes drift.
+
+`aliases[1..]` are preserved verbatim because they represent deliberate user intent (synonyms, historical names), not drift.
+
+**Resolution hierarchy**. When Obsidian resolves `[[link-text]]`:
+
+1. Exact match against any filename stem across the vault.
+2. Exact match against any alias across the vault.
+3. Fuzzy/ranked match as fallback.
+
+`id` field and body H1 are not consulted for link resolution. They exist for query and display respectively.
+
+**Slug function**. The `slugify()` function in `obsidian.lua` maps a human title to a filename:
+
+1. Replace spaces with hyphens.
+2. Strip every character that isn't ASCII alphanumeric or hyphen.
+3. Collapse runs of hyphens into one.
+4. Strip leading and trailing hyphens.
+5. Lowercase.
+
+| Input | Output |
+|---|---|
+| `Risk appetite is a board-level choice` | `risk-appetite-is-a-board-level-choice` |
+| `Risk appetite: is it a board-level choice?` | `risk-appetite-is-it-a-board-level-choice` |
+| `PMO!` | `pmo` |
+| `EVM (earned value) on mega-projects` | `evm-earned-value-on-mega-projects` |
+| `Ahrens 2022 - How to Take Smart Notes` | `ahrens-2022-how-to-take-smart-notes` |
+| `Café résumé — smart?` | `caf-rsum-smart` (non-ASCII stripped) |
+
+Known limitations:
+- Non-ASCII characters (accents, Arabic, Cyrillic, emoji) strip to nothing. Titles in those scripts become empty or near-empty slugs, which collapses to stem-collision. Users writing non-English titles must transliterate before slugifying.
+- Punctuation carries no information in the output. "Risk: response" and "Risk response" produce identical slugs; only meaningful for titles that differ only by punctuation.
+
+**Alternatives considered**.
+
+| Alternative | Why not |
+|---|---|
+| Single identity (filename = title verbatim) | Fails on Windows/NTFS (colons, special chars); rename-heavy; aliases already solve the visibility problem without filesystem risk. |
+| Drop `id` field | obsidian.nvim's Note model expects it; Dataview queries are more stable; `id` lets a file describe itself without filesystem context. Auto-sync keeps the redundancy cheap. |
+| H1 optional | Body H1 is the only portable readable title outside Obsidian. Without it, terminal/GitHub/pandoc readers see only the slug. |
+| Single-scalar `aliases` | Notes legitimately answer to multiple names. List is the idiomatic shape; single-value forces the user to pick one. |
+| `aliases[0]` authoritative (not H1) | Users edit H1 in the body more than aliases in frontmatter. Making aliases authoritative pushes sync burden onto users; H1-authoritative lets the hook catch drift. |
+| Hook auto-rewrites body H1 | Too invasive for an unattended hook. User edits to H1 are respected as-is; alias drift is the only thing auto-fixed. |
+
+**When to revisit**. If Obsidian changes its link resolution model (e.g., removes alias lookup); if a non-Obsidian editor becomes primary and its identity model differs; if `aliases[0] ↔ H1` bidirectional sync proves more confusing than the drift it prevents (monitor `normalize.py --check` output). The slug function's non-ASCII handling should be revisited if multilingual titles become common — transliteration at the slugify() level would solve the empty-slug problem.
+
 ## Glossary
 
 **Folgezettel**. Luhmann's numeric ID scheme (`1`, `1a`, `1a1`). Not used here; `[[wikilinks]]` replace it.
