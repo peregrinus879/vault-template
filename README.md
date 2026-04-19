@@ -59,6 +59,7 @@ All templates share the same frontmatter: `id`, `aliases`, `type`, `created`, `u
 |-----|---------------|
 | [GETTING-STARTED.md](GETTING-STARTED.md) | Clone, open in Obsidian, version history, add Neovim, multi-device sync |
 | [WORKFLOW.md](WORKFLOW.md) | Zettelkasten method, naming conventions, capture loop, keybindings |
+| [DESIGN.md](DESIGN.md) | Opinionated choices and the reasoning behind each |
 | [FEATURES.md](FEATURES.md) | Detailed feature showcase |
 | [SELF-HOSTING.md](SELF-HOSTING.md) | Encryption, automated backup, public template mirroring |
 | [AGENTS.md](AGENTS.md) | AI assistant context for working with this repo |

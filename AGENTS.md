@@ -26,6 +26,7 @@ It does not own:
 - [README.md](README.md) - landing page: pitch, feature highlights, directory structure
 - [GETTING-STARTED.md](GETTING-STARTED.md) - setup guide: Obsidian, version history and hooks, Neovim overlay, multi-device sync
 - [WORKFLOW.md](WORKFLOW.md) - Zettelkasten method, naming conventions, capture loop, keybindings
+- [DESIGN.md](DESIGN.md) - opinionated choices and the reasoning behind each
 - [FEATURES.md](FEATURES.md) - detailed feature showcase
 - [SELF-HOSTING.md](SELF-HOSTING.md) - encryption, automated backup, public template mirroring
 - `AGENTS.md` - canonical assistant context (this file)
