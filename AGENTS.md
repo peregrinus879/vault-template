@@ -13,7 +13,7 @@ It owns:
 - Note templates (`5-templates/`)
 - Vault-specific Neovim plugins (`nvim-vault/`): obsidian.nvim config and render-markdown.nvim (recommended companion). Canonical home for these files.
 - Self-hosting reference files (`self-hosting/`): pinentry-null, systemd units
-- Git hooks (`.githooks/`): frontmatter normalizer (pre-commit), public template sync (post-commit)
+- Git hooks (`.githooks/`): note normalizer (pre-commit), public template sync (post-commit)
 
 It does not own:
 

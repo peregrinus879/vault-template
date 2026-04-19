@@ -25,7 +25,7 @@ Choose a different path if you prefer; the default is `~/vault`. If you add Neov
 
 ### 1.2 Initialize version history (optional)
 
-Initialize a fresh git repo for local version history and to enable the pre-commit frontmatter normalizer:
+Initialize a fresh git repo for local version history and to enable the pre-commit note normalizer:
 
 ```bash
 cd ~/vault

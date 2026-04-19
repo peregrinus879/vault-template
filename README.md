@@ -6,9 +6,9 @@ Opinionated structure, templates for every note type, multi-device sync, and opt
 
 - **5 note templates** covering the full Zettelkasten lifecycle: fleeting, literature, permanent, overview, and writing
 - **Dual-editor support**: same files in Obsidian (desktop/mobile) and Neovim (terminal via obsidian.nvim); no import, no format conversion
-- **Neovim overlay** (`nvim-vault/`): a LazyVim-compatible stow package with obsidian.nvim config, template routing, slug filenames, and a custom rename command
+- **Neovim overlay** (`nvim-vault/`): a LazyVim-compatible stow package with obsidian.nvim config, template routing, slug filenames, and vault-specific normalize/slugify commands
 - **Slug filenames with readable aliases**: auto-generated cross-platform-safe filenames; human-readable titles preserved in `aliases` for search and `[[link]]` autocomplete
-- **Frontmatter normalization**: pre-commit hook fills missing metadata on notes created outside templates (mobile captures, copy-paste)
+- **Note normalization**: pre-commit hook applies the folder-matched template, fills canonical frontmatter, and ensures a body H1 synced with `aliases[0]` — for notes created outside templates (mobile captures, Ctrl+N without template, copy-paste)
 - **Multi-device sync**: Syncthing over Tailscale across Linux, Windows, and Android
 - **Dual-layer encryption** (optional): git-crypt (content) + git-remote-gcrypt (filenames, history); GitHub sees only opaque data
 - **Automated backup** (optional): systemd timer commits hourly; post-commit hook mirrors structure and templates to a public repo
@@ -35,7 +35,7 @@ Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`
 nvim-vault/       Neovim overlay (LazyVim stow package)
 self-hosting/     Reference files for encryption and backup setup
 .obsidian/        Obsidian app configuration
-.githooks/        Git hooks (frontmatter normalizer, public template sync)
+.githooks/        Git hooks (note normalizer, public template sync)
 ```
 
 ## Note types

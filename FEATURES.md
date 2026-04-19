@@ -12,7 +12,7 @@ Five templates cover the full Zettelkasten workflow: fleeting, literature, perma
 
 ## Dual-editor support
 
-The same markdown files work in both Obsidian (desktop, mobile) and Neovim (terminal, via obsidian.nvim). No import step, no format conversion, no sync delay beyond Syncthing. The `nvim-vault/` stow overlay ships a complete obsidian.nvim configuration as a LazyVim plugin spec, including slug-based filenames, template routing, and a custom rename command.
+The same markdown files work in both Obsidian (desktop, mobile) and Neovim (terminal, via obsidian.nvim). No import step, no format conversion, no sync delay beyond Syncthing. The `nvim-vault/` stow overlay ships a complete obsidian.nvim configuration as a LazyVim plugin spec, including slug-based filenames, template routing, and three vault-specific orchestrators: `<leader>oi` (apply canonical template), `<leader>of` (fill frontmatter), and `<leader>oS` (slugify and re-sync). See [DESIGN.md](DESIGN.md) §12 for the list of opt-level deviations from obsidian.nvim defaults.
 
 ## Slug filenames with readable aliases
 
