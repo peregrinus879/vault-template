@@ -96,6 +96,32 @@ Private note content (files under `0-fleeting/`, `1-literature/`, `2-permanent/`
 
 **When adding a new directory or file**, decide first whether it is per-device or shared, then update all three layers and the table above consistently. For visible infrastructure (no dot prefix), also update `userIgnoreFilters` in `.obsidian/app.json` and the CSS snippet at `.obsidian/snippets/hide-root-docs.css`. An inconsistency means one of the failure modes the layers exist to prevent.
 
+## Invariants
+
+Rules that must hold continuously. Each is a specific failure mode observed in past work; violating one silently breaks the setup in a way that is expensive to diagnose later. Pair with §Post-Change Verification below.
+
+### Code and configuration
+
+1. **`normalize.py` is the single source of truth for frontmatter rules.** `.githooks/pre-commit` and `<leader>or` both delegate. Do not duplicate field logic in either caller; changes to field behavior (naming, ordering, fallback chains, idempotency) go in `.githooks/lib/normalize.py`. The pre-commit hook is a thin shell wrapper; the `<leader>or` keybinding is a thin Lua orchestrator.
+2. **`<leader>or` orchestration split**: `:Obsidian rename` owns filesystem rename + vault-wide `[[wikilink]]` rewrite; `normalize.py` owns frontmatter. The Lua keybinding sequences them. Preserve this split. Do not reintroduce filesystem-level rename (`vim.fn.rename`) into `<leader>or`; it silently breaks backlinks.
+3. **`id` tracks the filename stem.** `normalize.py` enforces this on every run. Do not rewrite `id` to a free-form value expecting it to be preserved; the next commit will sync it back to the stem.
+4. **Template placeholders must be single-quoted**: `id: '{{id}}'`, `aliases:\n  - '{{title}}'`, `created: '{{date}}'`. YAML 1.2 plain scalars cannot start with `{`, so unquoted `{{title}}` is invalid YAML even before substitution. Titles containing apostrophes break this after substitution; WORKFLOW rule 4 (ASCII-only titles) is the upstream workaround.
+5. **Obsidian writes `aliases: []` on template insert**, not a missing field. `normalize.py` treats any empty form (`[]`, `[ ]`, `[  ]`, block-empty) as equivalent to missing and refills from the H1 heading > caller-supplied fallback > filename stem. Do not add code that assumes "field present means populated" without going through `aliases_is_empty`.
+6. **Content folder name (minus `N-` prefix) must equal the `type` value**. `normalize.py` derives `type` by stripping the leading `\d+-` from the first path component; the folder `3-overview/` produces `type: overview`, which must match the template's `type:` value. Keep folder names singular so the derivation produces a singular type.
+
+### Change-control coordination
+
+7. **Renaming a content directory requires updating five places**: `.gitattributes` (git-crypt rules, also drives hook derivation), `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` (`customizations` routing), `README.md`, `WORKFLOW.md`, `FEATURES.md`. The post-commit hook picks up the change from `.gitattributes` automatically. Run §Post-Change Verification afterward.
+8. **Adding a new root-level file to the public mirror requires updating four places**: the rsync `--include` allowlist at the top of `.githooks/post-commit`, the `ALLOWED_ROOT_FILES` constant lower in the same file, `userIgnoreFilters` in `.obsidian/app.json` (so the file is hidden from Obsidian search/graph), and `.obsidian/snippets/hide-root-docs.css` (so it is hidden from the file explorer sidebar).
+9. **Adding a new non-content root-level directory requires the above plus the orphan-cleanup skip-list** in `.githooks/post-commit` (the `case "$name" in ... continue ;;` line near the rsync invocation). Missing the skip-list entry causes the directory to be deleted on every sync. An inline comment in the hook flags this coupling.
+10. **Pause the auto-commit timer before multi-stage structural changes** on the hub: `systemctl --user stop vault-autocommit.timer`; resume after with `systemctl --user start vault-autocommit.timer`. The timer fires on `*:00`; any work straddling the hour may be swept into an `auto:` commit with no descriptive message.
+
+### Deployment and operation
+
+11. **Editing `self-hosting/vault-autocommit.service` does NOT redeploy.** The running timer uses the static copy at `~/.config/systemd/user/vault-autocommit.service`. After any edit to the source, redeploy: `cp ~/vault/self-hosting/vault-autocommit.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user restart vault-autocommit.timer`.
+12. **Every vault commit produces two commit lines in output**: one in the vault (your message), one `sync: YYYY-MM-DD-HHMM` in the public mirror (from `.githooks/post-commit`). This is expected; the public commit is a derived sync, not a duplicate of your work.
+13. **Hooks run only where `core.hooksPath` is set.** `GETTING-STARTED.md` §1.2 sets it locally for new forks; `SELF-HOSTING.md` §6.4 enables it on the hub. If a clone has no hooks configured, `pre-commit` normalization and `post-commit` public sync both no-op silently.
+
 ## Post-Change Verification
 
 After any change that adds, renames, or moves content directories, modifies `.gitattributes`, or edits the post-commit hook, you **must** verify no private content can leak. Not every change requires this; routine note edits and template tweaks do not. Use judgment: if the change could affect what gets encrypted or what gets synced to the public repo, run the checks.
