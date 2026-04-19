@@ -324,11 +324,11 @@ cd ~/projects/repos/templates/vault-template && git push --dry-run origin main
 
 ### 6.3 Sentinel file
 
-The post-commit hook refuses to run unless the public repo contains a `.vault-template-marker` file. This guards against a misconfigured `vault.publicPath` trashing an unrelated repo. Create it once:
+The post-commit hook refuses to run unless the public repo contains a `.public-mirror-marker` file. This guards against a misconfigured `vault.publicPath` trashing an unrelated repo. Create it once:
 
 ```bash
-touch ~/projects/repos/templates/vault-template/.vault-template-marker
-cd ~/projects/repos/templates/vault-template && git add .vault-template-marker && git commit -m "chore: add sentinel marker"
+touch ~/projects/repos/templates/vault-template/.public-mirror-marker
+cd ~/projects/repos/templates/vault-template && git add .public-mirror-marker && git commit -m "chore: add sentinel marker"
 ```
 
 ### 6.4 Post-commit hook
@@ -362,8 +362,8 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 |---|---|
 | Explicit `--include` allowlist | Only named root files (docs, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`), `nvim-vault/**`, `self-hosting/**`, `5-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
 | Trailing `--exclude='*'` | Anything not in the allowlist is denied; a new top-level file or directory will not publish unless its path is added to the filter |
-| Sentinel check (`.vault-template-marker`) | Hook refuses to sync unless `$PUBLIC` contains the marker file. Guards against a wrong `vault.publicPath` trashing an unrelated repo |
-| `--filter='P /.vault-template-marker'` | Protects the sentinel file from `--delete` (the marker lives only in vault-template, not in the private vault) |
+| Sentinel check (`.public-mirror-marker`) | Hook refuses to sync unless `$PUBLIC` contains the marker file. Guards against a wrong `vault.publicPath` trashing an unrelated repo |
+| `--filter='P /.public-mirror-marker'` | Protects the sentinel file from `--delete` (the marker lives only in vault-template, not in the private vault) |
 | Orphan cleanup loop | Removes top-level directories from the public repo that no longer exist in the vault (catches renames) |
 | `.gitkeep` creation loop | Creates empty content-directory shells in the public repo (content dirs are not in the allowlist) |
 | `--delete` | Anything in the public repo but not matched by the allowlist is removed on the next sync |

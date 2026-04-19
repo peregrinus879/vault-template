@@ -33,8 +33,8 @@ PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/pro
 # git repo would otherwise expose it to rsync --delete, rm -rf, git add -A,
 # commit, and push from this hook. The marker file lives in vault-template
 # only (not in private vault) and is bootstrapped one-time per fork.
-[ -f "$PUBLIC/.vault-template-marker" ] || {
-  printf -- '[post-commit] refusing: %s lacks .vault-template-marker sentinel\n' "$PUBLIC" >&2
+[ -f "$PUBLIC/.public-mirror-marker" ] || {
+  printf -- '[post-commit] refusing: %s lacks .public-mirror-marker sentinel\n' "$PUBLIC" >&2
   exit 0
 }
 
@@ -42,7 +42,7 @@ PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/pro
 # denies anything the allowlist did not name. Protect filters keep
 # public-only files from being removed by --delete when the source lacks them.
 rsync -a --delete \
-  --filter='P /.vault-template-marker' \
+  --filter='P /.public-mirror-marker' \
   \
   --include='/README.md' \
   --include='/WORKFLOW.md' \
@@ -109,7 +109,7 @@ done
 # included set. Files removed from the allowlist (excluded by --exclude='*')
 # are invisible to rsync and left behind. This loop catches them.
 # Keep in sync with the rsync --include list above.
-ALLOWED_ROOT_FILES="README.md WORKFLOW.md GETTING-STARTED.md DESIGN.md SELF-HOSTING.md FEATURES.md AGENTS.md CLAUDE.md LICENSE .gitignore .gitattributes .stignore .vault-template-marker"
+ALLOWED_ROOT_FILES="README.md WORKFLOW.md GETTING-STARTED.md DESIGN.md SELF-HOSTING.md FEATURES.md AGENTS.md CLAUDE.md LICENSE .gitignore .gitattributes .stignore .public-mirror-marker"
 for file in "$PUBLIC"/* "$PUBLIC"/.*; do
   [ -f "$file" ] || continue
   name="$(basename "$file")"
