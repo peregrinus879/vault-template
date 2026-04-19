@@ -19,6 +19,45 @@ end
 
 local vault_path = vim.env.OBSIDIAN_VAULT or (vim.env.HOME .. "/vault")
 
+-- Invoke .githooks/lib/normalize.py on a file. mode is "--apply" or
+-- "--fill". If target_path is nil, the current buffer is used (saving
+-- first). Returns true on success, false on failure or out-of-vault.
+local function run_normalize(mode, fallback_alias, target_path)
+  local path = target_path or vim.api.nvim_buf_get_name(0)
+  if not path:find(vault_path .. "/", 1, true) then
+    vim.notify("Not in vault", vim.log.levels.WARN)
+    return false
+  end
+
+  if not target_path then
+    local ok_write = pcall(vim.cmd, "write")
+    if not ok_write then
+      vim.notify("Could not save buffer", vim.log.levels.ERROR)
+      return false
+    end
+  end
+
+  local cmd = {
+    "python3",
+    vault_path .. "/.githooks/lib/normalize.py",
+    mode,
+    "--vault-root", vault_path,
+  }
+  if fallback_alias then
+    vim.list_extend(cmd, { "--fallback-alias", fallback_alias })
+  end
+  table.insert(cmd, path)
+
+  local result = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    vim.notify("normalize.py " .. mode .. " failed: " .. result, vim.log.levels.ERROR)
+    return false
+  end
+
+  vim.cmd("edit!")
+  return true
+end
+
 return {
   {
     "obsidian-nvim/obsidian.nvim",
@@ -75,21 +114,55 @@ return {
       end,
     },
     keys = {
-      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "New note" },
+      -- obsidian.nvim pass-through bindings (some modified by opts above).
+      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "New fleeting note" },
       { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "New from template" },
       { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Find note" },
       { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault" },
       { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
-      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
-      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Links" },
+      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Outgoing links" },
       { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste image" },
-      -- Slug rename orchestrator. Delegates the filename rename and
-      -- vault-wide [[wikilink]] rewrite to :Obsidian rename, then runs
-      -- .githooks/lib/frontmatter.py to fill any missing frontmatter.
-      -- Backlinks are updated correctly; frontmatter rules are shared
-      -- with the pre-commit hook (single source of truth).
+      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template (raw)" },
+      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note" },
+
+      -- Vault-specific orchestrators. See DESIGN.md §11.
+      --
+      -- oi — Insert template. Applies the folder-matched template
+      -- when the current note has no frontmatter; otherwise fills
+      -- frontmatter + ensures H1 + syncs aliases[0] with H1.
       {
-        "<leader>or",
+        "<leader>oi",
+        function()
+          if run_normalize("--apply") then
+            vim.notify("Template applied", vim.log.levels.INFO)
+          end
+        end,
+        desc = "Insert template (canonical)",
+      },
+
+      -- of — Fill frontmatter. Normalizes the canonical fields and
+      -- ensures H1 in body, without ever inserting template sections.
+      -- Use on notes with custom body structure.
+      {
+        "<leader>of",
+        function()
+          if run_normalize("--fill") then
+            vim.notify("Frontmatter filled", vim.log.levels.INFO)
+          end
+        end,
+        desc = "Fill frontmatter",
+      },
+
+      -- oS — Slugify note. Full canonicalization:
+      --  1. Slugifies the filename via :Obsidian rename (which rewrites
+      --     every [[wikilink]] in the vault).
+      --  2. Runs normalize.py --apply, passing the pre-rename stem as
+      --     the alias fallback so the readable name survives in
+      --     aliases[0] when the body has no H1 yet.
+      -- Invariants preserved: id = new filename stem; aliases[1..]
+      -- user-added synonyms are kept; H1 reconciled with aliases[0].
+      {
+        "<leader>oS",
         function()
           local old_path = vim.api.nvim_buf_get_name(0)
           if not old_path:find(vault_path .. "/", 1, true) then
@@ -105,8 +178,6 @@ return {
             return
           end
 
-          -- Save current buffer so disk reflects the latest edits
-          -- before any external tool reads the file.
           local ok_write = pcall(vim.cmd, "write")
           if not ok_write then
             vim.notify("Could not save buffer", vim.log.levels.ERROR)
@@ -125,13 +196,11 @@ return {
             end
 
             local choice = vim.fn.confirm(
-              "Rename to " .. slug .. ".md and update backlinks?",
+              "Slugify to " .. slug .. ".md and update backlinks?",
               "&Yes\n&No", 2
             )
             if choice ~= 1 then return end
 
-            -- :Obsidian rename renames the file and rewrites every
-            -- [[wikilink]] in the vault that targets this note.
             local ok_rename, err = pcall(vim.cmd, "Obsidian rename " .. slug)
             if not ok_rename then
               vim.notify("Rename failed: " .. tostring(err), vim.log.levels.ERROR)
@@ -142,35 +211,21 @@ return {
             pcall(vim.cmd, "write")
           end
 
-          -- When a rename fired, the pre-rename stem carried the
-          -- human-readable title (before slugification). Pass it as
-          -- the alias fallback so frontmatter.py can recover it if no
-          -- H1 heading exists and aliases is empty.
-          local frontmatter = vault_path .. "/.githooks/lib/frontmatter.py"
-          local cmd = {
-            "python3", frontmatter, "--fill",
-            "--vault-root", vault_path,
-          }
+          local fallback = nil
           if renamed then
-            vim.list_extend(cmd, { "--fallback-alias", stem })
+            fallback = stem
           end
-          table.insert(cmd, final_path)
-          local result = vim.fn.system(cmd)
-          if vim.v.shell_error ~= 0 then
-            vim.notify("frontmatter.py failed: " .. result, vim.log.levels.ERROR)
+          if not run_normalize("--apply", fallback, final_path) then
             return
           end
 
-          -- Reload so the buffer reflects frontmatter.py's disk changes.
-          vim.cmd("edit!")
-
-          if stem == slug then
-            vim.notify("Frontmatter normalized", vim.log.levels.INFO)
+          if renamed then
+            vim.notify("Slugified: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
           else
-            vim.notify("Renamed: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
+            vim.notify("Note canonicalized (filename already slug)", vim.log.levels.INFO)
           end
         end,
-        desc = "Rename note to slug",
+        desc = "Slugify note",
       },
     },
   },
