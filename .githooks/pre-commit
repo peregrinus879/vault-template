@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Frontmatter filler. Delegates to .githooks/lib/normalize.py, which
+# Frontmatter filler. Delegates to .githooks/lib/frontmatter.py, which
 # holds the single source of truth for frontmatter rules (see the
 # module docstring and DESIGN.md §9).
 #
@@ -37,7 +37,7 @@ if [ "${#staged_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# normalize.py prints the path of each file it modified to stdout.
+# frontmatter.py prints the path of each file it modified to stdout.
 # We collect those and re-stage them. Batching all staged files into
 # one invocation halves Python startup cost on large commits.
 changed=0
@@ -45,7 +45,7 @@ while IFS= read -r modified_path; do
   [ -n "$modified_path" ] || continue
   git add "$modified_path"
   changed=$((changed + 1))
-done < <(python3 "$VAULT/.githooks/lib/normalize.py" --fill --vault-root "$VAULT" "${staged_files[@]}")
+done < <(python3 "$VAULT/.githooks/lib/frontmatter.py" --fill --vault-root "$VAULT" "${staged_files[@]}")
 
 if [ "$changed" -gt 0 ]; then
   printf -- '[pre-commit] normalized %d file(s).\n' "$changed" >&2

@@ -85,7 +85,7 @@ return {
       { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste image" },
       -- Slug rename orchestrator. Delegates the filename rename and
       -- vault-wide [[wikilink]] rewrite to :Obsidian rename, then runs
-      -- .githooks/lib/normalize.py to fill any missing frontmatter.
+      -- .githooks/lib/frontmatter.py to fill any missing frontmatter.
       -- Backlinks are updated correctly; frontmatter rules are shared
       -- with the pre-commit hook (single source of truth).
       {
@@ -144,11 +144,11 @@ return {
 
           -- When a rename fired, the pre-rename stem carried the
           -- human-readable title (before slugification). Pass it as
-          -- the alias fallback so normalize.py can recover it if no
+          -- the alias fallback so frontmatter.py can recover it if no
           -- H1 heading exists and aliases is empty.
-          local normalize = vault_path .. "/.githooks/lib/normalize.py"
+          local frontmatter = vault_path .. "/.githooks/lib/frontmatter.py"
           local cmd = {
-            "python3", normalize, "--fill",
+            "python3", frontmatter, "--fill",
             "--vault-root", vault_path,
           }
           if renamed then
@@ -157,11 +157,11 @@ return {
           table.insert(cmd, final_path)
           local result = vim.fn.system(cmd)
           if vim.v.shell_error ~= 0 then
-            vim.notify("normalize.py failed: " .. result, vim.log.levels.ERROR)
+            vim.notify("frontmatter.py failed: " .. result, vim.log.levels.ERROR)
             return
           end
 
-          -- Reload so the buffer reflects normalize.py's disk changes.
+          -- Reload so the buffer reflects frontmatter.py's disk changes.
           vim.cmd("edit!")
 
           if stem == slug then

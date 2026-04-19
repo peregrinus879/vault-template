@@ -36,9 +36,9 @@ It does not own:
 - `self-hosting/pinentry-null` - headless pinentry for unattended GPG operations
 - `self-hosting/vault-autocommit.service` - systemd oneshot for auto-commit
 - `self-hosting/vault-autocommit.timer` - hourly trigger for auto-commit
-- `.githooks/pre-commit` - frontmatter normalizer for staged notes in content directories (delegates to `.githooks/lib/normalize.py`)
+- `.githooks/pre-commit` - frontmatter normalizer for staged notes in content directories (delegates to `.githooks/lib/frontmatter.py`)
 - `.githooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath .githooks` on the hub)
-- `.githooks/lib/normalize.py` - **single source of truth for frontmatter rules**. Shared by the pre-commit hook and the `<leader>or` orchestrator. Modes: `--fill` (in-place normalize; prints modified file paths to stdout for caller re-staging), `--check` (report problems to stderr, non-zero exit). Any change to frontmatter behavior must go here.
+- `.githooks/lib/frontmatter.py` - **single source of truth for frontmatter rules**. Shared by the pre-commit hook and the `<leader>or` orchestrator. Modes: `--fill` (in-place normalize; prints modified file paths to stdout for caller re-staging), `--check` (report problems to stderr, non-zero exit). Any change to frontmatter behavior must go here.
 
 ## Commit Policy
 
@@ -102,13 +102,13 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 ### Code and configuration
 
-1. **`normalize.py` is the single source of truth for frontmatter rules.** `.githooks/pre-commit` and `<leader>or` both delegate. Do not duplicate field logic in either caller; changes to field behavior (naming, ordering, fallback chains, idempotency) go in `.githooks/lib/normalize.py`. The pre-commit hook is a thin shell wrapper; the `<leader>or` keybinding is a thin Lua orchestrator.
-2. **`<leader>or` orchestration split**: `:Obsidian rename` owns filesystem rename + vault-wide `[[wikilink]]` rewrite; `normalize.py` owns frontmatter. The Lua keybinding sequences them. Preserve this split. Do not reintroduce filesystem-level rename (`vim.fn.rename`) into `<leader>or`; it silently breaks backlinks.
-3. **`id` tracks the filename stem.** `normalize.py` enforces this on every run. Do not rewrite `id` to a free-form value expecting it to be preserved; the next commit will sync it back to the stem.
+1. **`frontmatter.py` is the single source of truth for frontmatter rules.** `.githooks/pre-commit` and `<leader>or` both delegate. Do not duplicate field logic in either caller; changes to field behavior (naming, ordering, fallback chains, idempotency) go in `.githooks/lib/frontmatter.py`. The pre-commit hook is a thin shell wrapper; the `<leader>or` keybinding is a thin Lua orchestrator.
+2. **`<leader>or` orchestration split**: `:Obsidian rename` owns filesystem rename + vault-wide `[[wikilink]]` rewrite; `frontmatter.py` owns frontmatter. The Lua keybinding sequences them. Preserve this split. Do not reintroduce filesystem-level rename (`vim.fn.rename`) into `<leader>or`; it silently breaks backlinks.
+3. **`id` tracks the filename stem.** `frontmatter.py` enforces this on every run. Do not rewrite `id` to a free-form value expecting it to be preserved; the next commit will sync it back to the stem.
 4. **Template placeholders must be single-quoted**: `id: '{{id}}'`, `aliases:\n  - '{{title}}'`, `created: '{{date}}'`. YAML 1.2 plain scalars cannot start with `{`, so unquoted `{{title}}` is invalid YAML even before substitution. Titles containing apostrophes break this after substitution; WORKFLOW rule 4 (ASCII-only titles) is the upstream workaround.
-5. **Obsidian writes `aliases: []` on template insert**, not a missing field. `normalize.py` treats any empty form (`[]`, `[ ]`, `[  ]`, block-empty) as equivalent to missing and refills from the H1 heading > caller-supplied fallback > filename stem. Do not add code that assumes "field present means populated" without going through `aliases_is_empty`.
-6. **Content folder name (minus `N-` prefix) must equal the `type` value**. `normalize.py` derives `type` by stripping the leading `\d+-` from the first path component; the folder `3-overview/` produces `type: overview`, which must match the template's `type:` value. Keep folder names singular so the derivation produces a singular type.
-7. **`normalize.py` stdout is reserved for modified file paths.** `--fill` prints one path per modified file; unchanged files produce no stdout. The pre-commit hook reads stdout to re-stage. All diagnostic output (warnings, summaries, errors) must go to stderr, or the hook will mistake diagnostic lines for file paths and `git add` them.
+5. **Obsidian writes `aliases: []` on template insert**, not a missing field. `frontmatter.py` treats any empty form (`[]`, `[ ]`, `[  ]`, block-empty) as equivalent to missing and refills from the H1 heading > caller-supplied fallback > filename stem. Do not add code that assumes "field present means populated" without going through `aliases_is_empty`.
+6. **Content folder name (minus `N-` prefix) must equal the `type` value**. `frontmatter.py` derives `type` by stripping the leading `\d+-` from the first path component; the folder `3-overview/` produces `type: overview`, which must match the template's `type:` value. Keep folder names singular so the derivation produces a singular type.
+7. **`frontmatter.py` stdout is reserved for modified file paths.** `--fill` prints one path per modified file; unchanged files produce no stdout. The pre-commit hook reads stdout to re-stage. All diagnostic output (warnings, summaries, errors) must go to stderr, or the hook will mistake diagnostic lines for file paths and `git add` them.
 
 ### Change-control coordination
 
@@ -178,13 +178,13 @@ Items deliberately not done in past passes. Each carries a short rationale so fu
 
 ### Decisions pending user input
 
-- **`updated` frontmatter field behavior**. The schema reserves `updated` but no mechanism populates it. Template, pre-commit hook, and `<leader>or` all leave it empty. Two directions: drop the field entirely and rely on `git log -1 --format=%ad -- <path>` for last-modified (simpler; loses a semantic slot), or auto-bump via `normalize.py` (adds value but breaks the "works without git" promise in `GETTING-STARTED.md` §1.2 for non-git users). Decision deferred.
+- **`updated` frontmatter field behavior**. The schema reserves `updated` but no mechanism populates it. Template, pre-commit hook, and `<leader>or` all leave it empty. Two directions: drop the field entirely and rely on `git log -1 --format=%ad -- <path>` for last-modified (simpler; loses a semantic slot), or auto-bump via `frontmatter.py` (adds value but breaks the "works without git" promise in `GETTING-STARTED.md` §1.2 for non-git users). Decision deferred.
 - **Obsidian `bases` core plugin**. Obsidian 1.9 added the Bases core plugin (database views over frontmatter). Currently enabled in `.obsidian/core-plugins.json` but unused by the Zettelkasten workflow. Leaving it enabled costs nothing; disabling would match the `daily-notes` precedent (disabled as stale config). Decision deferred.
 
 ### Technical deferrals (low current value)
 
 - **Data-driven vault path in `self-hosting/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SELF-HOSTING.md` §5. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
-- **Defensive reload after `:Obsidian rename` in `<leader>or`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `normalize.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
+- **Defensive reload after `:Obsidian rename` in `<leader>or`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `frontmatter.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
 
 ## Changelog
 

@@ -284,7 +284,7 @@ def fill_file(
 
     fm_lines, body_start = split_frontmatter(lines)
     if body_start == -1:
-        print(f"[normalize] warning: {path} has unclosed frontmatter; skipping.",
+        print(f"[frontmatter] warning: {path} has unclosed frontmatter; skipping.",
               file=sys.stderr)
         return False
 
@@ -408,7 +408,7 @@ def main() -> int:
 
     for p in args.paths:
         if not os.path.isfile(p):
-            print(f"[normalize] warning: {p} is not a file; skipping.", file=sys.stderr)
+            print(f"[frontmatter] warning: {p} is not a file; skipping.", file=sys.stderr)
             continue
         if args.fill:
             try:
@@ -419,7 +419,7 @@ def main() -> int:
                     print(p)
                     changed += 1
             except OSError as exc:
-                print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
+                print(f"[frontmatter] error: {p}: {exc}", file=sys.stderr)
                 return 1
         else:  # --check
             for issue in check_file(p, vault_root):
@@ -427,7 +427,7 @@ def main() -> int:
                 issues_found += 1
 
     if args.fill and changed > 0:
-        print(f"[normalize] filled {changed} file(s).", file=sys.stderr)
+        print(f"[frontmatter] filled {changed} file(s).", file=sys.stderr)
 
     return 1 if issues_found > 0 else 0
 

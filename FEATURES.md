@@ -20,7 +20,7 @@ Note filenames are auto-generated lowercase-hyphenated slugs (e.g., `risk-appeti
 
 ## Frontmatter normalization
 
-A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the six canonical fields (`id`, `aliases`, `type`, `created`, `updated`, `tags`) and runs in two contexts:
+A shared Python normalizer (`.githooks/lib/frontmatter.py`) holds the single source of truth for the six canonical fields (`id`, `aliases`, `type`, `created`, `updated`, `tags`) and runs in two contexts:
 
 - **`.githooks/pre-commit`** runs the normalizer on every staged note in a content directory. Notes created outside templates (mobile captures, file manager, copy-paste) get correct metadata automatically on commit.
 - **`<leader>or`** in obsidian.nvim runs it after `:Obsidian rename` so a slug rename also refreshes frontmatter.
