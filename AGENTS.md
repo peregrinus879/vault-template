@@ -75,6 +75,7 @@ Infrastructure directories use a dotfile prefix (`.obsidian/`, `.githooks/`, `.s
 | `.obsidian/workspace.json` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Per-device UI layout |
 | `.obsidian/workspace-mobile.json` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Per-device mobile UI layout |
 | `.obsidian/cache` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Per-device search/graph cache |
+| `.obsidian/themes/` | Yes | Yes | No (rsync) | Local theme; excluded from the public mirror so forks choose their own theme |
 | `.stfolder/` | No (`.gitignore`) | Syncthing's own marker | No (rsync) | Syncthing folder sentinel |
 | `.stignore` | Yes | Yes | Yes | Syncthing ignore patterns |
 | `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups (transient) |
@@ -88,7 +89,7 @@ Two patterns visible at a glance:
 - **Fully excluded** (all three No): per-device state.
 - **Tracked and synced but not public** (Yes/Yes/No): private note content. This is the one intentional asymmetry; content is excluded from `vault-template` by the rsync allowlist. Any other asymmetry across the three layers is worth investigating.
 
-The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles whose handling is interesting. All other tracked files under `.obsidian/` (`appearance.json`, `core-plugins.json`, `graph.json`, `snippets/**`, `themes/**`) are fully shared, tracked in git, synced by Syncthing, included in `vault-template`.
+The `.obsidian/` directory is split by subpath rather than treated as a unit; rows above list the subfiles whose handling is interesting. All other tracked files under `.obsidian/` (`appearance.json`, `core-plugins.json`, `graph.json`, `snippets/**`) are fully shared, tracked in git, synced by Syncthing, included in `vault-template`. Themes are the exception: `themes/` is tracked and synced (so all your own devices see the same theme) but excluded from the public mirror so forks are not forced into your theme choice.
 
 Private note content (files under `0-fleeting/`, `1-literature/`, `2-permanent/`, `3-overview/`, `4-writing/`, `6-assets/`) is tracked and synced but excluded from `vault-template` by the rsync allowlist (content dirs are not in the allowlist; structural `.gitkeep` stubs are recreated separately).
 

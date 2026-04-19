@@ -74,8 +74,6 @@ rsync -a --delete \
   --include='/.obsidian/templates.json' \
   --include='/.obsidian/snippets/' \
   --include='/.obsidian/snippets/**' \
-  --include='/.obsidian/themes/' \
-  --include='/.obsidian/themes/**' \
   \
   --exclude='*' \
   \
@@ -121,6 +119,14 @@ for dir in "${CONTENT_DIRS[@]}"; do
   mkdir -p "$PUBLIC/$dir"
   [ -f "$PUBLIC/$dir/.gitkeep" ] || touch "$PUBLIC/$dir/.gitkeep"
 done
+
+# Themes are excluded from the public mirror by design: forks pick
+# their own theme. The private vault may carry a local theme, but it
+# must never reach vault-template. rsync cannot delete this since
+# .obsidian/themes/ is no longer in the include list (rsync sees only
+# what is included). Explicit cleanup here keeps the public mirror
+# theme-free on every sync.
+rm -rf "$PUBLIC/.obsidian/themes"
 
 cd "$PUBLIC" || exit 1
 git add -A
