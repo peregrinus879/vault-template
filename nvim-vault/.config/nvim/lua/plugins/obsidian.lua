@@ -10,6 +10,35 @@
 -- Set OBSIDIAN_VAULT to override the default vault path (~/vault).
 -- render-markdown.lua in this directory is a recommended companion for visual
 -- markdown rendering; it is not required by obsidian.nvim.
+--
+-- ---------------------------------------------------------------------------
+-- Deviations from obsidian.nvim defaults (see DESIGN.md §5, §9, §11):
+--
+-- Opts that change obsidian.nvim behavior beyond naming the workspace:
+--   notes_subdir, new_notes_location   :Obsidian new lands in 0-fleeting/.
+--   note.template                      Auto-applies fleeting.md on creation.
+--   templates.folder                   Points at vault's 5-templates/.
+--   templates.customizations           Routes each template type to its
+--                                      content folder (literature →
+--                                      1-literature/, etc.).
+--   note_id_func                       Slugifies titles → filenames. Slug
+--                                      rules documented in DESIGN.md §11.
+--   attachments.folder                 Image saves go to 6-assets/.
+--   ui.enable = false                  render-markdown.nvim handles visual
+--                                      rendering; obsidian.nvim's UI would
+--                                      overlap.
+--   completion.blink + nvim_cmp        LazyVim ships blink.cmp; match it.
+--
+-- Added keybindings (vault-specific orchestrators, not obsidian.nvim
+-- commands). Each calls .githooks/lib/normalize.py:
+--   <leader>oi    Insert canonical template   (--apply)
+--   <leader>of    Fill frontmatter            (--fill)
+--   <leader>oS    Slugify note                (slug rename + --apply)
+--
+-- Pass-through keybindings to obsidian.nvim native commands:
+--   <leader>on, oN, oo, os, ob, ol, op, ot, or
+-- See the `keys` table below for each one's exact command mapping.
+-- ---------------------------------------------------------------------------
 
 vim.g.markdown_folding = 1
 

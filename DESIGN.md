@@ -329,6 +329,45 @@ Known limitations:
 
 **When to revisit**. If Obsidian changes its link resolution model (e.g., removes alias lookup); if a non-Obsidian editor becomes primary and its identity model differs; if `aliases[0] ↔ H1` bidirectional sync proves more confusing than the drift it prevents (monitor `normalize.py --check` output). The slug function's non-ASCII handling should be revisited if multilingual titles become common — transliteration at the slugify() level would solve the empty-slug problem.
 
+## 12. obsidian.nvim overlay deviations
+
+**Decision**. The Lua overlay at `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` configures obsidian.nvim beyond naming the workspace. Every deviation from the plugin's defaults has a vault-workflow reason tied to a choice documented elsewhere in this file.
+
+**Opts that change obsidian.nvim behavior**.
+
+| Opt | Effect | Rationale |
+|---|---|---|
+| `notes_subdir = "0-fleeting"` + `new_notes_location = "notes_subdir"` | `:Obsidian new` lands notes in `0-fleeting/` | §1 (numeric directory prefixes; fleeting is where captures go) |
+| `note.template = "fleeting.md"` | Fleeting template auto-applied on `:Obsidian new` | §9 (unified frontmatter); keeps the capture path template-consistent without a second step |
+| `templates.folder = "5-templates"` | Template discovery | §1, §9 |
+| `templates.customizations` | Each template type routes to its matching content folder (`literature` → `1-literature/`, etc.) | §1 (one folder per type; new-from-template should land there, not in the default subdir) |
+| `note_id_func = slugify` | Filenames derived from titles via the slug function | §5 (slug filenames), §11 (slug rules with examples) |
+| `attachments.folder = "6-assets"` | Pasted images save to `6-assets/` | §1 (vault directory layout) |
+| `ui.enable = false` | Plugin's own UI renderer disabled | Overlap with `render-markdown.nvim` (recommended companion); leaving obsidian.nvim's UI on produces double rendering |
+| `completion.blink = true`, `completion.nvim_cmp = false` | Use blink.cmp, not nvim-cmp | LazyVim default is blink.cmp; align the completion engine |
+
+**Added keybindings**. obsidian.nvim provides no default keybindings. Every `<leader>o*` binding is a vault choice. The three below are custom orchestrators (not obsidian.nvim commands); they shell out to `.githooks/lib/normalize.py`:
+
+| Keybinding | Invokes | Purpose |
+|---|---|---|
+| `<leader>oi` | `normalize.py --apply` | Insert canonical template (folder-matched) + frontmatter + H1; wraps pre-existing body in `## Capture` |
+| `<leader>of` | `normalize.py --fill` | Normalize canonical frontmatter fields + ensure H1; never inserts template body sections |
+| `<leader>oS` | `:Obsidian rename <slug>` + `normalize.py --apply` | Slugify filename (with vault-wide backlink rewrite) + apply template + re-sync `id`, `aliases[0]`, H1 |
+
+All other `<leader>o*` bindings (`on`, `oN`, `oo`, `os`, `ob`, `ol`, `op`, `ot`, `or`) are pass-throughs to native obsidian.nvim subcommands. They exist because obsidian.nvim leaves keymapping to the user; picking the letters is a vault choice, the behavior is obsidian.nvim's.
+
+**Alternatives considered**.
+
+| Alternative | Why not |
+|---|---|
+| No overlay; let obsidian.nvim defaults apply | Leaves every note in an undefined default subdir; no slugification; no canonical template application for non-Neovim captures. The overlay is the vehicle for §1/§5/§9/§11 to hold. |
+| Overlay via vanilla Neovim `init.lua`, not a LazyVim plugin spec | LazyVim is the assumed distribution per `GETTING-STARTED.md` §2; the stow overlay integrates directly as a plugin spec. Users on vanilla Neovim can port the file with minor tweaks. |
+| Bind custom logic to existing obsidian.nvim letters (e.g., override `<leader>ot` with our template apply) | Muddies the mental model when reading obsidian.nvim documentation elsewhere. Kept native `<leader>ot`/`<leader>or` as pass-throughs; put vault logic on fresh letters (`oi`, `of`, `oS`). |
+
+**Source of truth**. `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` is the overlay. Its file-header comment enumerates the same deviations in one block for a reader already inside the code.
+
+**When to revisit**. If obsidian.nvim's defaults change such that an opt we set would no longer deviate (check the README/CHANGELOG on version upgrade). If LazyVim swaps away from blink.cmp. If `render-markdown.nvim` merges functionality with obsidian.nvim's UI and the disable becomes redundant.
+
 ## Glossary
 
 **Folgezettel**. Luhmann's numeric ID scheme (`1`, `1a`, `1a1`). Not used here; `[[wikilinks]]` replace it.

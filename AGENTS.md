@@ -31,7 +31,7 @@ It does not own:
 - [SELF-HOSTING.md](SELF-HOSTING.md) - encryption, automated backup, public template mirroring
 - `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
-- `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` - vault-specific obsidian.nvim config (canonical)
+- `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` - vault-specific obsidian.nvim config (canonical). Deviations from obsidian.nvim defaults enumerated in DESIGN.md §12.
 - `nvim-vault/.config/nvim/lua/plugins/render-markdown.lua` - recommended markdown rendering (not required by obsidian.nvim)
 - `self-hosting/pinentry-null` - headless pinentry for unattended GPG operations
 - `self-hosting/vault-autocommit.service` - systemd oneshot for auto-commit
