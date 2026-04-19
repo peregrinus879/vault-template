@@ -1,63 +1,73 @@
 #!/usr/bin/env python3
-"""Vault frontmatter normalizer.
+"""Vault note normalizer.
 
-Two modes:
+Enforces identity invariants across the vault's content notes:
+
+- Canonical frontmatter (id, aliases, type, created, updated, tags).
+- Body `# H1` heading matching aliases[0].
+- Template body application (via --apply mode).
+
+Modes:
 
   --fill PATH [PATH ...]
-      Add missing frontmatter fields and sync `id` to the filename
-      stem. Never rewrites existing user values beyond `id`. Exits 0
-      on success; non-zero only on I/O errors. Writes the file back
-      when changed.
+      Normalize frontmatter fields and ensure the body has a
+      `# H1` matching aliases[0]. Body is otherwise untouched.
+      Exits 0 on success; non-zero only on I/O errors.
+
+  --apply PATH [PATH ...]
+      If the file has no frontmatter, read the folder-matched
+      template from 5-templates/, substitute placeholders, prepend
+      to body, and wrap any pre-existing body content in a
+      `## Capture` section at the end. If the file already has
+      frontmatter, delegate to --fill.
 
   --check PATH [PATH ...]
       Report problems without modifying files. Prints one line per
       issue to stderr. Exits non-zero if any issue is found.
 
-Canonical field order written by --fill:
+Canonical field order:
     id, aliases, type, created, updated, tags
 
-Field rules (--fill):
-    id       : always rewritten to match the filename stem
-               (tautological with filename; kept in sync)
-    aliases  : if field absent OR present but empty (`aliases: []`
-               or block-form with no list items), filled with a
-               single entry chosen as the first populated of:
-               first-line H1 heading, --fallback-alias argument,
-               filename stem. If the field has list items, they are
-               preserved verbatim.
-    type     : if field absent or empty value, set to the folder-
-               derived type (first path component, stripping the
-               leading 'N-' prefix). Otherwise preserved.
-    created  : if field absent or empty value, set to today's date
-               (YYYY-MM-DD). Otherwise preserved.
-    updated  : if field absent, added with empty value. Preserved if
-               present (value never touched by this tool).
-    tags     : if field absent, added as empty flow sequence `[]`.
-               Preserved if present.
+Field rules:
+    id       : always rewritten to match the filename stem.
+    aliases  : aliases[0] = body H1 > caller-supplied fallback >
+               filename stem. If aliases already exists, aliases[0]
+               is overwritten with this canonical value; aliases[1..]
+               are preserved (user-added synonyms), deduplicated
+               against the canonical first entry.
+    type     : if absent or empty, set to the folder-derived type.
+               Otherwise preserved.
+    created  : if absent or empty, set to today. Otherwise preserved.
+    updated  : if absent, added as empty. Never rewritten.
+    tags     : if absent, added as empty flow sequence `[]`.
 
-Extra user-added frontmatter fields are preserved and emitted after
-the canonical six, in the order they appear in the source.
+Body rules (--fill and --apply):
+    H1 heading : if body has no `# H1` as its first non-blank line,
+                 `# {aliases[0]}` is inserted after the frontmatter.
+                 If H1 exists, aliases[0] is synced to its text
+                 (H1 wins when both are present and differ).
 
-Idempotent: running --fill twice on the same file produces no further
+Extra user-added frontmatter fields are preserved and emitted
+after the canonical six, in the order they appear in the source.
+
+Idempotent: running the same mode twice produces no further
 changes on the second run.
 
-When --fill modifies a file, its path is printed to stdout, one per
-line. Callers (pre-commit hook, editor orchestrators) can read stdout
-to re-stage or refresh only the files that actually changed.
+When a file is modified, its path is printed to stdout (one per
+line). Callers (pre-commit hook, editor orchestrators) read
+stdout to re-stage or refresh only the changed files.
 
 Design notes:
-    The parser is intentionally tolerant of the vault's known YAML
-    subset (flat key: value pairs plus a single block-style list for
-    `aliases`). It does not handle general YAML. Files with malformed
-    frontmatter (unclosed `---`, inline flow mappings) are skipped
-    with a warning rather than mangled.
+    The parser is tolerant of the vault's YAML subset: flat
+    `key: value` pairs plus a block-style or simple flow-style
+    list for `aliases`. It does not handle general YAML. Files
+    with malformed frontmatter (unclosed `---`, nested mappings)
+    are skipped with a warning rather than mangled.
 
     YAML comments inside frontmatter (lines starting with `#`) are
-    NOT preserved: they are merged into the preceding field's value
-    lines during parsing and dropped when that field is rewritten in
-    canonical order. The vault's schema has no use case for inline
-    comments; if one arises, the parser must change to track
-    comments as first-class top-level entries.
+    NOT preserved: they are merged into the preceding field's
+    value lines during parsing and dropped when that field is
+    rewritten in canonical order.
 """
 
 from __future__ import annotations
@@ -83,6 +93,21 @@ def yaml_single_quote(value: str) -> str:
     content including colons, braces, and special characters.
     """
     return "'" + value.replace("'", "''") + "'"
+
+
+def unquote_yaml(value: str) -> str:
+    """Strip YAML single or double quotes from a scalar value.
+
+    Handles the doubled single-quote escape inside single-quoted
+    strings. Double-quoted strings have backslash escapes left
+    as-is (not used in the vault's content).
+    """
+    if len(value) >= 2:
+        if value[0] == "'" and value[-1] == "'":
+            return value[1:-1].replace("''", "'")
+        if value[0] == '"' and value[-1] == '"':
+            return value[1:-1]
+    return value
 
 
 def split_frontmatter(lines: list[str]) -> tuple[list[str] | None, int]:
@@ -122,7 +147,6 @@ def parse_fields(fm_lines: list[str]) -> dict[str, list[str]]:
                 continue
         if current is not None:
             fields[current].append(line)
-    # Preserve insertion order via dict (Python 3.7+).
     ordered = {k: fields[k] for k in order}
     return ordered
 
@@ -143,14 +167,12 @@ def aliases_is_empty(field_lines: list[str]) -> bool:
     `aliases: [ ]` with whitespace) and block-form with no list items
     following. A block-form field with at least one `- value` line is
     considered populated. An inline flow sequence with entries (e.g.,
-    `aliases: [one, two]`) is considered populated and left untouched.
+    `aliases: [one, two]`) is considered populated.
     """
     first = field_lines[0]
     m = KEY_LINE_RE.match(first)
     if m:
         value = m.group(2).strip()
-        # Normalize whitespace inside flow-sequence brackets so
-        # `[ ]`, `[  ]`, and `[]` all count as empty.
         if value.startswith("[") and value.endswith("]"):
             if value[1:-1].strip() == "":
                 value = "[]"
@@ -163,10 +185,53 @@ def aliases_is_empty(field_lines: list[str]) -> bool:
     return False
 
 
-def extract_h1_title(body_lines: list[str]) -> str | None:
-    """Return the first H1 heading text, skipping leading blank lines.
+def extract_alias_values(field_lines: list[str]) -> list[str]:
+    """Extract alias values from an aliases field.
 
-    Returns None if the first non-blank line is not an H1 heading.
+    Supports block form (`aliases:\\n  - item`) and simple flow form
+    (`aliases: [a, b]`). Returns an empty list for empty or missing
+    entries. Commas inside quoted flow items are not respected; the
+    vault's content is not expected to use such values.
+    """
+    first = field_lines[0]
+    m = KEY_LINE_RE.match(first)
+    inline_value = m.group(2).strip() if m else ""
+
+    if inline_value.startswith("[") and inline_value.endswith("]"):
+        inner = inline_value[1:-1].strip()
+        if inner == "":
+            return []
+        return [unquote_yaml(item.strip()) for item in inner.split(",") if item.strip()]
+
+    values: list[str] = []
+    for line in field_lines[1:]:
+        stripped = line.strip()
+        if stripped.startswith("- ") and stripped != "-":
+            raw = stripped[2:].strip()
+            values.append(unquote_yaml(raw))
+    return values
+
+
+def render_aliases(values: list[str]) -> list[str]:
+    """Render an aliases list as frontmatter lines in block form.
+
+    Empty list emits `aliases: []`. Non-empty emits a block list with
+    each entry single-quoted.
+    """
+    if not values:
+        return ["aliases: []"]
+    lines = ["aliases:"]
+    for v in values:
+        lines.append(f"  - {yaml_single_quote(v)}")
+    return lines
+
+
+def extract_h1_title(body_lines: list[str]) -> str | None:
+    """Return the first non-blank line's H1 text, or None.
+
+    Non-blank line that is not an H1 returns None. Used to derive
+    canonical aliases[0] and to decide whether ensure_h1 should
+    insert one.
     """
     for raw in body_lines:
         line = raw.rstrip("\r\n")
@@ -175,6 +240,23 @@ def extract_h1_title(body_lines: list[str]) -> str | None:
         m = H1_RE.match(line)
         return m.group(1) if m else None
     return None
+
+
+def ensure_h1(body: list[str], title: str) -> list[str]:
+    """Return body with a `# title` line before the first non-blank line.
+
+    If the first non-blank line is already an H1, body is returned
+    unchanged. If the body is empty or all-blank, the H1 is appended.
+    """
+    first_content_idx = next(
+        (i for i, line in enumerate(body) if line.strip() != ""),
+        None,
+    )
+    if first_content_idx is not None:
+        if H1_RE.match(body[first_content_idx]):
+            return body
+        return body[:first_content_idx] + [f"# {title}", ""] + body[first_content_idx:]
+    return body + [f"# {title}"]
 
 
 def derive_folder_type(path: str, vault_root: str) -> str:
@@ -206,6 +288,10 @@ def build_canonical_fields(
 ) -> dict[str, list[str]]:
     """Return the field map after applying fill rules in canonical order.
 
+    Aliases rule: canonical aliases[0] = h1_title > fallback_alias >
+    filename stem. If the existing aliases list is populated, aliases[0]
+    is overwritten with the canonical value; aliases[1..] are preserved
+    (user-added synonyms) with duplicates against aliases[0] removed.
     Extra user-added fields (not in CANONICAL_ORDER) are preserved at
     the end in source order.
     """
@@ -214,18 +300,13 @@ def build_canonical_fields(
     # id: always synced to stem.
     out["id"] = [f"id: {yaml_single_quote(stem)}"]
 
-    # aliases: preserve only if present AND non-empty. Empty aliases
-    # (`aliases: []` or block-form with no items) are treated as
-    # missing and filled from the fallback chain: H1, caller-supplied
-    # fallback, filename stem.
-    has_alias_entries = (
-        "aliases" in existing and not aliases_is_empty(existing["aliases"])
-    )
-    if has_alias_entries:
-        out["aliases"] = list(existing["aliases"])
-    else:
-        title = h1_title or fallback_alias or stem
-        out["aliases"] = ["aliases:", f"  - {yaml_single_quote(title)}"]
+    # aliases: H1 drives aliases[0] (bidirectional sync rule).
+    canonical_first = h1_title or fallback_alias or stem
+    existing_values: list[str] = []
+    if "aliases" in existing and not aliases_is_empty(existing["aliases"]):
+        existing_values = extract_alias_values(existing["aliases"])
+    tail = [v for v in existing_values[1:] if v and v != canonical_first]
+    out["aliases"] = render_aliases([canonical_first] + tail)
 
     # type: preserve if populated, else fill from folder.
     if "type" in existing and field_has_value(existing["type"]):
@@ -273,7 +354,7 @@ def fill_file(
     today: str,
     fallback_alias: str | None = None,
 ) -> bool:
-    """Normalize the frontmatter of one file in place.
+    """Normalize frontmatter and ensure body H1 in place.
 
     Returns True if the file was modified, False if already canonical.
     Prints a warning and returns False on malformed frontmatter.
@@ -284,7 +365,7 @@ def fill_file(
 
     fm_lines, body_start = split_frontmatter(lines)
     if body_start == -1:
-        print(f"[frontmatter] warning: {path} has unclosed frontmatter; skipping.",
+        print(f"[normalize] warning: {path} has unclosed frontmatter; skipping.",
               file=sys.stderr)
         return False
 
@@ -304,19 +385,20 @@ def fill_file(
         fallback_alias=fallback_alias,
     )
 
+    canonical_aliases = extract_alias_values(new_fields["aliases"])
+    title_for_h1 = canonical_aliases[0] if canonical_aliases else stem
+    new_body = ensure_h1(body, title_for_h1)
+
     new_fm = render_frontmatter(new_fields)
     new_lines = [FM_DELIM, *new_fm, FM_DELIM]
 
     # If the original had no frontmatter, ensure one blank line before body.
     if fm_lines is None:
-        separator = [""] if body and body[0].strip() != "" else []
+        separator = [""] if new_body and new_body[0].strip() != "" else []
         new_lines.extend(separator)
-        new_lines.extend(body)
-    else:
-        new_lines.extend(body)
+    new_lines.extend(new_body)
 
     new_content = "\n".join(new_lines)
-    # Preserve trailing newline presence.
     if original.endswith("\n") and not new_content.endswith("\n"):
         new_content += "\n"
 
@@ -352,6 +434,8 @@ def check_file(path: str, vault_root: str) -> list[str]:
     existing = parse_fields(fm_lines)
     stem = os.path.splitext(os.path.basename(path))[0]
     folder_type = derive_folder_type(path, vault_root)
+    body = lines[body_start:] if body_start > 0 else []
+    h1_title = extract_h1_title(body)
 
     for required in CANONICAL_ORDER:
         if required not in existing:
@@ -361,7 +445,7 @@ def check_file(path: str, vault_root: str) -> list[str]:
         first = existing["id"][0]
         m = KEY_LINE_RE.match(first)
         value = m.group(2).strip() if m else ""
-        unquoted = value.strip("'\"")
+        unquoted = unquote_yaml(value)
         if unquoted != stem:
             issues.append(f"{path}: id '{unquoted}' does not match filename stem '{stem}'")
 
@@ -372,16 +456,23 @@ def check_file(path: str, vault_root: str) -> list[str]:
         if value != folder_type:
             issues.append(f"{path}: type '{value}' does not match folder-derived '{folder_type}'")
 
+    if "aliases" in existing and not aliases_is_empty(existing["aliases"]):
+        alias_values = extract_alias_values(existing["aliases"])
+        if alias_values and h1_title and alias_values[0] != h1_title:
+            issues.append(
+                f"{path}: aliases[0] '{alias_values[0]}' does not match H1 '{h1_title}'"
+            )
+
     return issues
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Normalize vault note frontmatter.",
+        description="Normalize vault note frontmatter and body.",
     )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--fill", action="store_true",
-                       help="Add missing fields and sync id in-place.")
+                       help="Normalize frontmatter and ensure body H1 in-place.")
     group.add_argument("--check", action="store_true",
                        help="Report issues; exit non-zero if any found.")
     parser.add_argument("paths", nargs="+",
@@ -389,16 +480,14 @@ def main() -> int:
     parser.add_argument("--vault-root", default=None,
                         help="Override vault root (defaults to git toplevel).")
     parser.add_argument("--fallback-alias", default=None,
-                        help="Alias used when aliases is absent or empty and "
-                             "no H1 heading is present. Typically the "
-                             "pre-rename filename stem, supplied by the "
-                             "<leader>or orchestrator.")
+                        help="Alias used for aliases[0] when no H1 is present. "
+                             "Typically the pre-rename filename stem, supplied "
+                             "by the <leader>oS orchestrator.")
     args = parser.parse_args()
 
     if args.vault_root:
         vault_root = os.path.abspath(args.vault_root)
     else:
-        # Fall back to the parent of .githooks/lib.
         here = os.path.dirname(os.path.abspath(__file__))
         vault_root = os.path.abspath(os.path.join(here, "..", ".."))
 
@@ -408,18 +497,15 @@ def main() -> int:
 
     for p in args.paths:
         if not os.path.isfile(p):
-            print(f"[frontmatter] warning: {p} is not a file; skipping.", file=sys.stderr)
+            print(f"[normalize] warning: {p} is not a file; skipping.", file=sys.stderr)
             continue
         if args.fill:
             try:
                 if fill_file(p, vault_root, today, args.fallback_alias):
-                    # stdout is reserved for modified paths so the
-                    # pre-commit hook (and any other caller) can
-                    # re-stage only the files that actually changed.
                     print(p)
                     changed += 1
             except OSError as exc:
-                print(f"[frontmatter] error: {p}: {exc}", file=sys.stderr)
+                print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
                 return 1
         else:  # --check
             for issue in check_file(p, vault_root):
@@ -427,7 +513,7 @@ def main() -> int:
                 issues_found += 1
 
     if args.fill and changed > 0:
-        print(f"[frontmatter] filled {changed} file(s).", file=sys.stderr)
+        print(f"[normalize] filled {changed} file(s).", file=sys.stderr)
 
     return 1 if issues_found > 0 else 0
 
