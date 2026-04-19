@@ -51,7 +51,7 @@ When you create a note (via obsidian.nvim or Obsidian), the filename is auto-gen
 2. The slug function creates a filename: `risk-appetite-is-a-board-level-choice.md`
 3. The `aliases` frontmatter field preserves your original title for search and `[[link]]` autocomplete
 
-You never need to think about the filename. Type the title naturally; the slug is generated for you.
+You never need to think about the filename. Type the title naturally; the slug is generated for you. The exact transformation rules (spaces → hyphens, non-alphanumeric stripped, etc.) and known limitations (non-ASCII stripping; punctuation collision) are documented with worked examples in [DESIGN.md](DESIGN.md) §11.
 
 ### Design Principles
 
@@ -66,7 +66,7 @@ You never need to think about the filename. Type the title naturally; the slug i
 | Type | Title you type | Slug filename |
 |------|---------------|---------------|
 | Fleeting | `Contingency is not a buffer` | `contingency-is-not-a-buffer.md` |
-| Literature | `Ahrens 2022 - How to Take Smart Notes` | `ahrens-2022---how-to-take-smart-notes.md` |
+| Literature | `Ahrens 2022 - How to Take Smart Notes` | `ahrens-2022-how-to-take-smart-notes.md` |
 | Permanent | `Risk appetite is a board-level choice, not a risk-team calculation` | `risk-appetite-is-a-board-level-choice-not-a-risk-team-calculation.md` |
 | Overview | `Risk management in capital projects` | `risk-management-in-capital-projects.md` |
 | Writing | `The case against stage-gate theatre` | `the-case-against-stage-gate-theatre.md` |

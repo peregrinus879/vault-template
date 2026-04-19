@@ -42,6 +42,14 @@
 
 vim.g.markdown_folding = 1
 
+-- Map a human title to a slug filename. Five steps (order matters):
+--   1. replace spaces with hyphens
+--   2. strip any character that is not ASCII alphanumeric or hyphen
+--   3. collapse runs of hyphens into one
+--   4. strip leading and trailing hyphens
+--   5. lowercase
+-- Worked examples and known limitations (non-ASCII stripping, punctuation
+-- collision) documented in DESIGN.md §11.
 local function slugify(title)
   return title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):gsub("%-+", "-"):gsub("^%-", ""):gsub("%-$", ""):lower()
 end

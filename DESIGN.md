@@ -108,6 +108,8 @@ Long-form output (blog drafts, papers, reports) lives in `4-writing/`. Those are
 
 The `id` frontmatter field mirrors the filename stem. It is redundant with the filename but explicit (useful for Dataview/Bases queries and makes the slug visible to the reader).
 
+The `slugify()` function that maps titles to filenames lives in `obsidian.lua`. Its exact transformation rules, known limitations (non-ASCII stripping, punctuation collision), and worked examples are documented in §11.
+
 **Alternatives considered**.
 
 | Alternative | Why not |
