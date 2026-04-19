@@ -1,37 +1,29 @@
 #!/usr/bin/env bash
-# Frontmatter filler for missing required fields.
-# Ensures staged markdown notes in content directories carry the required
-# frontmatter fields: id, aliases, type, created, updated, tags. Missing
-# fields are added; existing values are never rewritten.
+# Frontmatter filler. Delegates to .githooks/lib/normalize.py, which
+# holds the single source of truth for frontmatter rules (see the
+# module docstring and DESIGN.md §9).
 #
-# Values when fields are missing:
-#   id       = filename stem (single-quoted)
-#   aliases  = filename stem (single-quoted)
-#   type     = folder-derived (e.g., 2-permanent/foo.md -> "permanent")
-#              empty if the folder does not match the N-name pattern
-#   created  = commit date (YYYY-MM-DD)
-#   updated  = empty (user-managed)
-#   tags     = []
+# This hook collects staged markdown files under content directories
+# (derived from .gitattributes filter=git-crypt rules) and runs the
+# normalizer on each. Modified files are re-staged.
 #
-# The hook does NOT slugify filenames or rewrite existing frontmatter.
-# Slug normalization (renaming the file and updating frontmatter id)
-# requires <leader>or in obsidian.nvim. That command renames the local
-# file and preserves the old title as an alias; it does not rewrite
-# backlinks vault-wide (use :Obsidian rename for that).
-#
-# Auto-commit safe: non-interactive, auto-stages rewrites, exits 0.
-# Warns on malformed frontmatter (unclosed ---) but does not reject, so
-# the hourly auto-commit timer stays unblocked.
+# Auto-commit safe: non-interactive, exits 0 on success, warns on
+# malformed frontmatter but does not reject, so the hourly timer
+# stays unblocked.
 
 set -uo pipefail
 
 VAULT="$(git rev-parse --show-toplevel)" || exit 0
 cd "$VAULT" || exit 0
 
-# Derive content directories from .gitattributes (git-crypt rules), the same
-# source post-commit uses. Adding a new content directory requires only a
-# .gitattributes update; this hook picks it up automatically. The trailing
-# \.md$ filter naturally excludes 6-assets (binary attachments) and
+if ! command -v python3 >/dev/null 2>&1; then
+  printf -- '[pre-commit] python3 not found; skipping normalization.\n' >&2
+  exit 0
+fi
+
+# Derive content directories from .gitattributes so a new encrypted
+# directory requires only one file edit (see AGENTS.md propagation).
+# The \.md$ filter naturally excludes 6-assets (binary) and
 # 5-templates (not listed in .gitattributes).
 mapfile -t CONTENT_DIRS < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes" | sed 's|/\*\*$||')
 if [ "${#CONTENT_DIRS[@]}" -eq 0 ]; then
@@ -40,113 +32,30 @@ fi
 printf -v CONTENT_DIRS_PIPE '%s|' "${CONTENT_DIRS[@]}"
 CONTENT_DIRS_RE="^(${CONTENT_DIRS_PIPE%|})/.+\\.md\$"
 
-# Gather staged, added/modified markdown files in content dirs.
 mapfile -t staged_files < <(git diff --cached --name-only --diff-filter=AM | grep -E "$CONTENT_DIRS_RE" || true)
-
 if [ "${#staged_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
-TODAY="$(date +%Y-%m-%d)"
-modified=0
-
+# Track originals to detect which files the normalizer changed and
+# re-stage only those.
+changed=()
 for f in "${staged_files[@]}"; do
   [ -f "$f" ] || continue
-
-  stem="$(basename "$f" .md)"
-  # YAML single-quoted scalar: only ' needs escaping (as ''). No backslash
-  # escape, no double-quote escape. Defends against filenames containing
-  # colons, hashes, brackets, backslashes, and double quotes.
-  stem_q="${stem//\'/\'\'}"
-
-  # Derive type from the top-level folder name. Expected pattern: N-name
-  # where N is one or more digits. Empty type_val if the pattern doesn't
-  # match (leaves the field empty for the user to fill).
-  top_dir="${f%%/*}"
-  type_val=""
-  if [[ "$top_dir" =~ ^[0-9]+-(.+)$ ]]; then
-    type_val="${BASH_REMATCH[1]}"
+  before="$(sha1sum "$f" | awk '{print $1}')"
+  if ! python3 "$VAULT/.githooks/lib/normalize.py" --fill --vault-root "$VAULT" "$f"; then
+    printf -- '[pre-commit] normalize failed on %s; continuing.\n' "$f" >&2
+    continue
   fi
-
-  first_line="$(head -n 1 "$f" | tr -d '\r')"
-
-  if [ "$first_line" != "---" ]; then
-    # No frontmatter: prepend a minimal block.
-    tmp="$(mktemp)"
-    {
-      printf -- '---\n'
-      printf -- "id: '%s'\n" "$stem_q"
-      printf -- "aliases:\n  - '%s'\n" "$stem_q"
-      if [ -n "$type_val" ]; then
-        printf -- 'type: %s\n' "$type_val"
-      else
-        printf -- 'type:\n'
-      fi
-      printf -- 'created: %s\n' "$TODAY"
-      printf -- 'updated:\n'
-      printf -- 'tags: []\n'
-      printf -- '---\n\n'
-      cat "$f"
-    } > "$tmp"
-    mv "$tmp" "$f"
+  after="$(sha1sum "$f" | awk '{print $1}')"
+  if [ "$before" != "$after" ]; then
+    changed+=("$f")
     git add "$f"
-    modified=$((modified + 1))
-    continue
   fi
-
-  # Find the closing --- line number. Tolerate CRLF line endings.
-  end_line="$(awk '/^---\r?$/ { c++; if (c == 2) { print NR; exit } }' "$f")"
-  if [ -z "$end_line" ]; then
-    printf -- '[pre-commit] warning: %s has unclosed frontmatter; skipping.\n' "$f" >&2
-    continue
-  fi
-
-  fm="$(sed -n "2,$((end_line - 1))p" "$f")"
-
-  missing=()
-  grep -q '^id:'      <<< "$fm" || missing+=('id')
-  grep -q '^aliases:' <<< "$fm" || missing+=('aliases')
-  grep -q '^type:'    <<< "$fm" || missing+=('type')
-  grep -q '^created:' <<< "$fm" || missing+=('created')
-  grep -q '^updated:' <<< "$fm" || missing+=('updated')
-  grep -q '^tags:'    <<< "$fm" || missing+=('tags')
-
-  if [ "${#missing[@]}" -eq 0 ]; then
-    continue
-  fi
-
-  additions=''
-  for field in "${missing[@]}"; do
-    case "$field" in
-      id)      additions+="id: '${stem_q}'"$'\n' ;;
-      aliases) additions+="aliases:"$'\n'"  - '${stem_q}'"$'\n' ;;
-      type)
-        if [ -n "$type_val" ]; then
-          additions+="type: ${type_val}"$'\n'
-        else
-          additions+="type:"$'\n'
-        fi
-        ;;
-      created) additions+="created: ${TODAY}"$'\n' ;;
-      updated) additions+="updated:"$'\n' ;;
-      tags)    additions+="tags: []"$'\n' ;;
-    esac
-  done
-
-  # Insert additions immediately before the closing ---.
-  tmp="$(mktemp)"
-  {
-    sed -n "1,$((end_line - 1))p" "$f"
-    printf -- '%s' "$additions"
-    sed -n "${end_line},\$p" "$f"
-  } > "$tmp"
-  mv "$tmp" "$f"
-  git add "$f"
-  modified=$((modified + 1))
 done
 
-if [ "$modified" -gt 0 ]; then
-  printf -- '[pre-commit] Normalized frontmatter in %d file(s).\n' "$modified" >&2
+if [ "${#changed[@]}" -gt 0 ]; then
+  printf -- '[pre-commit] normalized %d file(s).\n' "${#changed[@]}" >&2
 fi
 
 exit 0

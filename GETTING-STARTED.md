@@ -34,6 +34,8 @@ git config core.hooksPath .githooks
 git add -A && git commit -m "init: vault from template"
 ```
 
+The pre-commit hook calls `python3` for frontmatter normalization. Python 3 ships by default on Arch Linux, Ubuntu, macOS, and WSL. On native Windows, install from [python.org](https://www.python.org/downloads/) or via `winget install Python.Python.3`. If `python3` is not on `PATH`, the hook logs a warning and skips normalization; commits still succeed.
+
 This requires a git identity. If not already configured:
 
 ```bash
