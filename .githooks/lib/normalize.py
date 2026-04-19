@@ -86,6 +86,15 @@ KEY_LINE_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*)\s*:(.*)$")
 TEMPLATES_SUBDIR = "5-templates"
 
 
+# ---------------------------------------------------------------------------
+# YAML subset helpers
+#
+# The parser handles the vault's schema: flat `key: value` pairs plus a
+# block-style or simple flow-style list for `aliases`. Not a general YAML
+# parser. Files with malformed frontmatter are skipped rather than mangled.
+# ---------------------------------------------------------------------------
+
+
 def yaml_single_quote(value: str) -> str:
     """Quote a scalar as a YAML single-quoted string.
 
@@ -227,6 +236,15 @@ def render_aliases(values: list[str]) -> list[str]:
     return lines
 
 
+# ---------------------------------------------------------------------------
+# Body inspection and modification
+#
+# Read-only extraction of the first H1, plus a minimal insert when the body
+# lacks one. Both the fill and apply modes rely on these for the aliases[0]
+# ↔ H1 sync rule.
+# ---------------------------------------------------------------------------
+
+
 def extract_h1_title(body_lines: list[str]) -> str | None:
     """Return the first non-blank line's H1 text, or None.
 
@@ -260,6 +278,15 @@ def ensure_h1(body: list[str], title: str) -> list[str]:
     return body + [f"# {title}"]
 
 
+# ---------------------------------------------------------------------------
+# Path and folder classification
+#
+# Derives the canonical `type` value from the content directory a note lives
+# under. Shared by build_canonical_fields and by apply_file (which uses it
+# to pick the template).
+# ---------------------------------------------------------------------------
+
+
 def derive_folder_type(path: str, vault_root: str) -> str:
     """Extract the type suffix from the top-level content folder name.
 
@@ -276,6 +303,16 @@ def derive_folder_type(path: str, vault_root: str) -> str:
         return ""
     m = FOLDER_TYPE_RE.match(parts[0])
     return m.group(1) if m else ""
+
+
+# ---------------------------------------------------------------------------
+# Canonical field building
+#
+# Given the existing frontmatter plus body H1 and filename stem, produces
+# the canonical field map in the invariant order (id, aliases, type,
+# created, updated, tags). Unknown user-added fields are preserved at the
+# end in source order. See AGENTS.md §Invariants #5 for the aliases rule.
+# ---------------------------------------------------------------------------
 
 
 def build_canonical_fields(
@@ -347,6 +384,16 @@ def render_frontmatter(fields: dict[str, list[str]]) -> list[str]:
     for lines in fields.values():
         rendered.extend(lines)
     return rendered
+
+
+# ---------------------------------------------------------------------------
+# File operations (mode implementations)
+#
+# One function per CLI mode: fill_file for --fill, apply_file for --apply,
+# check_file for --check. apply_file delegates to fill_file when the note
+# already has frontmatter. substitute_placeholders is a shared helper for
+# template substitution.
+# ---------------------------------------------------------------------------
 
 
 def fill_file(
@@ -563,6 +610,11 @@ def check_file(path: str, vault_root: str) -> list[str]:
             )
 
     return issues
+
+
+# ---------------------------------------------------------------------------
+# CLI entry
+# ---------------------------------------------------------------------------
 
 
 def main() -> int:
