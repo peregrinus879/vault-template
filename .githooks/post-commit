@@ -90,6 +90,12 @@ done < <(awk '/filter=git-crypt/ {print $1}' "$VAULT/.gitattributes")
 # Clean orphaned directories: anything in the public repo root that is
 # neither a content dir, infrastructure (.git, .obsidian), nor explicitly
 # present in the vault. Guards against renamed/removed top-level items.
+#
+# COUPLING: the skip-list below must stay in sync with the rsync
+# --include list at the top of this hook and with ALLOWED_ROOT_FILES.
+# Any new non-content top-level directory or file added to the public
+# mirror must be named in all three places; otherwise the cleanup
+# below will delete it on every sync.
 for dir in "$PUBLIC"/*/ "$PUBLIC"/.*/; do
   [ -d "$dir" ] || continue
   name="$(basename "$dir")"

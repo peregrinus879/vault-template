@@ -128,24 +128,27 @@ def field_has_value(field_lines: list[str]) -> bool:
 def aliases_is_empty(field_lines: list[str]) -> bool:
     """True if an aliases field is present but carries no entries.
 
-    Covers both inline-empty (`aliases:` with no value, `aliases: []`)
-    and block-form with no list items following. A block-form field
-    with at least one `- value` line is considered populated.
+    Covers inline-empty forms (`aliases:` with no value, `aliases: []`,
+    `aliases: [ ]` with whitespace) and block-form with no list items
+    following. A block-form field with at least one `- value` line is
+    considered populated. An inline flow sequence with entries (e.g.,
+    `aliases: [one, two]`) is considered populated and left untouched.
     """
     first = field_lines[0]
     m = KEY_LINE_RE.match(first)
     if m:
         value = m.group(2).strip()
+        # Normalize whitespace inside flow-sequence brackets so
+        # `[ ]`, `[  ]`, and `[]` all count as empty.
+        if value.startswith("[") and value.endswith("]"):
+            if value[1:-1].strip() == "":
+                value = "[]"
         if value in ("", "[]"):
-            # Inline empty. But block-form continuation may still
-            # supply entries below; check following lines.
             for line in field_lines[1:]:
                 stripped = line.strip()
                 if stripped.startswith("-") and stripped != "-":
                     return False
             return True
-    # Non-empty inline value (e.g., aliases: [one, two]) counts as
-    # populated; we leave such values untouched.
     return False
 
 
