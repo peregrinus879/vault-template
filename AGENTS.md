@@ -138,7 +138,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `self-hosting/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `GETTING-STARTED.md`, `SELF-HOSTING.md`, `WORKFLOW.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
-- Completing a themed work pass (audit remediation, structural change, new hook or template, setup flow change): draft a `CHANGELOG.md` entry before declaring the work done, per §Changelog discipline
+- Completing a themed work pass (audit remediation, structural change, new hook or template, setup flow change): draft a `CHANGELOG.md` entry before declaring the work done, per §Changelog conventions
 
 ### What to check
 
@@ -148,7 +148,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 4. **obsidian.nvim config**: if directory paths changed, verify `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` has the correct `notes_subdir`, `templates.folder`, `attachments.folder`, and `templates.customizations` values.
 5. **Doc cross-references and overviews**: cross-document references (section numbers, file names, headings) must resolve. `README.md` Documentation table must list all public docs. `AGENTS.md` Key Files descriptions must still match each doc's actual scope. Run `grep -rn 'step [0-9]\|§[0-9]' --include='*.md' .` and confirm every referenced section exists.
 
-## Changelog discipline
+## Changelog conventions
 
 `CHANGELOG.md` is theme-grouped, not per-commit. It lives in the private repo only (not synced to `vault-template`). Update it when a logical arc wraps, a session boundary, a coherent feature/fix bundle, an audit-remediation pass. Do not commit each non-trivial change with its own changelog line; git log is the per-commit record.
 
