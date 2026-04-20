@@ -99,7 +99,7 @@ When a thought appears, capture it immediately. Speed matters more than structur
 
 **In Obsidian mobile:** tap the `+` icon or new-note button. Confirm the default folder is `0-fleeting/` (Settings > Files and links > Default location for new notes > In the folder specified below > `0-fleeting`). Type, save. Syncthing pushes it to the hub within seconds to minutes.
 
-Mobile captures will not have the fleeting template applied automatically. That is fine; you will process them during triage.
+Obsidian captures (desktop and mobile) start without frontmatter or template structure. That is fine: the pre-commit hook on the hub applies the fleeting template, adds canonical frontmatter, and wraps your typed content in `## Capture` on the first commit. During triage you see a fully structured note ready to process or delete.
 
 **In Neovim** *(skip if you don't use Neovim)*: press `<leader>on`. Type a short title, press Enter. The note lands in `0-fleeting/` with the fleeting template applied: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
 

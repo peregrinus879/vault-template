@@ -257,7 +257,7 @@ The result is a pipeline where each tool does one thing: Syncthing moves files b
 
 ## 11. Identity and naming: filename, id, aliases, H1
 
-**Decision**. Every note carries four distinct identity slots, each with a fixed role and update rule:
+**Decision**. Every note carries five distinct identity slots (four if you collapse `aliases` into one; the table splits its primary entry and synonym tail for clarity), each with a fixed role and update rule:
 
 | Slot | Form | Role | Source of truth |
 |---|---|---|---|
