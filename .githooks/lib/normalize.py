@@ -3,7 +3,8 @@
 
 Enforces identity invariants across the vault's content notes:
 
-- Canonical frontmatter (id, aliases, type, created, updated, tags).
+- Canonical frontmatter (id, aliases, tags) — aligned with
+  obsidian.nvim's default emitter.
 - Body `# H1` heading matching aliases[0].
 - Template body application (via --apply mode).
 
@@ -26,7 +27,7 @@ Modes:
       issue to stderr. Exits non-zero if any issue is found.
 
 Canonical field order:
-    id, aliases, type, created, updated, tags
+    id, aliases, tags
 
 Field rules:
     id       : always rewritten to match the filename stem.
@@ -35,10 +36,6 @@ Field rules:
                is overwritten with this canonical value; aliases[1..]
                are preserved (user-added synonyms), deduplicated
                against the canonical first entry.
-    type     : if absent or empty, set to the folder-derived type.
-               Otherwise preserved.
-    created  : if absent or empty, set to today. Otherwise preserved.
-    updated  : if absent, added as empty. Never rewritten.
     tags     : if absent, added as empty flow sequence `[]`.
 
 Body rules (--fill and --apply):
@@ -48,7 +45,17 @@ Body rules (--fill and --apply):
                  (H1 wins when both are present and differ).
 
 Extra user-added frontmatter fields are preserved and emitted
-after the canonical six, in the order they appear in the source.
+after the canonical block, in the order they appear in the source.
+Notes migrating from an earlier six-field schema retain their
+`type`, `created`, `updated` values this way until cleaned up
+manually.
+
+Scalar serialization matches obsidian.nvim's yaml.lua emitter:
+strings are emitted unquoted unless they start with a special
+character ([, {, &, !, -, ", ', \\), contain ": ", look like a
+wikilink, are empty/whitespace-only, or look like a hex color.
+When quoting is required, double quotes are used and embedded
+double quotes are backslash-escaped.
 
 Idempotent: running the same mode twice produces no further
 changes on the second run.
@@ -78,11 +85,13 @@ import re
 import sys
 from datetime import date
 
-CANONICAL_ORDER = ("id", "aliases", "type", "created", "updated", "tags")
+CANONICAL_ORDER = ("id", "aliases", "tags")
 FM_DELIM = "---"
 FOLDER_TYPE_RE = re.compile(r"^\d+-(.+)$")
 H1_RE = re.compile(r"^#\s+(.+?)\s*$")
 KEY_LINE_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*)\s*:(.*)$")
+HEX_COLOR_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
+QUOTE_TRIGGER_START_CHARS = set('"\'\\[{&!-')
 TEMPLATES_SUBDIR = "5-templates"
 
 
@@ -95,14 +104,37 @@ TEMPLATES_SUBDIR = "5-templates"
 # ---------------------------------------------------------------------------
 
 
-def yaml_single_quote(value: str) -> str:
-    """Quote a scalar as a YAML single-quoted string.
+def _should_quote(value: str) -> bool:
+    """Whether a scalar needs quoting, matching obsidian.nvim's rules.
 
-    Single quotes in YAML single-quoted strings are escaped by
-    doubling. No backslash escapes are interpreted. Safe for arbitrary
-    content including colons, braces, and special characters.
+    Mirrors `should_quote` in obsidian.nvim's lua/obsidian/yaml/init.lua:
+    quote if the value starts with a YAML special character, contains
+    `": "`, looks like a `[[wikilink]]`, is empty or whitespace-only,
+    or looks like a hex color.
     """
-    return "'" + value.replace("'", "''") + "'"
+    if value == "" or value.isspace():
+        return True
+    if value[0] in QUOTE_TRIGGER_START_CHARS:
+        return True
+    if ": " in value:
+        return True
+    if re.search(r"\[\[.*?\]\]", value):
+        return True
+    if HEX_COLOR_RE.match(value):
+        return True
+    return False
+
+
+def yaml_scalar(value: str) -> str:
+    """Serialize a string as a YAML scalar matching obsidian.nvim's output.
+
+    Emits the raw value unquoted when safe, or double-quoted with
+    backslash-escaped embedded double quotes when special characters
+    require it.
+    """
+    if _should_quote(value):
+        return '"' + value.replace('"', '\\"') + '"'
+    return value
 
 
 def unquote_yaml(value: str) -> str:
@@ -226,13 +258,13 @@ def render_aliases(values: list[str]) -> list[str]:
     """Render an aliases list as frontmatter lines in block form.
 
     Empty list emits `aliases: []`. Non-empty emits a block list with
-    each entry single-quoted.
+    each entry serialized via yaml_scalar (quoted only when needed).
     """
     if not values:
         return ["aliases: []"]
     lines = ["aliases:"]
     for v in values:
-        lines.append(f"  - {yaml_single_quote(v)}")
+        lines.append(f"  - {yaml_scalar(v)}")
     return lines
 
 
@@ -309,9 +341,10 @@ def derive_folder_type(path: str, vault_root: str) -> str:
 # Canonical field building
 #
 # Given the existing frontmatter plus body H1 and filename stem, produces
-# the canonical field map in the invariant order (id, aliases, type,
-# created, updated, tags). Unknown user-added fields are preserved at the
-# end in source order. See AGENTS.md §Invariants #5 for the aliases rule.
+# the canonical field map in the invariant order (id, aliases, tags).
+# Unknown user-added fields (including legacy type/created/updated from
+# earlier schemas) are preserved at the end in source order. See
+# AGENTS.md §Invariants #5 for the aliases rule.
 # ---------------------------------------------------------------------------
 
 
@@ -320,8 +353,6 @@ def build_canonical_fields(
     *,
     stem: str,
     h1_title: str | None,
-    folder_type: str,
-    today: str,
     fallback_alias: str | None = None,
 ) -> dict[str, list[str]]:
     """Return the field map after applying fill rules in canonical order.
@@ -336,7 +367,9 @@ def build_canonical_fields(
     out: dict[str, list[str]] = {}
 
     # id: always synced to stem.
-    out["id"] = [f"id: {yaml_single_quote(stem)}"]
+    id_emit = yaml_scalar(stem)
+    # Preserve a trailing colon for slug-safe stems that don't need quoting.
+    out["id"] = [f"id: {id_emit}"]
 
     # aliases: H1 drives aliases[0] (bidirectional sync rule).
     canonical_first = h1_title or fallback_alias or stem
@@ -345,24 +378,6 @@ def build_canonical_fields(
         existing_values = extract_alias_values(existing["aliases"])
     tail = [v for v in existing_values[1:] if v and v != canonical_first]
     out["aliases"] = render_aliases([canonical_first] + tail)
-
-    # type: preserve if populated, else fill from folder.
-    if "type" in existing and field_has_value(existing["type"]):
-        out["type"] = list(existing["type"])
-    else:
-        out["type"] = [f"type: {folder_type}" if folder_type else "type:"]
-
-    # created: preserve if populated, else fill with today.
-    if "created" in existing and field_has_value(existing["created"]):
-        out["created"] = list(existing["created"])
-    else:
-        out["created"] = [f"created: {today}"]
-
-    # updated: preserve if present at all; otherwise add empty.
-    if "updated" in existing:
-        out["updated"] = list(existing["updated"])
-    else:
-        out["updated"] = ["updated:"]
 
     # tags: preserve if present, else empty flow sequence.
     if "tags" in existing:
@@ -399,13 +414,14 @@ def render_frontmatter(fields: dict[str, list[str]]) -> list[str]:
 def fill_file(
     path: str,
     vault_root: str,
-    today: str,
     fallback_alias: str | None = None,
 ) -> bool:
     """Normalize frontmatter and ensure body H1 in place.
 
     Returns True if the file was modified, False if already canonical.
     Prints a warning and returns False on malformed frontmatter.
+    vault_root is kept in the signature for future checks that need
+    folder context; currently only apply_file reads the folder type.
     """
     with open(path, "r", encoding="utf-8") as fh:
         original = fh.read()
@@ -422,14 +438,11 @@ def fill_file(
 
     stem = os.path.splitext(os.path.basename(path))[0]
     h1_title = extract_h1_title(body)
-    folder_type = derive_folder_type(path, vault_root)
 
     new_fields = build_canonical_fields(
         existing,
         stem=stem,
         h1_title=h1_title,
-        folder_type=folder_type,
-        today=today,
         fallback_alias=fallback_alias,
     )
 
@@ -505,18 +518,18 @@ def apply_file(
 
     # Frontmatter present → delegate to fill (no body template rework).
     if fm_lines is not None:
-        return fill_file(path, vault_root, today, fallback_alias)
+        return fill_file(path, vault_root, fallback_alias)
 
     folder_type = derive_folder_type(path, vault_root)
     if not folder_type:
         # Not in a recognized content folder; fill handles bare notes.
-        return fill_file(path, vault_root, today, fallback_alias)
+        return fill_file(path, vault_root, fallback_alias)
 
     template_path = os.path.join(vault_root, TEMPLATES_SUBDIR, f"{folder_type}.md")
     if not os.path.isfile(template_path):
         print(f"[normalize] warning: template {template_path} not found; "
               f"falling back to fill mode.", file=sys.stderr)
-        return fill_file(path, vault_root, today, fallback_alias)
+        return fill_file(path, vault_root, fallback_alias)
 
     with open(template_path, "r", encoding="utf-8") as fh:
         template_text = fh.read()
@@ -551,7 +564,7 @@ def apply_file(
     # template may have aliases[0] as fallback/stem, but the H1 is the
     # same substitution — they should already match). Fill also
     # reconciles any edge case where the template's aliases differ.
-    fill_file(path, vault_root, today, fallback_alias)
+    fill_file(path, vault_root, fallback_alias)
 
     return True
 
@@ -579,7 +592,6 @@ def check_file(path: str, vault_root: str) -> list[str]:
 
     existing = parse_fields(fm_lines)
     stem = os.path.splitext(os.path.basename(path))[0]
-    folder_type = derive_folder_type(path, vault_root)
     body = lines[body_start:] if body_start > 0 else []
     h1_title = extract_h1_title(body)
 
@@ -594,13 +606,6 @@ def check_file(path: str, vault_root: str) -> list[str]:
         unquoted = unquote_yaml(value)
         if unquoted != stem:
             issues.append(f"{path}: id '{unquoted}' does not match filename stem '{stem}'")
-
-    if folder_type and "type" in existing and field_has_value(existing["type"]):
-        first = existing["type"][0]
-        m = KEY_LINE_RE.match(first)
-        value = m.group(2).strip() if m else ""
-        if value != folder_type:
-            issues.append(f"{path}: type '{value}' does not match folder-derived '{folder_type}'")
 
     if "aliases" in existing and not aliases_is_empty(existing["aliases"]):
         alias_values = extract_alias_values(existing["aliases"])
@@ -655,7 +660,7 @@ def main() -> int:
             continue
         if args.fill:
             try:
-                if fill_file(p, vault_root, today, args.fallback_alias):
+                if fill_file(p, vault_root, args.fallback_alias):
                     print(p)
                     changed += 1
             except OSError as exc:
