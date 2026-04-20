@@ -199,36 +199,36 @@ git-remote-gcrypt encrypts the remote as a single opaque blob. But it has no fil
 
 **When to revisit**. If an algorithm break appears against git-crypt's AES-256 or gcrypt's GPG. Or if a simpler tool emerges that provides both filename and content encryption as one layer (none known as of 2026-04).
 
-## 9. Unified six-field frontmatter
+## 9. Unified three-field frontmatter
 
-**Decision**. Every note, regardless of type, carries the same six frontmatter fields in this order: `id`, `aliases`, `type`, `created`, `updated`, `tags`. No type-specific fields. Literature notes keep bibliographic metadata in the body under `## Source`, not in frontmatter.
+**Decision**. Every note carries the same three frontmatter fields in this order: `id`, `aliases`, `tags`. No type-specific fields. Literature notes keep bibliographic metadata in the body under `## Source`, not in frontmatter. The schema intentionally matches the default output of obsidian.nvim's frontmatter emitter, so no Lua customization is needed and `normalize.py` re-emits in the same shape.
 
-**Rationale**. Earlier iterations had type-specific frontmatter (`status` on writing notes, `scope` on MOCs, `medium`/`author`/`year` on literature notes). Each added field created:
+**Rationale**. Earlier iterations carried six fields (`id`, `aliases`, `type`, `created`, `updated`, `tags`). Each extra field earned its keep less than the last:
 
-- **Template divergence**: different templates carried different schemas, making the unified pre-commit normalizer harder to write.
-- **User confusion**: "does this note type need `status`? I forget."
-- **Stale fields**: `status` was never actually used; `scope` duplicated what `## Orientation` conveyed in the body.
+- **`type`** was folder-derived. Dataview / Bases queries work equally well with `FROM "2-permanent"` as with `WHERE type = "permanent"`. The field was a redundant copy of the path.
+- **`created`** was useful in principle but never read in practice. Age-based triage of fleeting notes (the main imagined use case) is better served by `git log --diff-filter=A --format=%aI` or filesystem `mtime`.
+- **`updated`** was reserved. No mechanism populated it; it sat empty forever.
 
-A uniform six-field schema makes the pre-commit normalizer a single implementation. Every note has the same skeleton. Where a note type needs additional information (bibliographic metadata for literature notes), it goes in the body where structure is visible and editable alongside content.
+Dropping the three unused fields aligns the schema with obsidian.nvim's default (`{id, aliases, tags}`). That alignment removes the need for a custom `note_frontmatter_func` on the Lua side, eliminates the Lua/Python dual-source-of-truth risk, and trims the normalizer's field logic.
 
 | Field | Purpose |
 |---|---|
 | `id` | Slug of the filename. Tautological with filename; explicit for tooling. |
-| `aliases` | Human-readable title(s). Drives search and `[[link]]` autocomplete. |
-| `type` | Folder-derived (`fleeting`, `literature`, `permanent`, `overview`, `writing`). Enables cross-folder filtering. |
-| `created` | Date the note was started (YYYY-MM-DD). Stable; never rewritten. |
-| `updated` | Reserved. Currently empty by convention; auto-bump behavior deferred pending a future decision. |
+| `aliases` | Human-readable title(s). Drives search and `[[link]]` autocomplete. aliases[0] syncs with body H1; aliases[1..] preserved as user-added synonyms. |
 | `tags` | User-defined classification. Free-form. |
 
 **Alternatives considered**.
 
 | Alternative | Why not |
 |---|---|
-| Type-specific frontmatter per template | Fragments the normalizer; increases user cognitive load. |
+| Keep six fields | Dead weight; `type`/`created`/`updated` never read in practice; maintenance cost for no gain. |
+| Custom `note_frontmatter_func` to emit six fields in Lua | Duplicates canonical-schema logic across Python (normalize.py) and Lua (obsidian.lua); drift risk on any schema change. |
+| Type-specific frontmatter per template (`status` on writing, `medium` on literature) | Fragments the normalizer; increases cognitive load; rejected as-was in the six-field iteration. |
 | No frontmatter; parse title/tags from body | Loses link autocomplete, breaks Dataview queries, inconsistent with Obsidian conventions. |
-| YAML block merged with content (inline markers) | Rejected by Obsidian and obsidian.nvim; both expect frontmatter at document top. |
 
-**When to revisit**. If a new mandatory cross-type field emerges (e.g., `provenance` if the vault ever needs to track which device captured a note). Otherwise, six is enough.
+**When to revisit**. If a cross-type field emerges that is genuinely load-bearing (e.g., `provenance` if the vault tracks capture device, or a mandatory `status` for writing notes that actually gets queried). Otherwise, three is enough — and matching obsidian.nvim's default is a stable target.
+
+**Migration**. Notes carried over from the earlier six-field schema keep their `type`/`created`/`updated` values: `build_canonical_fields` preserves unknown fields after the canonical block. Clean-up is manual or opportunistic.
 
 ## 10. External sync and version control (not the Obsidian Git plugin)
 

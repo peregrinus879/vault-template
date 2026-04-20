@@ -8,7 +8,7 @@ Seven numbered directories enforce a knowledge lifecycle: capture, process, synt
 
 ## Templates for every note type
 
-Five templates cover the full Zettelkasten workflow: fleeting, literature, permanent, overview, and writing. All share the same universal frontmatter (`id`, `aliases`, `type`, `created`, `updated`, `tags`). Literature notes carry bibliographic metadata in the body, not in frontmatter. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
+Five templates cover the full Zettelkasten workflow: fleeting, literature, permanent, overview, and writing. All share the same three-field frontmatter (`id`, `aliases`, `tags`), matching obsidian.nvim's default schema. Literature notes carry bibliographic metadata in the body, not in frontmatter. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
 
 ## Dual-editor support
 
@@ -20,7 +20,7 @@ Note filenames are auto-generated lowercase-hyphenated slugs (e.g., `risk-appeti
 
 ## Note normalization
 
-A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the six canonical frontmatter fields (`id`, `aliases`, `type`, `created`, `updated`, `tags`), body H1 insertion, and template body application. It runs in four contexts:
+A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the three canonical frontmatter fields (`id`, `aliases`, `tags` — matching obsidian.nvim's default emitter), body H1 insertion, and template body application. It runs in four contexts:
 
 - **`.githooks/pre-commit`** runs `--apply` on every staged note in a content directory. Notes created outside templates (mobile captures, file manager, copy-paste) get the folder-matched template body, correct frontmatter, and an H1 automatically on commit. Pre-existing body content is wrapped in a `## Capture` section for later integration.
 - **`<leader>oi`** in obsidian.nvim runs `--apply` on the current buffer — same comprehensive behavior, on demand.

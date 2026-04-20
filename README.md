@@ -50,7 +50,7 @@ self-hosting/     Reference files for encryption and backup setup
 
 ### Frontmatter
 
-All templates share the same frontmatter: `id`, `aliases`, `type`, `created`, `updated`, `tags`. No type-specific frontmatter. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`.
+All templates share the same three-field frontmatter (`id`, `aliases`, `tags`), matching obsidian.nvim's default schema. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`.
 
 ## Documentation
 

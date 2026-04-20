@@ -146,18 +146,15 @@ Every note has two parts separated by `---` fences:
 
 **In Neovim:** press `<leader>on` for a new fleeting note (template auto-applied), or `<leader>oN` to pick a template and route to the correct folder. obsidian.nvim generates the base frontmatter automatically.
 
-All templates share the same frontmatter:
+All templates share the same three frontmatter fields, matching obsidian.nvim's default schema:
 
 - **`id`**: the slugified filename (e.g., `quis-custodiet-ipsos-custodes`). Used internally for linking.
-- **`aliases`**: the original title you typed, preserving spaces and punctuation. Used for search and `[[link]]` autocomplete.
-- **`type`**: matches the note type (`fleeting`, `literature`, `permanent`, `overview`, `writing`).
-- **`created`**: date the note was created (auto-filled by template as `YYYY-MM-DD`).
-- **`updated`**: date of last meaningful revision (empty at creation; user-managed).
+- **`aliases`**: the original title you typed, preserving spaces and punctuation. Powers search and `[[link]]` autocomplete. `aliases[0]` is kept in sync with the body H1; additional entries (`aliases[1..]`) are preserved as user-added synonyms.
 - **`tags`**: empty by default. Add tags as needed.
 
-No type-specific frontmatter. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`, not in frontmatter. Write your content in the body, below any instructional comments.
+No type-specific frontmatter. The folder path already encodes the note type (`2-permanent/...` vs `1-literature/...`); no redundant field is written. For dates, rely on `git log` (first-commit = created; last-commit = updated) or filesystem `mtime`. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`, not in frontmatter. Write your content in the body, below any instructional comments.
 
-**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The shared normalizer `.githooks/lib/normalize.py` holds the rules in one place and runs in three contexts: the `.githooks/pre-commit` hook invokes it with `--apply` on every staged note in a content directory; `<leader>oi` invokes `--apply` on the current buffer; `<leader>of` invokes `--fill` (frontmatter-only) on the current buffer. `--apply` inserts the folder-matched template when a note has no frontmatter (wrapping any pre-existing body content in `## Capture` at the end), then fills canonical fields, ensures a body `# H1`, and syncs `aliases[0]` with the H1 (H1 wins when both exist and differ). User-added `aliases[1..]` synonyms are preserved. The hook does not slugify filenames; use `<leader>oS` per file for that. See [DESIGN.md](DESIGN.md) §9 for the schema rationale and §11 for the identity model.
+**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste) miss this auto-generation. The shared normalizer `.githooks/lib/normalize.py` holds the rules in one place and runs in three contexts: the `.githooks/pre-commit` hook invokes it with `--apply` on every staged note in a content directory; `<leader>oi` invokes `--apply` on the current buffer; `<leader>of` invokes `--fill` (frontmatter-only) on the current buffer. `--apply` inserts the folder-matched template when a note has no frontmatter (wrapping any pre-existing body content in `## Capture` at the end), then fills canonical fields, ensures a body `# H1`, and syncs `aliases[0]` with the H1 (H1 wins when both exist and differ). User-added `aliases[1..]` synonyms are preserved. The hook does not slugify filenames; use `<leader>oS` per file for that. See [DESIGN.md](DESIGN.md) §9 for the three-field schema rationale and §11 for the identity model.
 
 ### Fleeting Notes
 
