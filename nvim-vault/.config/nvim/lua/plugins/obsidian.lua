@@ -261,7 +261,7 @@ return {
             vim.notify("Note canonicalized (filename already slug)", vim.log.levels.INFO)
           end
         end,
-        desc = "Slugify note",
+        desc = "Slugify and normalize note",
       },
     },
   },
