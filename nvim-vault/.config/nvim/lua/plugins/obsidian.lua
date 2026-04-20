@@ -162,7 +162,7 @@ return {
       { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
       { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Outgoing links" },
       { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste image" },
-      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template (raw)" },
+      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
       { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note" },
 
       -- oS — Slugify note. Full canonicalization in one keystroke:

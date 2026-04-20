@@ -289,6 +289,18 @@ Two invariants run across these slots, auto-enforced by `normalize.py`:
 
 `aliases[1..]` are preserved verbatim because they represent deliberate user intent (synonyms, historical names), not drift.
 
+**Smart-apply detection rule (`## ` as the structure signal)**. `normalize.py --apply` branches three ways: no frontmatter → full template; frontmatter present and body has no `## ` heading → insert template body sections only; frontmatter present and body has ≥ 1 `## ` heading → fill only (body untouched).
+
+The signal is **any level-2 (`##`) heading anywhere in the body**. Rationale:
+
+- All vault templates use `##` for their body sections (`## Source`, `## Summary`, `## Key ideas`, `## Claim`, `## Development`, etc.). Fleeting is the exception (no sections) but that is the template applied to folderless captures anyway.
+- A note's H1 (`# `) is the title and is always present after fill. Checking for `##` separates "has title only" from "has template structure applied."
+- Level-1 (`#`) would conflict with H1 detection; level-3+ would miss the template's own section markers.
+
+The `##` check is a **deliberate user escape hatch**: if you want a note that keeps frontmatter and H1 but no template sections (a bare capture you intend to leave unstructured), add any `## Notes` line to the body and the hook will never re-insert template sections. A single `##` heading anywhere means "I've structured this deliberately; don't touch."
+
+This makes the rule idempotent and overridable without any configuration — the user signals intent in the note itself.
+
 **Resolution hierarchy**. When Obsidian resolves `[[link-text]]`:
 
 1. Exact match against any filename stem across the vault.
@@ -332,6 +344,8 @@ Known limitations:
 **When to revisit**. If Obsidian changes its link resolution model (e.g., removes alias lookup); if a non-Obsidian editor becomes primary and its identity model differs; if `aliases[0] ↔ H1` bidirectional sync proves more confusing than the drift it prevents (monitor `normalize.py --check` output). The slug function's non-ASCII handling should be revisited if multilingual titles become common — transliteration at the slugify() level would solve the empty-slug problem.
 
 ## 12. obsidian.nvim overlay deviations
+
+**Principle**. Keep obsidian.nvim as unchanged as possible. The plugin is the vault's primary in-editor surface and is externally maintained; every bit of configuration we add is code we own the maintenance of. Add opts only when a vault-workflow rule requires them; use `<cmd>Obsidian <sub><cr>` pass-throughs rather than remapping native commands to custom letters; never monkey-patch the plugin's internals. When a vault operation does not exist in obsidian.nvim, add a fresh letter for it (e.g., `<leader>oS`) rather than overriding an existing native binding. This keeps upstream upgrades safe and makes the overlay's surface area auditable at a glance.
 
 **Decision**. The Lua overlay at `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` configures obsidian.nvim beyond naming the workspace. Every deviation from the plugin's defaults has a vault-workflow reason tied to a choice documented elsewhere in this file.
 

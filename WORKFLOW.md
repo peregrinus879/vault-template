@@ -501,9 +501,9 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 | `<leader>ob` | Show backlinks |
 | `<leader>ol` | Show outgoing links |
 | `<leader>op` | Paste image from clipboard |
-| `<leader>ot` | Insert template (raw, at cursor; obsidian.nvim native) |
-| `<leader>or` | Rename note (free-form; obsidian.nvim native) |
-| `<leader>oS` | Slugify note (slug rename + apply template + re-sync) |
+| `<leader>ot` | Insert template |
+| `<leader>or` | Rename note |
+| `<leader>oS` | Slugify note (rename → normalize: FM + body + H1 + aliases) |
 | `[[` | Insert wiki-link (fuzzy picker) |
 
 ### Buffers and Windows
