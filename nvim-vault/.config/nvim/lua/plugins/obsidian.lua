@@ -16,11 +16,20 @@
 -- DESIGN.md §12; the underlying design decisions live in §5, §9, §11):
 --
 -- Opts that change obsidian.nvim behavior beyond naming the workspace:
---   notes_subdir, new_notes_location   :Obsidian new lands in 0-fleeting/.
---   note.template                      Auto-applies fleeting.md on creation.
+--   notes_subdir, new_notes_location   :Obsidian new + [[...]]-follow-
+--                                      creating both land in 2-permanent/.
+--                                      Rationale: in nvim, extracting
+--                                      atomic claims from literature notes
+--                                      into permanent is the dominant
+--                                      pattern. Fleeting stays the default
+--                                      in Obsidian GUI (mobile + desktop).
+--   note.template                      Auto-applies permanent.md on
+--                                      creation in nvim.
 --   templates.folder                   Points at vault's 5-templates/.
---   templates.customizations           Routes each template type to its
---                                      content folder (literature →
+--   templates.customizations           Routes each template type (picked
+--                                      via <leader>oN or <leader>oM) to
+--                                      its content folder (fleeting →
+--                                      0-fleeting/, literature →
 --                                      1-literature/, etc.).
 --   note_id_func                       Slugifies titles → filenames. Slug
 --                                      rules documented in DESIGN.md §11.
@@ -30,8 +39,12 @@
 --                                      overlap.
 --   completion.blink + nvim_cmp        LazyVim ships blink.cmp; match it.
 --
--- One vault-specific keybinding (not an obsidian.nvim command):
+-- Vault-specific keybindings (not obsidian.nvim commands):
 --   <leader>oS   Slugify note (slug rename + normalize.py --apply)
+--   <leader>oM   Promote/move note to a different type (folder move +
+--                normalize.py --reapply). Same orchestration split as oS:
+--                Lua owns the filesystem action, normalize.py owns body
+--                and frontmatter.
 --
 -- Routine normalization (frontmatter hygiene, H1 insertion, aliases↔H1
 -- sync, template body application when body lacks ## headings) runs
@@ -39,8 +52,12 @@
 -- need a keybinding for it. Use <leader>oS when you want the full
 -- pipeline in-session (slug rename included).
 --
--- Pass-through keybindings to obsidian.nvim native commands:
---   <leader>on, oN, oo, os, ob, ol, op, ot, or
+-- Pass-through keybindings to obsidian.nvim native commands. Two
+-- groups mirroring the plugin's general-action / note-action split;
+-- within each group, alphabetical by the binding letter:
+--   General:  <leader>on, oN, oo, os
+--   Note:     <leader>ob, ol, op, or, ot
+-- Descriptions are the command subnames Title-cased.
 -- See the `keys` table below for each one's exact command mapping.
 -- ---------------------------------------------------------------------------
 
@@ -120,13 +137,14 @@ return {
           path = vault_path,
         },
       },
-      notes_subdir = "0-fleeting",
+      notes_subdir = "2-permanent",
       new_notes_location = "notes_subdir",
       templates = {
         folder = "5-templates",
         date_format = "%Y-%m-%d",
         time_format = "%H:%M",
         customizations = {
+          fleeting = { notes_subdir = "0-fleeting" },
           literature = { notes_subdir = "1-literature" },
           permanent = { notes_subdir = "2-permanent" },
           overview = { notes_subdir = "3-overview" },
@@ -134,7 +152,7 @@ return {
         },
       },
       note = {
-        template = "fleeting.md",
+        template = "permanent.md",
       },
       completion = {
         blink = true,
@@ -155,16 +173,24 @@ return {
       end,
     },
     keys = {
-      -- obsidian.nvim pass-through bindings (some modified by opts above).
-      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "New fleeting note" },
+      -- obsidian.nvim pass-through bindings. Two groups mirroring the
+      -- plugin's general-action / note-action split; within each group,
+      -- alphabetical by the binding letter (lowercase before uppercase
+      -- for same-letter pairs). Descriptions are the command subnames
+      -- Title-cased, no editorializing.
+
+      -- General
+      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "New" },
       { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "New from template" },
-      { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Find note" },
-      { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault" },
+      { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Quick switch" },
+      { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search" },
+
+      -- Note
       { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
-      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Outgoing links" },
-      { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste image" },
-      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
-      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note" },
+      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Links" },
+      { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste img" },
+      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename" },
+      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Template" },
 
       -- oS — Slugify note. Full canonicalization in one keystroke:
       --  1. Slugifies the filename via :Obsidian rename (which rewrites
