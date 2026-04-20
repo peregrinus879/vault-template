@@ -20,7 +20,7 @@ git clone https://github.com/peregrinus879/vault-template.git ~/vault
 cd ~/vault && rm -rf .git
 ```
 
-Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`. Write a thought. See [GETTING-STARTED.md](GETTING-STARTED.md) for the full setup, including version history, Neovim, and multi-device sync.
+Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`. Write a thought. See [SETUP-LOCAL.md](SETUP-LOCAL.md) for the full local setup (version history, Neovim). For multi-device sync and encrypted backup, see [SETUP-HUB.md](SETUP-HUB.md).
 
 ## Structure
 
@@ -56,11 +56,11 @@ All templates share the same three-field frontmatter (`id`, `aliases`, `tags`), 
 
 | Doc | What it covers |
 |-----|---------------|
-| [GETTING-STARTED.md](GETTING-STARTED.md) | Clone, open in Obsidian, version history, add Neovim, multi-device sync |
+| [SETUP-LOCAL.md](SETUP-LOCAL.md) | Clone, Obsidian install, version history, optional Neovim overlay |
+| [SETUP-HUB.md](SETUP-HUB.md) | Self-hosted hub: Syncthing, device pairing, encryption, automated backup, public template mirroring |
 | [WORKFLOW.md](WORKFLOW.md) | Zettelkasten method, naming conventions, capture loop, keybindings |
 | [DESIGN.md](DESIGN.md) | Opinionated choices and the reasoning behind each |
 | [FEATURES.md](FEATURES.md) | Detailed feature showcase |
-| [SELF-HOSTING.md](SELF-HOSTING.md) | Encryption, automated backup, public template mirroring |
 | [AGENTS.md](AGENTS.md) | AI assistant context for working with this repo |
 | [CLAUDE.md](CLAUDE.md) | Claude Code wrapper for AGENTS.md |
 

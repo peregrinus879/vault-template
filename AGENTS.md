@@ -24,11 +24,11 @@ It does not own:
 ## Key Files
 
 - [README.md](README.md) - landing page: pitch, feature highlights, directory structure
-- [GETTING-STARTED.md](GETTING-STARTED.md) - setup guide: Obsidian, version history and hooks, Neovim overlay, multi-device sync
+- [SETUP-LOCAL.md](SETUP-LOCAL.md) - local setup: clone, Obsidian, version history and hooks, optional Neovim overlay
+- [SETUP-HUB.md](SETUP-HUB.md) - self-hosted hub: Syncthing, device pairing, encryption, automated backup, public template mirroring
 - [WORKFLOW.md](WORKFLOW.md) - Zettelkasten method, naming conventions, capture loop, keybindings
 - [DESIGN.md](DESIGN.md) - opinionated choices and the reasoning behind each
 - [FEATURES.md](FEATURES.md) - detailed feature showcase
-- [SELF-HOSTING.md](SELF-HOSTING.md) - encryption, automated backup, public template mirroring
 - `AGENTS.md` - canonical assistant context (this file)
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
 - `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` - vault-specific obsidian.nvim config (canonical). Deviations from obsidian.nvim defaults enumerated in DESIGN.md §12.
@@ -112,7 +112,7 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 ### Change-control coordination
 
-8. **Renaming a content directory requires updating five places**: `.gitattributes` (git-crypt rules, also drives hook derivation), `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` (`customizations` routing), `README.md`, `WORKFLOW.md`, `FEATURES.md`. The post-commit hook picks up the change from `.gitattributes` automatically. Run §Post-Change Verification afterward.
+8. **Renaming a content directory requires updating five places**: `.gitattributes` (git-crypt rules, also drives hook derivation), `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` (`customizations` routing), `README.md`, `WORKFLOW.md`, `FEATURES.md`. The post-commit hook picks up the change from `.gitattributes` automatically. If the rename affects the captured-to folder or any path mentioned in setup, also update `SETUP-LOCAL.md` and/or `SETUP-HUB.md`. Run §Post-Change Verification afterward.
 9. **Adding a new root-level file to the public mirror requires updating four places**: the rsync `--include` allowlist at the top of `.githooks/post-commit`, the `ALLOWED_ROOT_FILES` constant lower in the same file, `userIgnoreFilters` in `.obsidian/app.json` (so the file is hidden from Obsidian search/graph), and `.obsidian/snippets/hide-root-docs.css` (so it is hidden from the file explorer sidebar).
 10. **Adding a new non-content root-level directory requires the above plus the orphan-cleanup skip-list** in `.githooks/post-commit` (the `case "$name" in ... continue ;;` line near the rsync invocation). Missing the skip-list entry causes the directory to be deleted on every sync. An inline comment in the hook flags this coupling.
 11. **Pause the auto-commit timer before multi-stage structural changes** on the hub: `systemctl --user stop vault-autocommit.timer`; resume after with `systemctl --user start vault-autocommit.timer`. The timer fires on `*:00`; any work straddling the hour may be swept into an `auto:` commit with no descriptive message.
@@ -121,7 +121,7 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 12. **Editing `self-hosting/vault-autocommit.service` does NOT redeploy.** The running timer uses the static copy at `~/.config/systemd/user/vault-autocommit.service`. After any edit to the source, redeploy: `cp ~/vault/self-hosting/vault-autocommit.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user restart vault-autocommit.timer`.
 13. **Every vault commit produces two commit lines in output**: one in the vault (your message), one `sync: YYYY-MM-DD-HHMM` in the public mirror (from `.githooks/post-commit`). This is expected; the public commit is a derived sync, not a duplicate of your work.
-14. **Hooks run only where `core.hooksPath` is set.** `GETTING-STARTED.md` §1.2 sets it locally for new forks; `SELF-HOSTING.md` §6.4 enables it on the hub. If a clone has no hooks configured, `pre-commit` normalization and `post-commit` public sync both no-op silently.
+14. **Hooks run only where `core.hooksPath` is set.** `SETUP-LOCAL.md` §2 sets it locally for new forks; `SETUP-HUB.md` §8.4 enables it on the hub. If a clone has no hooks configured, `pre-commit` normalization and `post-commit` public sync both no-op silently.
 
 ## Post-Change Verification
 
@@ -136,7 +136,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing `.stignore` (Syncthing propagation rules; affects what reaches other devices)
 - Changing `.gitignore`, `.stignore`, or the rsync allowlist in `.githooks/post-commit` (update the per-item state table in §Propagation Model)
 - Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `self-hosting/pinentry-null`
-- Adding, renaming, or reordering sections across `README.md`, `GETTING-STARTED.md`, `SELF-HOSTING.md`, `WORKFLOW.md`, or `AGENTS.md`
+- Adding, renaming, or reordering sections across `README.md`, `SETUP-LOCAL.md`, `SETUP-HUB.md`, `WORKFLOW.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
 - Completing a themed work pass (audit remediation, structural change, new hook or template, setup flow change): draft a `CHANGELOG.md` entry before declaring the work done, per §Changelog conventions
 
@@ -167,7 +167,7 @@ Triggers for an update pass: end of a working session, completion of an audit or
 
 ## Known Limitations
 
-- **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, GETTING-STARTED.md, SELF-HOSTING.md, FEATURES.md, CHANGELOG.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `self-hosting/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
+- **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, SETUP-LOCAL.md, SETUP-HUB.md, FEATURES.md, CHANGELOG.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `self-hosting/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
 - **Public repo commit messages must be opaque**: the post-commit hook uses `sync: <date>` for public template repo commits. Do not forward private repo commit messages to the public repo. Private commit messages may reference note names, topics, or other content that would leak through the public repo's git history.
 - **No batch slug rename**: the pre-commit hook normalizes frontmatter and applies templates but does not slugify filenames (renaming breaks wiki-links and causes Syncthing churn). Slug normalization requires `<leader>oS` one file at a time. Future enhancement: extend `<leader>oS` to operate on multiple files (e.g., all notes in a directory), or add a separate hook/script that renames files in `0-fleeting/` only (low-risk: fleeting notes are temporary and rarely have backlinks).
 - **Auto-commit timer can preempt planned commits**: `vault-autocommit.timer` fires hourly on the hub (`*:00`) and runs `git add -A`, commits any diff as `auto: <ts>`, and pushes. Push failures log to stderr (visible via `journalctl --user -u vault-autocommit`) but do not block the next tick. If a planned multi-stage change straddles the top of the hour, the timer will sweep staged changes into an `auto:` commit and push it before you can write a descriptive message. Before any structural change on the hub, pause the timer: `systemctl --user stop vault-autocommit.timer`. Restart after the planned commit: `systemctl --user start vault-autocommit.timer`. If the timer preempts anyway, prefer accepting the `auto:` message. Amending is allowed but requires force-push; reserve it for commits where the message loss is materially worse than a rewritten hash.
@@ -182,7 +182,7 @@ Items deliberately not done in past passes. Each carries a short rationale so fu
 
 ### Technical deferrals (low current value)
 
-- **Data-driven vault path in `self-hosting/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SELF-HOSTING.md` §5. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
+- **Data-driven vault path in `self-hosting/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SETUP-HUB.md` §7. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
 - **Defensive reload after `:Obsidian rename` in `<leader>oS`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `normalize.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
 
 ## Changelog

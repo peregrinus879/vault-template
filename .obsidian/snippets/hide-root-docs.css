@@ -6,10 +6,10 @@
 /* Root documentation files */
 .nav-file-title[data-path="README.md"],
 .nav-file-title[data-path="WORKFLOW.md"],
-.nav-file-title[data-path="GETTING-STARTED.md"],
+.nav-file-title[data-path="SETUP-LOCAL.md"],
+.nav-file-title[data-path="SETUP-HUB.md"],
 .nav-file-title[data-path="CHANGELOG.md"],
 .nav-file-title[data-path="DESIGN.md"],
-.nav-file-title[data-path="SELF-HOSTING.md"],
 .nav-file-title[data-path="FEATURES.md"],
 .nav-file-title[data-path="AGENTS.md"],
 .nav-file-title[data-path="CLAUDE.md"],

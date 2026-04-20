@@ -1,11 +1,13 @@
-# Self-Hosting Guide
+# Setup: Self-hosted hub (sync, encryption, backup)
 
-Encrypted backup to GitHub with automated commits and public template mirroring. This guide covers the infrastructure layer that sits on top of the base vault setup described in [GETTING-STARTED.md](GETTING-STARTED.md).
+A self-hosted hub adds real-time sync across Linux, Windows, and Android, plus encrypted backup to GitHub with automated commits and a public template mirror. This guide covers the infrastructure layer that sits on top of the local vault described in [SETUP-LOCAL.md](SETUP-LOCAL.md).
 
 ## What this adds
 
 | Feature | Purpose |
 |---|---|
+| Hub Syncthing | Always-on hub for asynchronous device sync over Tailscale |
+| Device pairing (Linux, Windows, Android) | Each client syncs with the hub |
 | git-crypt | Encrypts file contents in git objects (AES-256) |
 | git-remote-gcrypt | Encrypts the entire remote (filenames, structure, history) |
 | Automated backup | systemd timer commits and pushes hourly |
@@ -13,14 +15,14 @@ Encrypted backup to GitHub with automated commits and public template mirroring.
 
 ## Prerequisites
 
-- **Arch Linux** on the remote hub (headless, always-on)
-- **[Tailscale](https://tailscale.com/)** installed and connected on all devices
-- **Syncthing** on local machines and mobile, configured per [GETTING-STARTED.md](GETTING-STARTED.md) §3. Hub-side Syncthing is set up in §1a below.
-- **GitHub account** with two repos: one private (encrypted backup, e.g., `vault-backup`), one public (template mirror, e.g., `vault-template`)
+- A **local vault** set up per [SETUP-LOCAL.md](SETUP-LOCAL.md) on at least one machine.
+- **Arch Linux** on the remote hub (headless, always-on).
+- **[Tailscale](https://tailscale.com/)** installed and connected on all devices (hub and clients).
+- **GitHub account** with two repos: one private (encrypted backup, e.g., `vault-backup`), one public (template mirror, e.g., `vault-template`).
 
-This guide standardizes on `~/vault` for the hub. All commands, systemd units, and scripts assume this path. If you use a different location, adjust the service file (`self-hosting/vault-autocommit.service`) and the commands below accordingly. The `OBSIDIAN_VAULT` environment variable documented in GETTING-STARTED.md is for the Neovim overlay on local machines, not for hub infrastructure.
+This guide standardizes on `~/vault` for the hub. All commands, systemd units, and scripts assume this path. If you use a different location, adjust the service file (`self-hosting/vault-autocommit.service`) and the commands below accordingly. The `OBSIDIAN_VAULT` environment variable documented in SETUP-LOCAL.md is for the Neovim overlay on local machines, not for hub infrastructure.
 
-## 1. Baseline tools
+## 1. Hub baseline tools
 
 Install on the remote hub:
 
@@ -43,9 +45,9 @@ git config --global user.name "Your Name"
 git config --global user.email "your-email@example.com"
 ```
 
-## 1a. Hub Syncthing
+## 2. Hub Syncthing
 
-The remote hub runs Syncthing as a system service (always-on, survives reboot). After pairing with a local machine (§3.2 in GETTING-STARTED.md), wait for the initial sync to complete before continuing with git-crypt and gcrypt setup. The vault directory (`~/vault`) is created by Syncthing during the first sync.
+The remote hub runs Syncthing as a system service (always-on, survives reboot). The vault directory (`~/vault`) is created by Syncthing during the first device pairing.
 
 ```bash
 sudo pacman -S syncthing
@@ -68,7 +70,7 @@ syncthing cli config options local-ann-enabled set false
 syncthing cli config options relays-enabled set false
 ```
 
-Note the device ID for pairing other devices:
+Note the hub's device ID for pairing other devices:
 
 ```bash
 syncthing cli show system | python3 -c "import sys,json; print(json.load(sys.stdin)['myID'])"
@@ -94,7 +96,114 @@ ssh -L 8384:127.0.0.1:8384 <user>@<tailscale-ip>
 # Open http://127.0.0.1:8384 in browser for GUI configuration
 ```
 
-## 2. git-crypt
+## 3. Pair devices with the hub
+
+Each client device needs Syncthing installed and paired with the hub. Wait for the initial sync to complete (Syncthing UI shows "Up to Date") before continuing to the encryption sections below.
+
+### 3.1 Linux
+
+Install and enable Syncthing on the client:
+
+```bash
+sudo pacman -S syncthing
+systemctl --user enable --now syncthing
+```
+
+Open `http://localhost:8384` and add the vault folder.
+
+Pair with the hub:
+
+1. **Add Remote Device**: paste the hub's device ID
+2. **Accept** the vault folder share when prompted
+3. Set the folder path to the vault location on that device
+4. Wait for initial sync to complete
+
+Harden for Tailscale-only sync:
+
+```bash
+syncthing cli config options raw-listen-addresses 0 set tcp://<tailscale-ip>:22000
+syncthing cli config options natenabled set false
+syncthing cli config options global-ann-enabled set false
+syncthing cli config options local-ann-enabled set false
+syncthing cli config options relays-enabled set false
+```
+
+### 3.2 Windows
+
+Install Syncthing natively on Windows (not inside WSL):
+
+```powershell
+winget install Syncthing.Syncthing
+```
+
+Syncthing does not auto-start on Windows. Create a VBS script in the Startup folder:
+
+```powershell
+$p = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Syncthing.vbs"
+Set-Content -Path $p -Value 'Set WshShell = CreateObject("WScript.Shell")'
+Add-Content -Path $p -Value 'WshShell.Run Chr(34) & WshShell.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\Microsoft\WinGet\Links\syncthing.exe" & Chr(34) & " --no-browser", 0, False'
+```
+
+Run each line separately in PowerShell. The executable path assumes installation via `winget install Syncthing.Syncthing`. If installed differently, find the path with `where.exe syncthing` and adjust accordingly.
+
+Access the web UI at `http://127.0.0.1:8384` (`localhost` may not work on Windows due to IPv6 resolution).
+
+Pair with the hub:
+
+1. Click **Add Remote Device**, paste the hub's device ID, set address to `tcp://<hub-tailscale-ip>:22000`
+2. Accept the **vault** folder share when it appears, set path to `C:\Users\<user>\vault`
+3. Harden for Tailscale-only sync via **Actions** > **Settings** > **Connections**:
+   - Set **Sync Protocol Listen Addresses** to `tcp://<tailscale-ip>:22000`
+   - Uncheck **NAT Traversal**
+   - Uncheck **Global Discovery**
+   - Uncheck **Local Discovery**
+   - Uncheck **Enable Relaying**
+   - Save
+
+Wait for initial sync to complete.
+
+**WSL access**: symlink the Windows-synced vault into WSL:
+
+```bash
+ln -s /mnt/c/Users/<user>/vault ~/vault
+```
+
+**Neovim in WSL** *(skip if not applicable)*: install Neovim and apply the vault overlay inside WSL:
+
+```bash
+sudo pacman -S --needed neovim ripgrep git stow
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
+cd ~/vault && stow -v -t ~ nvim-vault
+```
+
+Do not run git auto-commit from WSL. The remote hub handles all git operations.
+
+### 3.3 Android
+
+1. Install [Obsidian](https://play.google.com/store/apps/details?id=md.obsidian) from Play Store.
+2. Install [Tailscale](https://play.google.com/store/apps/details?id=com.tailscale.ipn) and sign in.
+3. Install [Syncthing-Fork](https://github.com/Catfriend1/syncthing-android) via [Obtainium](https://github.com/ImranR98/Obtainium) (recommended) or [Play Store](https://play.google.com/store/apps/details?id=com.github.catfriend1.syncthingandroid).
+4. Add the hub as a remote device (paste device ID, set address to `tcp://<hub-tailscale-ip>:22000`).
+5. Accept the vault folder share; set path to device storage (e.g., `[int]/Obsidian/vault`).
+6. Wait for initial sync to complete.
+7. Open Obsidian, choose **Open folder as vault**, select the Syncthing folder.
+
+Syncthing on Android pauses on battery saver. Do not rename or move notes from the Android Files app; use Obsidian's file explorer only.
+
+On mobile, templates are not auto-applied. After creating a new note, swipe down (pull) to trigger the template picker. This behavior is configured by `mobilePullAction: insert-template` in `.obsidian/app.json` (already set in this template).
+
+Confirm the default folder is `0-fleeting/` in Settings > Files and links > Default location.
+
+### 3.4 Resolving sync conflicts
+
+On first sync, Obsidian may write to `.obsidian/app.json` at the same time the hub version syncs, creating a `.sync-conflict-*` file. This is normal:
+
+1. The live file is correct as-is
+2. Delete the conflict file (the one with `sync-conflict` in the name)
+3. Conflict files are ignored by `.gitignore` and will never be committed
+
+## 4. git-crypt
 
 git-crypt encrypts file contents in git objects. Encryption rules are defined in `.gitattributes`:
 
@@ -120,17 +229,17 @@ scp ~/vault-git-crypt.key <user>@<workstation-tailscale-ip>:~/Downloads/
 rm ~/vault-git-crypt.key
 ```
 
-## 3. git-remote-gcrypt
+## 5. git-remote-gcrypt
 
 git-remote-gcrypt encrypts the entire repository on the remote, including filenames and directory structure. This prevents note titles from being visible on GitHub.
 
-### 3.1 Install
+### 5.1 Install
 
 ```bash
 yay -S git-remote-gcrypt
 ```
 
-### 3.2 GPG key
+### 5.2 GPG key
 
 Generate a dedicated GPG key for unattended encrypted backup. No passphrase (required for the systemd timer):
 
@@ -161,7 +270,7 @@ If GPG prompts for a passphrase during subkey creation, change it to empty after
 gpg --change-passphrase vault-backup@noreply
 ```
 
-### 3.3 Headless GPG configuration
+### 5.3 Headless GPG configuration
 
 Configure GPG for unattended operation. gpg-agent invokes pinentry even for no-passphrase keys; the `pinentry-null` script provides a headless pinentry that returns an empty passphrase automatically.
 
@@ -185,7 +294,7 @@ gpgconf --kill gpg-agent
 echo "test" | gpg --no-tty -e -r vault-backup@noreply | gpg --no-tty -d
 ```
 
-### 3.4 Backup GPG key material
+### 5.4 Backup GPG key material
 
 Export and store securely (same location as the git-crypt key). Transfer to a trusted workstation:
 
@@ -213,7 +322,7 @@ Store the following in your password manager:
 - gcrypt remote ID (`:id:...`, shown during first push)
 - Backup repo URL (`gcrypt::git@github.com:<owner>/<repo>.git#main`)
 
-### 3.5 Configure remote
+### 5.5 Configure remote
 
 The GitHub backup repo name may differ from the local vault directory name (e.g., `vault-backup` on GitHub, `vault` locally). Use the GitHub repo name in the remote URL.
 
@@ -242,11 +351,11 @@ Record the gcrypt remote ID shown in the output (`:id:...`).
 
 GitHub will show a single synthetic commit ("Initial commit" by root@localhost, dated 2013-01-01). This is the encrypted container. Your actual commits are preserved inside the encrypted payload.
 
-### 3.6 Performance note
+### 5.6 Performance note
 
 git-remote-gcrypt re-encrypts and re-uploads the full repository on every push (git backend limitation). This is acceptable for a small vault. If the vault grows substantially (primarily from `6-assets/`), push duration will increase. Monitor with `du -sh .git/` periodically.
 
-## 4. Deploy key
+## 6. Deploy key
 
 Generate a dedicated SSH key (no passphrase) for unattended push:
 
@@ -264,7 +373,7 @@ Verify push works without passphrase prompt:
 cd ~/vault && git push --dry-run origin main
 ```
 
-## 5. Auto-commit timer
+## 7. Auto-commit timer
 
 Enable user linger so the timer persists across SSH logout:
 
@@ -295,18 +404,18 @@ systemctl --user start vault-autocommit.service
 journalctl --user -u vault-autocommit.service -n 10
 ```
 
-## 6. Public template sync
+## 8. Public template sync
 
 A public repo mirrors the vault's structure, templates, config, and docs. Note content is not synced.
 
-### 6.1 Clone the public repo
+### 8.1 Clone the public repo
 
 ```bash
 cd ~/projects/repos/templates
 git clone git@github.com:<owner>/vault-template.git
 ```
 
-### 6.2 Deploy key
+### 8.2 Deploy key
 
 Generate a dedicated SSH key for unattended push:
 
@@ -322,7 +431,7 @@ Verify:
 cd ~/projects/repos/templates/vault-template && git push --dry-run origin main
 ```
 
-### 6.3 Sentinel file
+### 8.3 Sentinel file
 
 The post-commit hook refuses to run unless the public repo contains a `.public-mirror-marker` file. This guards against a misconfigured `vault.publicPath` trashing an unrelated repo. Create it once:
 
@@ -331,7 +440,7 @@ touch ~/projects/repos/templates/vault-template/.public-mirror-marker
 cd ~/projects/repos/templates/vault-template && git add .public-mirror-marker && git commit -m "chore: add sentinel marker"
 ```
 
-### 6.4 Post-commit hook
+### 8.4 Post-commit hook
 
 The hook is tracked in the repo at `.githooks/post-commit`. Enable it on the remote hub only:
 
@@ -354,7 +463,7 @@ cd ~/vault && git add .githooks/post-commit && git commit -m "chore: mark hook e
 
 Local machines skip this step; the hook runs only on the remote hub.
 
-### 6.5 Rsync rules
+### 8.5 Rsync rules
 
 The hook uses a fail-closed allowlist: only paths named explicitly in the `--include` list are published; the trailing `--exclude='*'` denies everything else.
 
@@ -372,7 +481,7 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 
 **Public-mirror constraint**: `--delete` plus the cleanup loops mean the public repo is strictly a derived view of the private vault's allowlisted set. Any file or directory that exists only in the public repo will be wiped on the next sync unless explicitly protected. To preserve a public-only item, three places in `.githooks/post-commit` must be updated: (1) add an rsync protect filter (e.g., `--filter='P /.github/'`), (2) add the directory name to the orphan-directory skip list, and (3) add the filename to the `ALLOWED_ROOT_FILES` list for root files.
 
-### 6.6 Testing
+### 8.6 Testing
 
 Verify no private content leaks:
 
@@ -406,34 +515,34 @@ sed -i '$ d' ~/vault/5-templates/fleeting.md
 cd ~/vault && git add -A && git commit -m "test: clean up"
 ```
 
-## 7. Recovery (fresh clone)
+## 9. Recovery (fresh clone)
 
 Recovery requires both the GPG key and the git-crypt key.
 
-### 7.1 Import GPG key
+### 9.1 Import GPG key
 
 ```bash
 gpg --import vault-backup-private.asc
 ```
 
-### 7.2 Configure GPG for headless operation
+### 9.2 Configure GPG for headless operation
 
-Install `pinentry-null` and configure `gpg-agent.conf` as described in §3.3.
+Install `pinentry-null` and configure `gpg-agent.conf` as described in §5.3.
 
-### 7.3 Clone from encrypted remote
+### 9.3 Clone from encrypted remote
 
 ```bash
 git clone -c gcrypt.gpg-args="--no-tty" \
   "gcrypt::git@github.com:<owner>/<repo>.git#main" ~/vault
 ```
 
-### 7.4 Unlock git-crypt
+### 9.4 Unlock git-crypt
 
 ```bash
 cd ~/vault && git-crypt unlock <path-to-git-crypt-key>
 ```
 
-### 7.5 Configure gcrypt for future pushes
+### 9.5 Configure gcrypt for future pushes
 
 ```bash
 cd ~/vault

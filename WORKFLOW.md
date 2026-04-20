@@ -1,6 +1,6 @@
 # Vault Workflow
 
-A hands-on tutorial for running a Zettelkasten in this vault. It covers two editors: [Obsidian](https://obsidian.md) (desktop and mobile GUI) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal, inside Neovim). Both read the same markdown files in the same folder. You do not need to pick one; use Obsidian on desktop and mobile, Neovim at the keyboard, Obsidian when you want the graph view. For installation and device setup, see [GETTING-STARTED.md](GETTING-STARTED.md).
+A hands-on tutorial for running a Zettelkasten in this vault. It covers two editors: [Obsidian](https://obsidian.md) (desktop and mobile GUI) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal, inside Neovim). Both read the same markdown files in the same folder. You do not need to pick one; use Obsidian on desktop and mobile, Neovim at the keyboard, Obsidian when you want the graph view. For installation, see [SETUP-LOCAL.md](SETUP-LOCAL.md); for multi-device sync and encrypted backup, see [SETUP-HUB.md](SETUP-HUB.md).
 
 ## The Method
 
@@ -358,7 +358,7 @@ Obsidian mobile is for capture, not composition.
 
 *Skip this entire section if you don't use Neovim. Everything above works with Obsidian alone.*
 
-This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the vault workflow. It assumes [LazyVim](https://www.lazyvim.org/) as the Neovim distribution with the vault's `nvim-vault/` overlay installed (see [GETTING-STARTED.md](GETTING-STARTED.md) §2).
+This section covers Neovim, neo-tree, and obsidian.nvim basics relevant to the vault workflow. It assumes [LazyVim](https://www.lazyvim.org/) as the Neovim distribution with the vault's `nvim-vault/` overlay installed (see [SETUP-LOCAL.md](SETUP-LOCAL.md) §6).
 
 ### Starting a Session
 
