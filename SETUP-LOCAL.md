@@ -51,7 +51,7 @@ Or download from [obsidian.md/download](https://obsidian.md/download).
 winget install Obsidian.Obsidian
 ```
 
-Mobile install is covered in [SETUP-HUB.md](SETUP-HUB.md) §5, since a useful mobile setup requires sync.
+Mobile install is covered in [SETUP-HUB.md](SETUP-HUB.md) §3.3, since a useful mobile setup requires sync.
 
 ## 4. Open as vault
 
