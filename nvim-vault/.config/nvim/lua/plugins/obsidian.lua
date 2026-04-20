@@ -57,7 +57,8 @@
 -- within each group, alphabetical by the binding letter:
 --   General:  <leader>on, oN, oo, os
 --   Note:     <leader>ob, ol, op, or, ot
--- Descriptions are the command subnames Title-cased.
+-- Descriptions are the plugin's own shipped strings from
+-- lua/obsidian/commands/init-legacy.lua.
 -- See the `keys` table below for each one's exact command mapping.
 -- ---------------------------------------------------------------------------
 
@@ -176,21 +177,21 @@ return {
       -- obsidian.nvim pass-through bindings. Two groups mirroring the
       -- plugin's general-action / note-action split; within each group,
       -- alphabetical by the binding letter (lowercase before uppercase
-      -- for same-letter pairs). Descriptions are the command subnames
-      -- Title-cased, no editorializing.
+      -- for same-letter pairs). Descriptions are the plugin's own
+      -- shipped strings from lua/obsidian/commands/init-legacy.lua.
 
       -- General
-      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "New" },
-      { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "New from template" },
-      { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Quick switch" },
-      { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search" },
+      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "Create a new note" },
+      { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "Create a new note from a template" },
+      { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Switch notes" },
+      { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault" },
 
       -- Note
-      { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
-      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Links" },
-      { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste img" },
-      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename" },
-      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Template" },
+      { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Collect backlinks" },
+      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Collect all links within the current buffer" },
+      { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste an image from the clipboard" },
+      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note and update all references to it" },
+      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert a template" },
 
       -- oS — Slugify note. Full canonicalization in one keystroke:
       --  1. Slugifies the filename via :Obsidian rename (which rewrites
