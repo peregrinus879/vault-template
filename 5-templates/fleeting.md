@@ -2,9 +2,6 @@
 id: '{{id}}'
 aliases:
   - '{{title}}'
-type: fleeting
-created: '{{date}}'
-updated:
 tags: []
 ---
 

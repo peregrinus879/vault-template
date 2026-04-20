@@ -2,9 +2,6 @@
 id: '{{id}}'
 aliases:
   - '{{title}}'
-type: overview
-created: '{{date}}'
-updated:
 tags: []
 ---
 
