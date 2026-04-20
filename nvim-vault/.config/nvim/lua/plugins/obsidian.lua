@@ -29,11 +29,14 @@
 --                                      overlap.
 --   completion.blink + nvim_cmp        LazyVim ships blink.cmp; match it.
 --
--- Added keybindings (vault-specific orchestrators, not obsidian.nvim
--- commands). Each calls .githooks/lib/normalize.py:
---   <leader>oi    Insert canonical template   (--apply)
---   <leader>of    Fill frontmatter            (--fill)
---   <leader>oS    Slugify note                (slug rename + --apply)
+-- One vault-specific keybinding (not an obsidian.nvim command):
+--   <leader>oS   Slugify note (slug rename + normalize.py --apply)
+--
+-- Routine normalization (frontmatter hygiene, H1 insertion, aliases↔H1
+-- sync, template body application when body lacks ## headings) runs
+-- automatically via the pre-commit hook on every commit; users don't
+-- need a keybinding for it. Use <leader>oS when you want the full
+-- pipeline in-session (slug rename included).
 --
 -- Pass-through keybindings to obsidian.nvim native commands:
 --   <leader>on, oN, oo, os, ob, ol, op, ot, or
@@ -162,40 +165,14 @@ return {
       { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template (raw)" },
       { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note" },
 
-      -- Vault-specific orchestrators. See DESIGN.md §11.
-      --
-      -- oi — Insert template. Applies the folder-matched template
-      -- when the current note has no frontmatter; otherwise fills
-      -- frontmatter + ensures H1 + syncs aliases[0] with H1.
-      {
-        "<leader>oi",
-        function()
-          if run_normalize("--apply") then
-            vim.notify("Template applied", vim.log.levels.INFO)
-          end
-        end,
-        desc = "Insert template (canonical)",
-      },
-
-      -- of — Fill frontmatter. Normalizes the canonical fields and
-      -- ensures H1 in body, without ever inserting template sections.
-      -- Use on notes with custom body structure.
-      {
-        "<leader>of",
-        function()
-          if run_normalize("--fill") then
-            vim.notify("Frontmatter filled", vim.log.levels.INFO)
-          end
-        end,
-        desc = "Fill frontmatter",
-      },
-
-      -- oS — Slugify note. Full canonicalization:
+      -- oS — Slugify note. Full canonicalization in one keystroke:
       --  1. Slugifies the filename via :Obsidian rename (which rewrites
       --     every [[wikilink]] in the vault).
       --  2. Runs normalize.py --apply, passing the pre-rename stem as
       --     the alias fallback so the readable name survives in
       --     aliases[0] when the body has no H1 yet.
+      -- No confirmation prompt: if you press the key, you want the slug.
+      -- Target-collision check still aborts with an error.
       -- Invariants preserved: id = new filename stem; aliases[1..]
       -- user-added synonyms are kept; H1 reconciled with aliases[0].
       {
@@ -231,12 +208,6 @@ return {
               vim.notify("Target already exists: " .. slug .. ".md", vim.log.levels.ERROR)
               return
             end
-
-            local choice = vim.fn.confirm(
-              "Slugify to " .. slug .. ".md and update backlinks?",
-              "&Yes\n&No", 2
-            )
-            if choice ~= 1 then return end
 
             local ok_rename, err = pcall(vim.cmd, "Obsidian rename " .. slug)
             if not ok_rename then
