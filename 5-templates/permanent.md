@@ -14,10 +14,8 @@ tags: []
 
 ## Connections
 <!-- Related permanent notes. State the relationship inline: `- Supports [[x]]: reason`. -->
-
--
+- 
 
 ## Sources
 <!-- Literature notes this claim draws from. -->
-
 - [[]]

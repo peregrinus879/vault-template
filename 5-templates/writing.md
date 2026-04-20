@@ -14,8 +14,8 @@ tags: []
 
 ## Outline
 <!-- Structure from collected permanent notes. -->
-
--
+- 
 
 ## Draft
+<!-- Prose assembled from the outline. -->
 
