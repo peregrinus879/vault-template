@@ -53,13 +53,23 @@ Three exclusion layers decide what propagates where:
 | `.stignore` | What Syncthing propagates between devices | `.stignore` |
 | Rsync allowlist | What reaches the public `vault-template` mirror | `.githooks/post-commit` |
 
-### Dot-prefixed infrastructure
+### Directory naming: dot-prefix rule
 
-Infrastructure directories use a dotfile prefix (`.obsidian/`, `.githooks/`, `.stfolder/`, `.claude/`, `.trash/`). The convention signals "not content" and is respected by Obsidian, which hides dotfile-prefixed entries from its file explorer. Content directories never start with a dot.
+**Dot-prefix when an external tool imposes the directory name. Non-dot when this repo invents the name.**
 
-### Visible infrastructure
+| Directory | Imposed by | Effect |
+|---|---|---|
+| `.obsidian/` | Obsidian (vault config root) | Hidden by Obsidian from its own file explorer |
+| `.githooks/` | git convention (`core.hooksPath` target) | Hidden |
+| `.stfolder/` | Syncthing (folder sentinel) | Hidden |
+| `.claude/` | Claude Code (per-project files) | Hidden |
+| `.trash/` | Obsidian (soft-delete bucket) | Hidden |
+| `nvim-vault/` | repo-invented (stow package name) | Visible; hidden explicitly (see below) |
+| `hub/` | repo-invented (hub-only support files) | Visible; hidden explicitly (see below) |
 
-`nvim-vault/` and `hub/` are infrastructure directories that do not use a dot prefix. They are intentionally visible on GitHub for discoverability by public template users. Obsidian hiding is handled by `userIgnoreFilters` in `.obsidian/app.json` (search, graph, links) and `.obsidian/snippets/hide-root-docs.css` (file explorer sidebar, using `.nav-folder-title[data-path]` selectors).
+Obsidian hides dot-prefixed entries from its file explorer automatically. For the two repo-invented infrastructure directories, Obsidian hiding is handled by `userIgnoreFilters` in `.obsidian/app.json` (search, graph, link suggestions) and `.obsidian/snippets/hide-root-docs.css` (file explorer sidebar, using `.nav-folder-title[data-path]` selectors). This is the coupling cost of choosing your own names; it is the reason a new non-dot infrastructure directory triggers invariant #10.
+
+Content directories never start with a dot.
 
 ### Current state per item
 
