@@ -10,6 +10,7 @@ tags: []
 
 ## Source
 <!-- Bibliographic record. -->
+
 - Medium: 
 - Author: 
 - Year: 
@@ -17,4 +18,5 @@ tags: []
 
 ## Notes
 <!-- Paraphrase, one idea per bullet with locator. Link [[permanent-note]] when extracted. Quote only when wording matters. -->
+
 - (p. ) → [[]]
