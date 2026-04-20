@@ -293,6 +293,40 @@ def extract_h1_title(body_lines: list[str]) -> str | None:
     return None
 
 
+H2_RE = re.compile(r"^##\s+")
+
+
+def body_has_h2(body: list[str]) -> bool:
+    """True if the body contains any `## ` (level-2 heading) line."""
+    return any(H2_RE.match(line) for line in body)
+
+
+def strip_template_h1(template_body_text: str) -> str:
+    """Remove the first `# H1` line from template body text.
+
+    Used when applying a template to a note that already has an H1 in
+    its body — the note's H1 is preserved, and the template contributes
+    only its intro comment and `##` sections. Strips the `# H1` line
+    plus any blank lines immediately following it, then returns the
+    remainder. If the template body has no H1, returns the input
+    unchanged.
+    """
+    lines = template_body_text.splitlines(keepends=False)
+    h1_idx = None
+    for i, line in enumerate(lines):
+        if line.strip() == "":
+            continue
+        if H1_RE.match(line):
+            h1_idx = i
+        break
+    if h1_idx is None:
+        return template_body_text
+    remaining = lines[h1_idx + 1:]
+    while remaining and remaining[0].strip() == "":
+        remaining.pop(0)
+    return "\n".join(remaining)
+
+
 def ensure_h1(body: list[str], title: str) -> list[str]:
     """Return body with a `# title` line before the first non-blank line.
 
@@ -498,11 +532,23 @@ def apply_file(
 ) -> bool:
     """Apply canonical template + frontmatter to a note.
 
-    If the file already has frontmatter, delegates to fill_file
-    (which handles the aliases[0] ↔ H1 sync). Otherwise reads the
-    folder-matched template from 5-templates/, substitutes
-    placeholders, prepends it to the file, and wraps any pre-
-    existing body content in a `## Capture` section at the end.
+    Branches on the note's current state:
+
+    - No frontmatter → prepend the full folder-matched template
+      (frontmatter + body) and wrap any pre-existing body content
+      in `## Capture` at the end.
+    - Frontmatter present AND body has at least one `## ` heading
+      → body already has structure; delegate to fill (frontmatter
+      and H1 hygiene only).
+    - Frontmatter present AND body has no `## ` heading → insert
+      the template's body sections (stripped of its H1 — the note
+      keeps its own H1) after the existing H1; wrap any pre-
+      existing non-H1 body content in `## Capture`.
+
+    The third branch closes the gap for Neovim-created notes that
+    land with obsidian.nvim's auto-frontmatter but no body template.
+    Escape hatch: any `## ` in the body signals "structure already
+    here," and the hook won't re-insert template sections.
 
     Returns True if the file was modified, False if unchanged.
     """
@@ -516,19 +562,19 @@ def apply_file(
               file=sys.stderr)
         return False
 
-    # Frontmatter present → delegate to fill (no body template rework).
-    if fm_lines is not None:
+    body = lines[body_start:] if body_start > 0 else []
+
+    # Frontmatter present + body already structured → fill only.
+    if fm_lines is not None and body_has_h2(body):
         return fill_file(path, vault_root, fallback_alias)
 
     folder_type = derive_folder_type(path, vault_root)
-    if not folder_type:
-        # Not in a recognized content folder; fill handles bare notes.
-        return fill_file(path, vault_root, fallback_alias)
+    template_path = os.path.join(vault_root, TEMPLATES_SUBDIR, f"{folder_type}.md") if folder_type else ""
 
-    template_path = os.path.join(vault_root, TEMPLATES_SUBDIR, f"{folder_type}.md")
-    if not os.path.isfile(template_path):
-        print(f"[normalize] warning: template {template_path} not found; "
-              f"falling back to fill mode.", file=sys.stderr)
+    if not folder_type or not os.path.isfile(template_path):
+        if folder_type and not os.path.isfile(template_path):
+            print(f"[normalize] warning: template {template_path} not found; "
+                  f"falling back to fill mode.", file=sys.stderr)
         return fill_file(path, vault_root, fallback_alias)
 
     with open(template_path, "r", encoding="utf-8") as fh:
@@ -536,22 +582,69 @@ def apply_file(
 
     stem = os.path.splitext(os.path.basename(path))[0]
     title = fallback_alias or stem
-
     substituted = substitute_placeholders(
         template_text, title=title, stem=stem, today=today
     )
 
-    existing_body = original.strip()
-    if existing_body:
-        new_content = (
-            substituted.rstrip("\n")
-            + "\n\n## Capture\n\n"
-            + existing_body
-            + "\n"
-        )
+    # Case: no frontmatter → full apply (prepend whole template).
+    if fm_lines is None:
+        existing_body = original.strip()
+        if existing_body:
+            new_content = (
+                substituted.rstrip("\n")
+                + "\n\n## Capture\n\n"
+                + existing_body
+                + "\n"
+            )
+        else:
+            new_content = substituted
+            if not new_content.endswith("\n"):
+                new_content += "\n"
     else:
-        new_content = substituted
-        if not new_content.endswith("\n"):
+        # Case: frontmatter present + body has no ## → insert
+        # template body only, keep existing FM and H1.
+        sub_lines = substituted.splitlines(keepends=False)
+        _, sub_body_start = split_frontmatter(sub_lines)
+        if sub_body_start > 0:
+            tmpl_body_text = "\n".join(sub_lines[sub_body_start:])
+        else:
+            tmpl_body_text = substituted
+        tmpl_sections = strip_template_h1(tmpl_body_text)
+
+        h1_idx = None
+        for i, line in enumerate(body):
+            if line.strip() == "":
+                continue
+            if H1_RE.match(line):
+                h1_idx = i
+            break
+
+        if h1_idx is None:
+            pre_h1: list[str] = []
+            h1_line = f"# {title}"
+            post_h1 = [ln for ln in body if ln.strip() != ""]
+        else:
+            pre_h1 = body[:h1_idx]
+            h1_line = body[h1_idx]
+            post_h1 = list(body[h1_idx + 1:])
+
+        while post_h1 and post_h1[0].strip() == "":
+            post_h1.pop(0)
+        while post_h1 and post_h1[-1].strip() == "":
+            post_h1.pop()
+
+        new_body_lines: list[str] = list(pre_h1) + [h1_line, ""]
+        new_body_lines.extend(tmpl_sections.splitlines())
+        if post_h1:
+            if new_body_lines[-1].strip() != "":
+                new_body_lines.append("")
+            new_body_lines.append("## Capture")
+            new_body_lines.append("")
+            new_body_lines.extend(post_h1)
+
+        new_lines = [FM_DELIM, *fm_lines, FM_DELIM, *new_body_lines]
+        new_content = "\n".join(new_lines)
+        if original.endswith("\n") and not new_content.endswith("\n"):
             new_content += "\n"
 
     if new_content == original:
@@ -560,10 +653,8 @@ def apply_file(
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(new_content)
 
-    # Post-apply: run fill to sync aliases[0] ↔ H1 (the substituted
-    # template may have aliases[0] as fallback/stem, but the H1 is the
-    # same substitution — they should already match). Fill also
-    # reconciles any edge case where the template's aliases differ.
+    # Post-apply: run fill to sync aliases[0] ↔ H1 and ensure H1.
+    # Idempotent if already canonical.
     fill_file(path, vault_root, fallback_alias)
 
     return True
@@ -598,6 +689,17 @@ def check_file(path: str, vault_root: str) -> list[str]:
     for required in CANONICAL_ORDER:
         if required not in existing:
             issues.append(f"{path}: missing field '{required}'")
+
+    # Catch unsubstituted template placeholders in any field value.
+    placeholder_re = re.compile(r"\{\{[^}]*\}\}")
+    for field_name, field_lines in existing.items():
+        for line in field_lines:
+            if placeholder_re.search(line):
+                issues.append(
+                    f"{path}: field '{field_name}' contains an unsubstituted "
+                    f"placeholder (e.g. {{{{title}}}})"
+                )
+                break
 
     if "id" in existing:
         first = existing["id"][0]
