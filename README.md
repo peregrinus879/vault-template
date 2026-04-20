@@ -2,16 +2,28 @@
 
 Opinionated structure, templates for every note type, multi-device sync, and optional encrypted backup. Works with [Obsidian](https://obsidian.md) (desktop/mobile) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal).
 
-## What you get
+## Highlights
 
-- **5 note templates** covering the full Zettelkasten lifecycle: fleeting, literature, permanent, overview, and writing
-- **Dual-editor support**: same files in Obsidian (desktop/mobile) and Neovim (terminal via obsidian.nvim); no import, no format conversion
-- **Neovim overlay** (`nvim-vault/`): a LazyVim-compatible stow package with obsidian.nvim config, template routing, slug filenames, and a `<leader>oS` slugify-and-canonicalize keybinding
-- **Slug filenames with readable aliases**: auto-generated cross-platform-safe filenames; human-readable titles preserved in `aliases` for search and `[[link]]` autocomplete
-- **Note normalization**: pre-commit hook applies the folder-matched template, fills canonical frontmatter, and ensures a body H1 synced with `aliases[0]` — for notes created outside templates (mobile captures, Ctrl+N without template, copy-paste)
-- **Multi-device sync**: Syncthing over Tailscale across Linux, Windows, and Android
-- **Dual-layer encryption** (optional): git-crypt (content) + git-remote-gcrypt (filenames, history); GitHub sees only opaque data
-- **Automated backup** (optional): systemd timer commits hourly; post-commit hook mirrors structure and templates to a public repo
+**Opinionated Zettelkasten structure.** Seven numbered directories enforce a knowledge lifecycle: capture, process, synthesize, navigate, compose. Each content directory has a dedicated template with pre-filled frontmatter. The numbered prefix keeps folders sorted in every file explorer and picker, across every platform. See [DESIGN.md](DESIGN.md) §1 for the rationale behind the numbering order.
+
+**Templates for every note type.** Five templates cover the full Zettelkasten workflow: fleeting, literature, permanent, overview, and writing. All share the same three-field frontmatter (`id`, `aliases`, `tags`), matching obsidian.nvim's default schema. Literature notes carry bibliographic metadata in the body, not in frontmatter. Notes land in the correct folder automatically when created via obsidian.nvim's `<leader>oN`.
+
+**Dual-editor support.** The same markdown files work in both Obsidian (desktop, mobile) and Neovim (terminal, via obsidian.nvim). No import step, no format conversion, no sync delay beyond Syncthing. The `nvim-vault/` stow overlay ships a complete obsidian.nvim configuration as a LazyVim plugin spec, including slug-based filenames, template routing, and one vault-specific keybinding, `<leader>oS`, for slugify-and-canonicalize. Routine normalization runs automatically via the pre-commit hook on every commit. See [DESIGN.md](DESIGN.md) §12 for overlay deviations from obsidian.nvim defaults.
+
+**Slug filenames with readable aliases.** Note filenames are auto-generated lowercase-hyphenated slugs (e.g., `risk-appetite-is-a-board-level-choice.md`). The human-readable title lives in the `aliases` frontmatter field, which powers search and `[[link]]` autocomplete in both editors. Slugs avoid all cross-platform filename issues when Syncthing moves files across Linux, Windows, and Android.
+
+**Note normalization.** A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the three canonical frontmatter fields, body H1 insertion, and template body application. It runs in two contexts:
+
+- `.githooks/pre-commit` runs `--apply` on every staged note in a content directory. Notes created outside templates (mobile captures, Obsidian Ctrl+N without a template, copy-paste, Neovim `:e`/`:w`) get the folder-matched template body, correct frontmatter, and an H1 automatically on commit. Pre-existing body content is wrapped in a `## Capture` section for later integration.
+- `<leader>oS` in obsidian.nvim runs the same normalization plus a slug rename (via `:Obsidian rename`, which rewrites backlinks vault-wide), passing the pre-rename stem as the alias fallback.
+
+The apply rule branches three ways on the note's state: no frontmatter → prepend full template + wrap pre-existing content in `## Capture`; frontmatter present + body has no `## ` heading → insert template body sections only (note's H1 preserved); frontmatter + at least one `## ` heading → fill only (frontmatter + H1 sync; body untouched). Key rules: `id` always tracks the filename stem; `aliases[0]` is synced with the body H1 bidirectionally (H1 wins when both exist and differ); user-added `aliases[1..]` are preserved verbatim. Running the normalizer twice produces no further changes (idempotent). `--check` flags issues including unsubstituted `{{...}}` placeholders. See [DESIGN.md](DESIGN.md) §9 and §11.
+
+**Multi-device sync.** Syncthing over Tailscale provides real-time file sync across Linux desktops, Windows (native + WSL), and Android. A headless Linux server acts as the always-on hub so devices sync asynchronously. No cloud dependency; all traffic stays on the private Tailscale mesh. See [DESIGN.md](DESIGN.md) §10 for why Syncthing handles sync rather than the Obsidian Git plugin or Obsidian Sync.
+
+**Dual-layer encryption (optional, self-hosting).** Two encryption layers protect note content before it reaches GitHub: **git-crypt** encrypts file contents in git objects (AES-256), and **git-remote-gcrypt** encrypts the entire remote, including filenames, directory structure, and commit history. Together, GitHub sees only opaque encrypted data. Neither layer alone provides full coverage.
+
+**Automated backup and public template mirroring (optional, self-hosting).** A systemd timer commits and pushes changes hourly. A post-commit hook mirrors the vault's structure, templates, config, and documentation to a public template repo via rsync. Content directories are excluded; the public mirror shows the layout without any private notes. The sync uses a fail-closed allowlist at the root level: new root files and directories do not publish unless explicitly added. Files inside already-allowlisted subtrees (e.g., `5-templates/`, `nvim-vault/`) publish automatically. A sentinel file guards against accidental sync to the wrong repo. See [DESIGN.md](DESIGN.md) §10.
 
 ## Quick start
 
@@ -60,7 +72,6 @@ All templates share the same three-field frontmatter (`id`, `aliases`, `tags`), 
 | [SETUP-HUB.md](SETUP-HUB.md) | Self-hosted hub: Syncthing, device pairing, encryption, automated backup, public template mirroring |
 | [WORKFLOW.md](WORKFLOW.md) | Zettelkasten method, naming conventions, capture loop, keybindings |
 | [DESIGN.md](DESIGN.md) | Opinionated choices and the reasoning behind each |
-| [FEATURES.md](FEATURES.md) | Detailed feature showcase |
 | [AGENTS.md](AGENTS.md) | AI assistant context for working with this repo |
 | [CLAUDE.md](CLAUDE.md) | Claude Code wrapper for AGENTS.md |
 
