@@ -37,11 +37,43 @@ It does not own:
 - `hub/vault-autocommit.timer` - hourly trigger for auto-commit
 - `.githooks/pre-commit` - note normalizer for staged notes in content directories (delegates to `.githooks/lib/normalize.py --apply`)
 - `.githooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath .githooks` on the hub)
-- `.githooks/lib/normalize.py` - **single source of truth for note normalization**. Called by the pre-commit hook (on every commit) and by the `<leader>oS` slugify orchestrator. Modes: `--apply` (no frontmatter → full template; frontmatter present + body has no `## ` → insert template body sections after H1, wrap pre-existing content in `## Capture`; frontmatter present + body has ≥1 `## ` → fill only), `--fill` (normalize canonical frontmatter fields, ensure body H1, sync `aliases[0]` with H1; prints modified paths to stdout), `--check` (report problems including unsubstituted `{{...}}` placeholders; non-zero exit). Any change to normalization behavior must go here. See DESIGN.md §11 for the identity model.
+- `.githooks/lib/normalize.py` - **single source of truth for note normalization**. Called by the pre-commit hook (on every commit), by the `<leader>o<space>` slug-rename orchestrator (`--apply`), and by the `<leader>op` promotion orchestrator (`--reapply`). Modes: `--apply` (no frontmatter → full template; frontmatter present + body has no `## ` → insert template body sections after H1, wrap pre-existing content in `## Capture`; frontmatter present + body has ≥1 `## ` → fill only), `--reapply` (force-apply target template regardless of body state; preserves existing `## Capture` block or wraps body in a new one), `--fill` (canonicalize frontmatter, ensure body H1, sync `aliases[0]` with H1; prints modified paths to stdout), `--check` (report problems including unsubstituted `{{...}}` placeholders; non-zero exit). Any change to normalization behavior must go here. See DESIGN.md §11 for the identity model.
 
 ## Commit Policy
 
 Only commit `5-templates/`, `nvim-vault/`, `hub/`, docs, `.githooks/`, and config. All other content is captured by the hourly auto-commit timer.
+
+## Conventions
+
+Rules about how we name and describe things across the repo. Precede the Invariants section because the terminology below is used there.
+
+### Terminology: normalize vs canonical
+
+- **Normalize** / **normalization**: the full note-shaping pipeline. Covers template body application, H1 insertion, `aliases[0]`↔H1 sync, frontmatter canonicalization, and (for `<leader>o<space>`) slug rename. The verb describes everything `normalize.py` does end-to-end.
+- **Canonical** / **canonicalize**: the frontmatter schema only. The three-field order (`id`, `aliases`, `tags`), the `id` = filename stem rule, the `aliases[0]` ↔ H1 bidirectional sync, the empty `tags: []` default. `build_canonical_fields` canonicalizes frontmatter. Normalizing a note *includes* canonicalizing its frontmatter, plus more.
+
+Use "normalize" when describing the full pipeline or any superset of frontmatter work. Use "canonical" / "canonicalize" when the scope is specifically the frontmatter schema. Do not treat them as synonyms.
+
+### Keybinding uppercase convention
+
+When a lowercase/uppercase letter pair under `<leader>o` is a natural fit, uppercase = "the 'create a new note' variant of its lowercase sibling":
+
+- `<leader>on` = new note (default); `<leader>oN` = new note from template picker
+- `<leader>ol` = link text to existing note; `<leader>oL` = link text to new note
+
+Not forced — applied only where the pair reads natural. Outside the "create new" family (e.g., `<leader>op` for promote), lowercase is the default letter. The convention lives in `nvim-vault/.config/nvim/lua/plugins/obsidian.lua`'s header comment.
+
+### Keybinding desc strings
+
+Keybinding `desc` strings are our own short forms, not verbatim mirrors of obsidian.nvim's shipped desc strings in `lua/obsidian/commands/init-legacy.lua`. The policy change is deliberate: upstream's shipped strings are verbose for which-key popups (e.g., "Rename note and update all references to it"); short forms improve readability, and we accept maintaining them ourselves.
+
+When writing or editing a `desc`:
+
+- Keep the imperative verb from upstream where possible ("Collect", "Link", "Rename", "Paste", "Switch").
+- Drop articles ("a", "an", "the") unless dropping them hurts readability.
+- Drop qualifiers already implied by context ("selected text" → "text" on a visual-mode binding; "within the current buffer" → "in buffer" on a per-note picker).
+- Do not invent new verbs upstream does not use; stay close to obsidian.nvim's command naming so readers switching between our docs and upstream docs recognize the action.
+- For custom orchestrators (`<leader>o<space>`, `<leader>op`), match the shipped-desc tone: primary verb(s) + object + optional "and <side-effect>" clause.
 
 ## Propagation Model
 
@@ -111,13 +143,13 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 ### Code and configuration
 
-1. **`normalize.py` is the single source of truth for note normalization.** `.githooks/pre-commit`, `<leader>oS`, and `<leader>oP` all delegate. Do not duplicate field or template logic in callers; changes go in `.githooks/lib/normalize.py`. The pre-commit hook is a thin shell wrapper; the `<leader>oS` and `<leader>oP` keybindings are thin Lua orchestrators.
-2. **Orchestrator splits (`<leader>oS`, `<leader>oP`)**: each Lua keybinding is a thin sequencer. The filesystem primitive is chosen to match what is changing, and `normalize.py` owns body/frontmatter.
-    - `<leader>oS`: `:Obsidian rename <slug>` owns filename rename + vault-wide `[[wikilink]]` rewrite; `normalize.py --apply` owns frontmatter, H1 insertion, template application, and aliases↔H1 sync.
-    - `<leader>oP`: `os.rename` owns the folder-only move; `normalize.py --reapply` owns target template application (with `## Capture` preservation) and frontmatter canonicalization.
-    - **Name change vs folder move.** Backlinks in this vault resolve by filename stem + alias, so folder-only moves cannot break them and are safe through `os.rename`. Filename stem changes can break backlinks and must go through `:Obsidian rename` so that the vault-wide `[[wikilink]]` rewrite runs. Do not reintroduce `vim.fn.rename` / `os.rename` into `<leader>oS` for name changes; do not reintroduce `:Obsidian rename` into `<leader>oP` (it would refuse the folder move, and the filename is not what's changing anyway).
+1. **`normalize.py` is the single source of truth for note normalization.** `.githooks/pre-commit`, `<leader>o<space>`, and `<leader>op` all delegate. Do not duplicate field or template logic in callers; changes go in `.githooks/lib/normalize.py`. The pre-commit hook is a thin shell wrapper; the `<leader>o<space>` and `<leader>op` keybindings are thin Lua orchestrators.
+2. **Orchestrator splits (`<leader>o<space>`, `<leader>op`)**: each Lua keybinding is a thin sequencer. The filesystem primitive is chosen to match what is changing, and `normalize.py` owns body/frontmatter.
+    - `<leader>o<space>`: `:Obsidian rename <slug>` owns filename rename + vault-wide `[[wikilink]]` rewrite; `normalize.py --apply` owns template body application, H1 insertion, and frontmatter canonicalization (including `aliases[0]`↔H1 sync).
+    - `<leader>op`: `os.rename` owns the folder-only move; `normalize.py --reapply` owns target template application (with `## Capture` preservation) and frontmatter canonicalization.
+    - **Name change vs folder move.** Backlinks in this vault resolve by filename stem + alias, so folder-only moves cannot break them and are safe through `os.rename`. Filename stem changes can break backlinks and must go through `:Obsidian rename` so that the vault-wide `[[wikilink]]` rewrite runs. Do not reintroduce `vim.fn.rename` / `os.rename` into `<leader>o<space>` for name changes; do not reintroduce `:Obsidian rename` into `<leader>op` (it would refuse the folder move, and the filename is not what's changing anyway).
     - (`<leader>or` is a pass-through to `:Obsidian rename` for free-form filename renames, not slug normalization.)
-    - Preserve these splits. Do not fold body or frontmatter logic into either Lua orchestrator; the template rules live in `apply_file` / `reapply_file` and nowhere else.
+    - Preserve these splits. Do not fold body or frontmatter logic into either Lua orchestrator; the template and frontmatter rules live in `apply_file` / `reapply_file` / `fill_file` and nowhere else.
 3. **`id` tracks the filename stem.** `normalize.py` enforces this on every run. Do not rewrite `id` to a free-form value expecting it to be preserved; the next commit will sync it back to the stem.
 4. **Template placeholders must be single-quoted**: `id: '{{id}}'`, `aliases:\n  - '{{title}}'`. YAML 1.2 plain scalars cannot start with `{`, so unquoted `{{title}}` is invalid YAML even before substitution. Titles containing apostrophes break this after substitution; WORKFLOW rule 4 (ASCII-only titles) is the upstream workaround.
 5. **`aliases[0]` is synced bidirectionally with body H1; `aliases[1..]` are preserved.** Obsidian writes `aliases: []` on template insert, not a missing field. `normalize.py` treats any empty form (`[]`, `[ ]`, `[  ]`, block-empty) as equivalent to missing. Whenever frontmatter is normalized, canonical `aliases[0]` = body H1 > caller-supplied fallback > filename stem. If both H1 and an existing aliases[0] are present and differ, H1 wins (aliases[0] is rewritten to match). User-added `aliases[1..]` (synonyms, historical names) are preserved with duplicates against aliases[0] removed. If the body has no `# H1` as its first non-blank line, `normalize.py` inserts `# {aliases[0]}` after the frontmatter. Do not add code that assumes "field present means populated" without going through `aliases_is_empty`.
@@ -183,7 +215,7 @@ Triggers for an update pass: end of a working session, completion of an audit or
 
 - **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, SETUP-LOCAL.md, SETUP-HUB.md, CHANGELOG.md, DESIGN.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `hub/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
 - **Public repo commit messages must be opaque**: the post-commit hook uses `sync: <date>` for public template repo commits. Do not forward private repo commit messages to the public repo. Private commit messages may reference note names, topics, or other content that would leak through the public repo's git history.
-- **No batch slug rename**: the pre-commit hook normalizes frontmatter and applies templates but does not slugify filenames (renaming breaks wiki-links and causes Syncthing churn). Slug normalization requires `<leader>oS` one file at a time. Future enhancement: extend `<leader>oS` to operate on multiple files (e.g., all notes in a directory), or add a separate hook/script that renames files in `0-fleeting/` only (low-risk: fleeting notes are temporary and rarely have backlinks).
+- **No batch slug rename**: the pre-commit hook normalizes frontmatter and applies templates but does not slugify filenames (renaming breaks wiki-links and causes Syncthing churn). Slug normalization requires `<leader>o<space>` one file at a time. Future enhancement: extend `<leader>o<space>` to operate on multiple files (e.g., all notes in a directory), or add a separate hook/script that renames files in `0-fleeting/` only (low-risk: fleeting notes are temporary and rarely have backlinks).
 - **Auto-commit timer can preempt planned commits**: `vault-autocommit.timer` fires hourly on the hub (`*:00`) and runs `git add -A`, commits any diff as `auto: <ts>`, and pushes. Push failures log to stderr (visible via `journalctl --user -u vault-autocommit`) but do not block the next tick. If a planned multi-stage change straddles the top of the hour, the timer will sweep staged changes into an `auto:` commit and push it before you can write a descriptive message. Before any structural change on the hub, pause the timer: `systemctl --user stop vault-autocommit.timer`. Restart after the planned commit: `systemctl --user start vault-autocommit.timer`. If the timer preempts anyway, prefer accepting the `auto:` message. Amending is allowed but requires force-push; reserve it for commits where the message loss is materially worse than a rewritten hash.
 
 ## Deferred Items
@@ -197,7 +229,7 @@ Items deliberately not done in past passes. Each carries a short rationale so fu
 ### Technical deferrals (low current value)
 
 - **Data-driven vault path in `hub/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SETUP-HUB.md` §7. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
-- **Defensive reload after `:Obsidian rename` in `<leader>oS`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `normalize.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
+- **Defensive reload after `:Obsidian rename` in `<leader>o<space>`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `normalize.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
 
 ## Changelog
 
