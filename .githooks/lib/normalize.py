@@ -32,6 +32,23 @@ Modes:
       Any `## ` heading in the body is the user's escape hatch to
       opt out of template re-application.
 
+  --reapply PATH [PATH ...]
+      Force-apply the folder-matched template regardless of body
+      state, used by the <leader>oM promotion orchestrator after
+      moving a file between content folders.
+      - No frontmatter → fall back to --apply (branch 1 handles it).
+      - Frontmatter present → split the body at the first `## Capture`
+        heading. Content before that (old template sections) is
+        discarded; `## Capture` onward (user data) is preserved. If
+        no `## Capture` exists, everything below H1 is wrapped in a
+        new `## Capture`. Target template's body sections are then
+        inserted between H1 and the preserved/wrapped content.
+      The `## ` escape hatch that protects --apply's third branch
+      is deliberately bypassed here: the caller has asked for a
+      template swap, which is the whole point of promotion.
+      Idempotent: the `## Capture` preserved on one run is preserved
+      unchanged on the next.
+
   --check PATH [PATH ...]
       Report problems without modifying files. Prints one line per
       issue to stderr. Exits non-zero if any issue is found.
@@ -670,6 +687,139 @@ def apply_file(
     return True
 
 
+def reapply_file(
+    path: str,
+    vault_root: str,
+    today: str,
+    fallback_alias: str | None = None,
+) -> bool:
+    """Force-apply the folder-matched template, preserving captured content.
+
+    Counterpart to apply_file for the promotion workflow (<leader>oM).
+    Unlike --apply, --reapply does not honor the `## ` escape hatch:
+    it rewrites the body's template sections even when the note
+    already has `## ` headings.
+
+    Behavior:
+    - No frontmatter → fall back to apply_file (its branch 1).
+    - Frontmatter present → split the body at the first `## Capture`
+      heading. Content before the Capture (old template sections) is
+      discarded; `## Capture` onward (user data) is preserved. If no
+      `## Capture` exists, everything below H1 is wrapped in a new
+      `## Capture`. Target template's body sections are inserted
+      between H1 and the preserved/wrapped content.
+
+    Idempotent: the `## Capture` block preserved on one run is
+    preserved unchanged on the next, so repeated --reapply produces
+    no further changes after the template is already the target's.
+
+    Returns True if the file was modified, False if unchanged.
+    """
+    with open(path, "r", encoding="utf-8") as fh:
+        original = fh.read()
+    lines = original.splitlines(keepends=False)
+
+    fm_lines, body_start = split_frontmatter(lines)
+    if body_start == -1:
+        print(f"[normalize] warning: {path} has unclosed frontmatter; skipping.",
+              file=sys.stderr)
+        return False
+
+    # No frontmatter: full template application is exactly what we want.
+    if fm_lines is None:
+        return apply_file(path, vault_root, today, fallback_alias)
+
+    body = lines[body_start:] if body_start > 0 else []
+
+    folder_type = derive_folder_type(path, vault_root)
+    template_path = os.path.join(vault_root, TEMPLATES_SUBDIR, f"{folder_type}.md") if folder_type else ""
+
+    if not folder_type or not os.path.isfile(template_path):
+        if folder_type and not os.path.isfile(template_path):
+            print(f"[normalize] warning: template {template_path} not found; "
+                  f"falling back to fill mode.", file=sys.stderr)
+        return fill_file(path, vault_root, fallback_alias)
+
+    with open(template_path, "r", encoding="utf-8") as fh:
+        template_text = fh.read()
+
+    stem = os.path.splitext(os.path.basename(path))[0]
+    title = fallback_alias or stem
+    substituted = substitute_placeholders(
+        template_text, title=title, stem=stem, today=today
+    )
+
+    sub_lines = substituted.splitlines(keepends=False)
+    _, sub_body_start = split_frontmatter(sub_lines)
+    if sub_body_start > 0:
+        tmpl_body_text = "\n".join(sub_lines[sub_body_start:])
+    else:
+        tmpl_body_text = substituted
+    tmpl_sections = strip_template_h1(tmpl_body_text)
+
+    # Locate H1.
+    h1_idx = None
+    for i, line in enumerate(body):
+        if line.strip() == "":
+            continue
+        if H1_RE.match(line):
+            h1_idx = i
+        break
+
+    if h1_idx is None:
+        pre_h1: list[str] = []
+        h1_line = f"# {title}"
+        post_h1 = [ln for ln in body if ln.strip() != ""]
+    else:
+        pre_h1 = body[:h1_idx]
+        h1_line = body[h1_idx]
+        post_h1 = list(body[h1_idx + 1:])
+
+    # Find the first `## Capture` below H1; everything from there onward
+    # is preserved as user data.
+    capture_idx = None
+    for i, line in enumerate(post_h1):
+        if line.strip() == "## Capture":
+            capture_idx = i
+            break
+
+    if capture_idx is not None:
+        preserved = list(post_h1[capture_idx:])
+    else:
+        trimmed = list(post_h1)
+        while trimmed and trimmed[0].strip() == "":
+            trimmed.pop(0)
+        while trimmed and trimmed[-1].strip() == "":
+            trimmed.pop()
+        if trimmed:
+            preserved = ["## Capture", ""] + trimmed
+        else:
+            preserved = []
+
+    new_body_lines: list[str] = list(pre_h1) + [h1_line, ""]
+    new_body_lines.extend(tmpl_sections.splitlines())
+    if preserved:
+        if new_body_lines and new_body_lines[-1].strip() != "":
+            new_body_lines.append("")
+        new_body_lines.extend(preserved)
+
+    new_lines = [FM_DELIM, *fm_lines, FM_DELIM, *new_body_lines]
+    new_content = "\n".join(new_lines)
+    if original.endswith("\n") and not new_content.endswith("\n"):
+        new_content += "\n"
+
+    if new_content == original:
+        return False
+
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(new_content)
+
+    # Post-reapply: run fill to sync aliases[0] <-> H1 and canonicalize FM.
+    fill_file(path, vault_root, fallback_alias)
+
+    return True
+
+
 def check_file(path: str, vault_root: str) -> list[str]:
     """Return a list of human-readable issues with the file.
 
@@ -744,6 +894,10 @@ def main() -> int:
     group.add_argument("--apply", action="store_true",
                        help="Apply folder-matched template to notes missing "
                             "frontmatter; otherwise equivalent to --fill.")
+    group.add_argument("--reapply", action="store_true",
+                       help="Force-apply folder-matched template, preserving "
+                            "any `## Capture` block. Used by the <leader>oM "
+                            "promotion orchestrator.")
     group.add_argument("--check", action="store_true",
                        help="Report issues; exit non-zero if any found.")
     parser.add_argument("paths", nargs="+",
@@ -786,12 +940,20 @@ def main() -> int:
             except OSError as exc:
                 print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
                 return 1
+        elif args.reapply:
+            try:
+                if reapply_file(p, vault_root, today, args.fallback_alias):
+                    print(p)
+                    changed += 1
+            except OSError as exc:
+                print(f"[normalize] error: {p}: {exc}", file=sys.stderr)
+                return 1
         else:  # --check
             for issue in check_file(p, vault_root):
                 print(issue, file=sys.stderr)
                 issues_found += 1
 
-    if (args.fill or args.apply) and changed > 0:
+    if (args.fill or args.apply or args.reapply) and changed > 0:
         print(f"[normalize] modified {changed} file(s).", file=sys.stderr)
 
     return 1 if issues_found > 0 else 0
