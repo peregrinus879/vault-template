@@ -101,9 +101,9 @@ When a thought appears, capture it immediately. Speed matters more than structur
 
 Obsidian captures (desktop and mobile) start without frontmatter or template structure. That is fine: the pre-commit hook on the hub applies the fleeting template, adds canonical frontmatter, and wraps your typed content in `## Capture` on the first commit. During triage you see a fully structured note ready to process or delete.
 
-**In Neovim** *(skip if you don't use Neovim)*: press `<leader>on`. Type a short title, press Enter. The note lands in `0-fleeting/` with the fleeting template applied: frontmatter (`id`, `aliases`, `tags`) and body structure are ready. Write the thought in one to three sentences below the comment. Do not format, do not link, do not polish.
+**In Neovim** *(skip if you don't use Neovim)*: nvim defaults to permanent, not fleeting. For quick throwaway captures, prefer Obsidian (desktop or mobile). For captures you expect to turn into a permanent claim, press `<leader>on` and type the title. The note lands in `2-permanent/` with the permanent template applied. If you want a fleeting capture in nvim, press `<leader>oN` and pick `fleeting` from the picker; it routes to `0-fleeting/`.
 
-The filename is a slug (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). Your original title is preserved in the `aliases` field for search and link autocomplete.
+Either way the filename is a slug (e.g., typing "Contingency is not a buffer" creates `contingency-is-not-a-buffer.md`). Your original title is preserved in the `aliases` field for search and link autocomplete.
 
 ### End of Day: Triage (2-5 minutes)
 
@@ -144,7 +144,7 @@ Every note has two parts separated by `---` fences:
 
 **In Obsidian:** press `Ctrl+N` for a new note (lands in `0-fleeting/`), or right-click a folder and choose **New note**, then insert a template via `Ctrl+P` > "Insert template."
 
-**In Neovim:** press `<leader>on` for a new fleeting note (template auto-applied), or `<leader>oN` to pick a template and route to the correct folder. obsidian.nvim generates the base frontmatter automatically.
+**In Neovim:** press `<leader>on` for a new permanent note (default; template auto-applied), or `<leader>oN` to pick a different template and route to the matching folder. obsidian.nvim generates the base frontmatter automatically.
 
 All templates share the same three frontmatter fields, matching obsidian.nvim's default schema:
 
@@ -209,7 +209,7 @@ The title **is** the claim. Not the topic. This is the single habit that separat
 
 *In Obsidian:* right-click `2-permanent/` in the file explorer, select **New note**. Title as a claim. Press `Ctrl+P`, type "Insert template", choose `permanent`.
 
-*In Neovim:* press `<leader>oN`. Pick the `permanent` template. Type the title as a full declarative sentence, sentence case. The note is created in `2-permanent/`.
+*In Neovim:* press `<leader>on` (permanent is the default template). Type the title as a full declarative sentence, sentence case. The note is created in `2-permanent/`. Or press `<leader>oN` and pick `permanent` explicitly; same result.
 
 **Filling in the template:**
 
@@ -266,24 +266,24 @@ This is the most frequent workflow: turning a fleeting note into a literature po
 
 ### In Neovim
 
-**Side-by-side method** (best when you need to reference the fleeting note while writing):
+**`<leader>oP` method** (recommended; keeps the original filename and backlinks):
 
-1. Open the fleeting note (from neo-tree or `<leader>oo`).
+1. Open the note to promote (from neo-tree or `<leader>oo`).
+2. Press `<leader>oP`. A picker opens with the five types; `permanent` is preselected.
+3. Hit Enter to accept permanent, or type the first letter of another type (`l` for literature, `f` for fleeting, `o` for overview, `w` for writing) and Enter.
+4. The file is moved to the target folder. The old template sections are replaced with the target template's sections. Any existing body content below H1 is preserved under `## Capture` for you to weave into the new structure. The buffer follows the file. Backlinks resolve automatically; the filename is unchanged, and `[[wiki-links]]` resolve by stem + alias regardless of folder.
+
+**Side-by-side method** (best when you want to rewrite the content from scratch while keeping the original in view):
+
+1. Open the original note (from neo-tree or `<leader>oo`).
 2. Split the screen: `<leader>|` (vertical split, side by side).
 3. In the new right pane, press `<leader>oN`. Pick the target template (`literature`, `permanent`, `overview`, or `writing`). Type the title. The new note is created in the correct folder with the template applied.
-4. You now have the fleeting note on the left, the new note on the right. Use `Ctrl+h` / `Ctrl+l` to move focus between panes. Copy lines with `yy` in one pane, switch panes, paste with `p`.
+4. You now have the original on the left, the new note on the right. Use `Ctrl+h` / `Ctrl+l` to move focus between panes. Copy lines with `yy` in one pane, switch panes, paste with `p`.
 5. Write the content in the new note. Add at least one `[[link]]` for permanent notes.
 6. Close the left pane: `<leader>wd` (closes the window, not the buffer).
-7. Delete the fleeting note: `<leader>e` to open neo-tree, navigate to it in `0-fleeting/`, press `d`.
+7. Delete the original: `<leader>e` to open neo-tree, navigate to it, press `d`.
 
-**Quick method** (best when the fleeting note is short and you can hold the idea):
-
-1. Open the fleeting note, read it, close it (`<leader>bd`).
-2. Press `<leader>oN`, pick the template, type the title.
-3. Write the promoted note from memory.
-4. Delete the fleeting note via neo-tree.
-
-Fleeting notes rarely have backlinks, so nothing is lost by deleting them.
+Fleeting notes rarely have backlinks, so nothing is lost by deleting them when you go with the side-by-side method. Use `<leader>oP` when you want to keep the filename (and therefore any existing backlinks) stable.
 
 ## Linking
 
@@ -325,7 +325,7 @@ Check backlinks every time you open a permanent note or a literature note. Liter
 | Renaming files with `mv` in the terminal | Use Obsidian's file explorer or neo-tree. Links break otherwise. |
 | Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. |
 | Waiting for the "right" title before writing | Write the note, title later. Rename is cheap; both editors update links. |
-| Creating permanent notes with `<leader>on` instead of `<leader>oN` | `<leader>on` creates fleeting notes. Use `<leader>oN` to pick the target template and route directly. |
+| Creating fleeting notes in nvim with `<leader>on` | In nvim, `<leader>on` defaults to permanent. For a fleeting capture in nvim, press `<leader>oN` and pick `fleeting`. Or capture in Obsidian (mobile or desktop), where the default is fleeting. |
 | Ignoring backlinks | Check backlinks (Obsidian right sidebar or `<leader>ob`) on literature and permanent notes. |
 | Writing full paraphrases in literature notes | Literature notes are brief pointers, not full paraphrases. Develop ideas in permanent notes. |
 | Notes created in Obsidian keep typed filenames (`My thought.md`), never auto-slugified | Expected. Obsidian (mobile and desktop) uses the typed title as the filename; our vault only slugifies via `<leader>oS` in Neovim. Hourly auto-commit normalizes frontmatter and applies templates but never renames files. Run `<leader>oS` when you promote a note you want to keep. |
@@ -376,8 +376,8 @@ LazyVim shows the dashboard. Pick notes by name rather than navigating folders.
 | Key | Action |
 |---|---|
 | `<leader>oo` | Find note by name |
-| `<leader>on` | New fleeting note |
-| `<leader>oN` | New note from template |
+| `<leader>on` | New note (permanent by default) |
+| `<leader>oN` | New note from template picker |
 | `<leader>e` | Toggle neo-tree as left sidebar |
 
 **B. Open a specific file.**
@@ -494,16 +494,17 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 | Keys | Action |
 |------|--------|
-| `<leader>on` | New fleeting note |
-| `<leader>oN` | New note from template (picks template, routes to folder) |
-| `<leader>oo` | Find note by name |
-| `<leader>os` | Search vault content |
-| `<leader>ob` | Show backlinks |
-| `<leader>ol` | Show outgoing links |
+| `<leader>on` | New note (default: permanent) |
+| `<leader>oN` | New note from template picker |
+| `<leader>oo` | Quick switch (find note by name) |
+| `<leader>os` | Search vault |
+| `<leader>ob` | Collect backlinks |
+| `<leader>ol` | Collect outgoing links |
 | `<leader>op` | Paste image from clipboard |
+| `<leader>or` | Rename note (updates all backlinks) |
 | `<leader>ot` | Insert template |
-| `<leader>or` | Rename note |
-| `<leader>oS` | Slugify note (rename → normalize: FM + body + H1 + aliases) |
+| `<leader>oS` | Slugify and normalize note |
+| `<leader>oP` | Promote note to a different type |
 | `[[` | Insert wiki-link (fuzzy picker) |
 
 ### Buffers and Windows

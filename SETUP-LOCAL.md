@@ -142,7 +142,7 @@ nvim ~/vault/0-fleeting/test.md
 
 Run `:checkhealth obsidian` inside Neovim. All checks should pass.
 
-Try `<leader>on` to create a fleeting note, `<leader>oN` to create a note from a template.
+Try `<leader>on` to create a new note (defaults to permanent in nvim), or `<leader>oN` to pick a template explicitly.
 
 ## Next steps
 

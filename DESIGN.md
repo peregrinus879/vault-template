@@ -353,24 +353,27 @@ Known limitations:
 
 | Opt | Effect | Rationale |
 |---|---|---|
-| `notes_subdir = "0-fleeting"` + `new_notes_location = "notes_subdir"` | `:Obsidian new` lands notes in `0-fleeting/` | §1 (numeric directory prefixes; fleeting is where captures go) |
-| `note.template = "fleeting.md"` | Fleeting template auto-applied on `:Obsidian new` | §9 (unified frontmatter); keeps the capture path template-consistent without a second step |
+| `notes_subdir = "2-permanent"` + `new_notes_location = "notes_subdir"` | `:Obsidian new` and `[[...]]`-follow creation both land in `2-permanent/` | §1 (numeric directory prefixes); nvim workflow is permanent-dominated. Obsidian GUI (desktop + mobile) still defaults to `0-fleeting/` via `.obsidian/app.json`: the two editors' defaults are independent and diverge by choice (in nvim you extract claims; in Obsidian you capture throwaway thoughts). |
+| `note.template = "permanent.md"` | Permanent template auto-applied on `:Obsidian new` | §9 (unified frontmatter); matches the `notes_subdir` default above |
 | `templates.folder = "5-templates"` | Template discovery | §1, §9 |
-| `templates.customizations` | Each template type routes to its matching content folder (`literature` → `1-literature/`, etc.) | §1 (one folder per type; new-from-template should land there, not in the default subdir) |
+| `templates.customizations` | Each template type routes to its matching content folder (`fleeting` → `0-fleeting/`, `literature` → `1-literature/`, `permanent` → `2-permanent/`, `overview` → `3-overview/`, `writing` → `4-writing/`) | §1 (one folder per type). The `fleeting` row is explicit because when the default `notes_subdir` is `2-permanent/`, picking fleeting via `<leader>oN` must still route to `0-fleeting/`. Also consumed by `<leader>oP` for its folder-per-type lookup. |
 | `note_id_func = slugify` | Filenames derived from titles via the slug function | §5 (slug filenames), §11 (slug rules with examples) |
 | `attachments.folder = "6-assets"` | Pasted images save to `6-assets/` | §1 (vault directory layout) |
 | `ui.enable = false` | Plugin's own UI renderer disabled | Overlap with `render-markdown.nvim` (recommended companion); leaving obsidian.nvim's UI on produces double rendering |
 | `completion.blink = true`, `completion.nvim_cmp = false` | Use blink.cmp, not nvim-cmp | LazyVim default is blink.cmp; align the completion engine |
 
-**Added keybindings**. obsidian.nvim provides no default keybindings. Every `<leader>o*` binding is a vault choice. The three below are custom orchestrators (not obsidian.nvim commands); they shell out to `.githooks/lib/normalize.py`:
+**Added keybindings**. obsidian.nvim provides no default keybindings. Every `<leader>o*` binding is a vault choice. The two below are custom orchestrators (not obsidian.nvim commands); they shell out to `.githooks/lib/normalize.py`:
 
 | Keybinding | Invokes | Purpose |
 |---|---|---|
-| `<leader>oS` | `:Obsidian rename <slug>` + `normalize.py --apply` | Slugify filename (with vault-wide backlink rewrite) + apply template + re-sync `id`, `aliases[0]`, H1. The only vault-custom keybinding. |
+| `<leader>oS` | `:Obsidian rename <slug>` + `normalize.py --apply` | Slugify filename (with vault-wide backlink rewrite) + apply template + re-sync `id`, `aliases[0]`, H1 |
+| `<leader>oP` | `os.rename` (folder-only move) + `normalize.py --reapply` | Promote note to a different type: picker selects target type, file moves to matching folder, target template's body sections are installed, any `## Capture` block is preserved |
 
 Routine normalization (frontmatter hygiene, H1 insertion, aliases↔H1 sync, template body insertion when body lacks `## ` headings) runs automatically via the pre-commit hook on every commit. No in-session keybinding is needed for it; pressing `<leader>oS` in-session runs the same pipeline plus a slug rename.
 
-All other `<leader>o*` bindings (`on`, `oN`, `oo`, `os`, `ob`, `ol`, `op`, `ot`, `or`) are pass-throughs to native obsidian.nvim subcommands. They exist because obsidian.nvim leaves keymapping to the user; picking the letters is a vault choice, the behavior is obsidian.nvim's.
+Why `<leader>oP` uses `os.rename` rather than `:Obsidian rename`: backlinks in this vault resolve by filename stem plus alias, and `<leader>oP` does not change the filename stem; only the folder. Folder-only moves cannot break backlinks. `:Obsidian rename` is for name changes, which can break backlinks when the stem changes and so are only safe via obsidian.nvim's vault-wide link rewrite. The two orchestrators intentionally pick different primitives for this reason.
+
+All other `<leader>o*` bindings (`on`, `oN`, `oo`, `os`, `ob`, `ol`, `op`, `ot`, `or`) are pass-throughs to native obsidian.nvim subcommands. They exist because obsidian.nvim leaves keymapping to the user; picking the letters is a vault choice, the behavior is obsidian.nvim's. Descriptions are the plugin's own shipped strings from `lua/obsidian/commands/init-legacy.lua`; within each of the plugin's general-action / note-action groups, the bindings are ordered alphabetically by letter (stable against upstream churn).
 
 **Alternatives considered**.
 
