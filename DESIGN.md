@@ -352,9 +352,9 @@ Known limitations:
 
 | Keybinding | Invokes | Purpose |
 |---|---|---|
-| `<leader>oi` | `normalize.py --apply` | Insert canonical template (folder-matched) + frontmatter + H1; wraps pre-existing body in `## Capture` |
-| `<leader>of` | `normalize.py --fill` | Normalize canonical frontmatter fields + ensure H1; never inserts template body sections |
-| `<leader>oS` | `:Obsidian rename <slug>` + `normalize.py --apply` | Slugify filename (with vault-wide backlink rewrite) + apply template + re-sync `id`, `aliases[0]`, H1 |
+| `<leader>oS` | `:Obsidian rename <slug>` + `normalize.py --apply` | Slugify filename (with vault-wide backlink rewrite) + apply template + re-sync `id`, `aliases[0]`, H1. The only vault-custom keybinding. |
+
+Routine normalization (frontmatter hygiene, H1 insertion, aliases↔H1 sync, template body insertion when body lacks `## ` headings) runs automatically via the pre-commit hook on every commit. No in-session keybinding is needed for it; pressing `<leader>oS` in-session runs the same pipeline plus a slug rename.
 
 All other `<leader>o*` bindings (`on`, `oN`, `oo`, `os`, `ob`, `ol`, `op`, `ot`, `or`) are pass-throughs to native obsidian.nvim subcommands. They exist because obsidian.nvim leaves keymapping to the user; picking the letters is a vault choice, the behavior is obsidian.nvim's.
 

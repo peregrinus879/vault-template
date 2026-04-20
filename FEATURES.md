@@ -12,7 +12,7 @@ Five templates cover the full Zettelkasten workflow: fleeting, literature, perma
 
 ## Dual-editor support
 
-The same markdown files work in both Obsidian (desktop, mobile) and Neovim (terminal, via obsidian.nvim). No import step, no format conversion, no sync delay beyond Syncthing. The `nvim-vault/` stow overlay ships a complete obsidian.nvim configuration as a LazyVim plugin spec, including slug-based filenames, template routing, and three vault-specific orchestrators: `<leader>oi` (apply canonical template), `<leader>of` (fill frontmatter), and `<leader>oS` (slugify and re-sync). See [DESIGN.md](DESIGN.md) §12 for the list of opt-level deviations from obsidian.nvim defaults.
+The same markdown files work in both Obsidian (desktop, mobile) and Neovim (terminal, via obsidian.nvim). No import step, no format conversion, no sync delay beyond Syncthing. The `nvim-vault/` stow overlay ships a complete obsidian.nvim configuration as a LazyVim plugin spec, including slug-based filenames, template routing, and one vault-specific keybinding — `<leader>oS` for slugify-and-canonicalize. Routine normalization runs automatically via the pre-commit hook on every commit. See [DESIGN.md](DESIGN.md) §12 for the list of opt-level deviations from obsidian.nvim defaults.
 
 ## Slug filenames with readable aliases
 
@@ -20,14 +20,17 @@ Note filenames are auto-generated lowercase-hyphenated slugs (e.g., `risk-appeti
 
 ## Note normalization
 
-A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the three canonical frontmatter fields (`id`, `aliases`, `tags` — matching obsidian.nvim's default emitter), body H1 insertion, and template body application. It runs in four contexts:
+A shared Python normalizer (`.githooks/lib/normalize.py`) holds the single source of truth for the three canonical frontmatter fields (`id`, `aliases`, `tags` — matching obsidian.nvim's default emitter), body H1 insertion, and template body application. It runs in two contexts:
 
-- **`.githooks/pre-commit`** runs `--apply` on every staged note in a content directory. Notes created outside templates (mobile captures, file manager, copy-paste) get the folder-matched template body, correct frontmatter, and an H1 automatically on commit. Pre-existing body content is wrapped in a `## Capture` section for later integration.
-- **`<leader>oi`** in obsidian.nvim runs `--apply` on the current buffer — same comprehensive behavior, on demand.
-- **`<leader>of`** runs `--fill` on the current buffer: frontmatter + H1 only, without ever inserting template sections. Use when a note has custom body structure you want to preserve.
-- **`<leader>oS`** slugifies the filename (via `:Obsidian rename`, which rewrites backlinks vault-wide), then runs `--apply` with the pre-rename stem as the alias fallback.
+- **`.githooks/pre-commit`** runs `--apply` on every staged note in a content directory. Notes created outside templates (mobile captures, Obsidian Ctrl+N without a template, copy-paste, Neovim `:e`/`:w`) get the folder-matched template body, correct frontmatter, and an H1 automatically on commit. Pre-existing body content is wrapped in a `## Capture` section for later integration.
+- **`<leader>oS`** in obsidian.nvim runs the same normalization plus a slug rename (via `:Obsidian rename`, which rewrites backlinks vault-wide), passing the pre-rename stem as the alias fallback.
 
-Key rules: `id` always tracks the filename stem; `type` is derived from the folder name; `aliases[0]` is synced with the body H1 bidirectionally (H1 wins when both exist and differ); user-added `aliases[1..]` (synonyms, short forms, historical names) are preserved verbatim. If a body has no `# H1` at its first non-blank line, `# {aliases[0]}` is inserted after the frontmatter. Running the normalizer twice produces no further changes (idempotent). See [DESIGN.md](DESIGN.md) §9 for the schema and §11 for the full identity model.
+The apply rule branches three ways on the note's state:
+- No frontmatter → prepend full template + wrap pre-existing content in `## Capture`.
+- Frontmatter present + body has no `## ` heading → insert template body sections only (note's H1 preserved); existing raw content moves to `## Capture`.
+- Frontmatter present + body has at least one `## ` heading → fill only (frontmatter + H1 sync; body untouched).
+
+Key rules: `id` always tracks the filename stem; `aliases[0]` is synced with the body H1 bidirectionally (H1 wins when both exist and differ); user-added `aliases[1..]` (synonyms, short forms, historical names) are preserved verbatim. If a body has no `# H1` at its first non-blank line, `# {aliases[0]}` is inserted after the frontmatter. Running the normalizer twice produces no further changes (idempotent). `--check` flags issues including unsubstituted `{{...}}` placeholders. See [DESIGN.md](DESIGN.md) §9 for the schema and §11 for the full identity model.
 
 ## Multi-device sync
 

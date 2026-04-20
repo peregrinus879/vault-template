@@ -38,7 +38,7 @@ It does not own:
 - `self-hosting/vault-autocommit.timer` - hourly trigger for auto-commit
 - `.githooks/pre-commit` - note normalizer for staged notes in content directories (delegates to `.githooks/lib/normalize.py --apply`)
 - `.githooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath .githooks` on the hub)
-- `.githooks/lib/normalize.py` - **single source of truth for note normalization**. Shared by the pre-commit hook and the `<leader>oi`/`<leader>of`/`<leader>oS` orchestrators. Modes: `--apply` (insert folder-matched template if no frontmatter; otherwise delegate to --fill; wrap any pre-existing body content in `## Capture`), `--fill` (normalize canonical frontmatter fields, ensure body H1, sync `aliases[0]` with H1; prints modified paths to stdout for caller re-staging), `--check` (report problems to stderr, non-zero exit). Any change to normalization behavior must go here. See DESIGN.md §11 for the identity model.
+- `.githooks/lib/normalize.py` - **single source of truth for note normalization**. Called by the pre-commit hook (on every commit) and by the `<leader>oS` slugify orchestrator. Modes: `--apply` (no frontmatter → full template; frontmatter present + body has no `## ` → insert template body sections after H1, wrap pre-existing content in `## Capture`; frontmatter present + body has ≥1 `## ` → fill only), `--fill` (normalize canonical frontmatter fields, ensure body H1, sync `aliases[0]` with H1; prints modified paths to stdout), `--check` (report problems including unsubstituted `{{...}}` placeholders; non-zero exit). Any change to normalization behavior must go here. See DESIGN.md §11 for the identity model.
 
 ## Commit Policy
 
@@ -102,7 +102,7 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 ### Code and configuration
 
-1. **`normalize.py` is the single source of truth for note normalization.** `.githooks/pre-commit`, `<leader>oi`, `<leader>of`, and `<leader>oS` all delegate. Do not duplicate field or template logic in callers; changes go in `.githooks/lib/normalize.py`. The pre-commit hook is a thin shell wrapper; the keybindings are thin Lua orchestrators.
+1. **`normalize.py` is the single source of truth for note normalization.** `.githooks/pre-commit` and `<leader>oS` both delegate. Do not duplicate field or template logic in callers; changes go in `.githooks/lib/normalize.py`. The pre-commit hook is a thin shell wrapper; the `<leader>oS` keybinding is a thin Lua orchestrator.
 2. **`<leader>oS` orchestration split**: `:Obsidian rename` owns filesystem rename + vault-wide `[[wikilink]]` rewrite; `normalize.py` owns frontmatter, H1 insertion, template application, and aliases↔H1 sync. The Lua keybinding sequences them. Preserve this split. Do not reintroduce filesystem-level rename (`vim.fn.rename`) into `<leader>oS`; it silently breaks backlinks. (`<leader>or` is a pass-through to `:Obsidian rename` — used for free-form renames, not slug normalization.)
 3. **`id` tracks the filename stem.** `normalize.py` enforces this on every run. Do not rewrite `id` to a free-form value expecting it to be preserved; the next commit will sync it back to the stem.
 4. **Template placeholders must be single-quoted**: `id: '{{id}}'`, `aliases:\n  - '{{title}}'`. YAML 1.2 plain scalars cannot start with `{`, so unquoted `{{title}}` is invalid YAML even before substitution. Titles containing apostrophes break this after substitution; WORKFLOW rule 4 (ASCII-only titles) is the upstream workaround.
