@@ -6,8 +6,7 @@ tags: []
 ---
 
 # {{title}}
-<!-- Long-form output from the slip-box. Assemble permanent notes
-     into continuous text. -->
+<!-- Long-form output. Assemble permanent notes into continuous text. -->
 
 ## Audience
 <!-- Who is this for? What do they already know? -->
@@ -20,8 +19,3 @@ tags: []
 
 ## Draft
 
-
-## Connections
-<!-- Permanent notes and MOCs this piece draws from. -->
-
-- [[]]

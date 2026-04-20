@@ -6,31 +6,15 @@ tags: []
 ---
 
 # {{title}}
-<!-- Curated narrative tour through a topic. Prose between links.
-     For flat enumeration of notes on a topic, use tags instead. -->
+<!-- Curated narrative tour. Prose between links. For flat enumeration, use tags. -->
 
 ## Orientation
 <!-- 2-4 sentences: what this covers, where to start. -->
 
 
-## Starting points
-<!-- 1-3 notes that frame the topic. Read these first. -->
-
-- [[]]
-
-## Core
+## Tour
 <!-- Sections organized by your argument. Prose between links. -->
 
 ### 
-
-- [[]] 
-
-## Open questions
-<!-- Unresolved threads. Candidates for future notes. -->
-
-- 
-
-## Related
-<!-- Sibling overviews. -->
 
 - [[]]

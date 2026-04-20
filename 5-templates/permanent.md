@@ -6,24 +6,16 @@ tags: []
 ---
 
 # {{title}}
-<!-- One atomic claim. Self-contained: readable without external context.
-     Title states the claim. If you need two claims, split the note. -->
-
-## Claim
-<!-- Restate in 1-2 sentences. Sharpen what the title asserts. -->
-
+<!-- One atomic, self-contained claim. Title states it. Split if you have two. -->
 
 ## Development
-<!-- Argue, explain, qualify. Cite sources with [[literature-note]]. -->
+<!-- Argue, explain, qualify. Cite with [[literature-note]]. -->
 
 
 ## Connections
-<!-- Link to related permanent notes. State the relationship. -->
+<!-- Related permanent notes. State the relationship inline: `- Supports [[x]]: reason`. -->
 
-- Supports: [[]]
-- Contradicts: [[]]
-- Extends: [[]]
-- Prerequisite: [[]]
+-
 
 ## Sources
 <!-- Literature notes this claim draws from. -->
