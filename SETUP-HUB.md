@@ -111,14 +111,14 @@ systemctl --user enable --now syncthing
 
 Open `http://localhost:8384` and add the vault folder.
 
-Pair with the hub:
+Pair with the hub. Each device needs the other's device ID. In the Syncthing web UI:
 
 1. **Add Remote Device**: paste the hub's device ID
 2. **Accept** the vault folder share when prompted
 3. Set the folder path to the vault location on that device
 4. Wait for initial sync to complete
 
-Harden for Tailscale-only sync:
+For Tailscale-hardened sync (recommended), restrict this device to its Tailscale IP and disable NAT traversal, global discovery, local discovery, and relaying:
 
 ```bash
 syncthing cli config options raw-listen-addresses 0 set tcp://<tailscale-ip>:22000

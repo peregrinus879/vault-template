@@ -2,6 +2,13 @@
 
 Opinionated structure, templates for every note type, multi-device sync, and optional encrypted backup. Works with [Obsidian](https://obsidian.md) (desktop/mobile) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal).
 
+## Choose your path
+
+| Path | What you get | Time |
+|---|---|---|
+| **Local** ([SETUP-LOCAL.md](SETUP-LOCAL.md)) | Full Zettelkasten template on one machine: Obsidian plus optional Neovim overlay and local git version history. | 5 to 15 min |
+| **Hub** ([SETUP-HUB.md](SETUP-HUB.md)) | Adds real-time multi-device sync (Linux, Windows, Android), encrypted GitHub backup, and automated public template mirroring. Builds on the Local path. | +30 min |
+
 ## Highlights
 
 **Opinionated Zettelkasten structure.** Seven numbered directories enforce a knowledge lifecycle: capture, process, synthesize, navigate, compose. Each content directory has a dedicated template with pre-filled frontmatter. The numbered prefix keeps folders sorted in every file explorer and picker, across every platform. See [DESIGN.md](DESIGN.md) §1 for the rationale behind the numbering order.
