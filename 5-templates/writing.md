@@ -12,6 +12,7 @@ tags: []
 <!-- Who is this for? What do they already know? -->
 
 
+
 ## Outline
 <!-- Structure from collected permanent notes. -->
 
@@ -19,4 +20,5 @@ tags: []
 
 ## Draft
 <!-- Prose assembled from the outline. -->
+
 
