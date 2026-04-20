@@ -378,7 +378,7 @@ All other `<leader>o*` bindings (`on`, `oN`, `oo`, `os`, `ob`, `ol`, `op`, `ot`,
 |---|---|
 | No overlay; let obsidian.nvim defaults apply | Leaves every note in an undefined default subdir; no slugification; no canonical template application for non-Neovim captures. The overlay is the vehicle for §1/§5/§9/§11 to hold. |
 | Overlay via vanilla Neovim `init.lua`, not a LazyVim plugin spec | LazyVim is the assumed distribution per `GETTING-STARTED.md` §2; the stow overlay integrates directly as a plugin spec. Users on vanilla Neovim can port the file with minor tweaks. |
-| Bind custom logic to existing obsidian.nvim letters (e.g., override `<leader>ot` with our template apply) | Muddies the mental model when reading obsidian.nvim documentation elsewhere. Kept native `<leader>ot`/`<leader>or` as pass-throughs; put vault logic on fresh letters (`oi`, `of`, `oS`). |
+| Bind custom logic to existing obsidian.nvim letters (e.g., override `<leader>ot` with our template apply) | Muddies the mental model when reading obsidian.nvim documentation elsewhere. Kept native `<leader>ot`/`<leader>or` as pass-throughs; vault logic lives on a fresh letter (`<leader>oS`). |
 
 **Source of truth**. `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` is the overlay. Its file-header comment enumerates the same deviations in one block for a reader already inside the code.
 

@@ -16,11 +16,21 @@ Modes:
       Exits 0 on success; non-zero only on I/O errors.
 
   --apply PATH [PATH ...]
-      If the file has no frontmatter, read the folder-matched
-      template from 5-templates/, substitute placeholders, prepend
-      to body, and wrap any pre-existing body content in a
-      `## Capture` section at the end. If the file already has
-      frontmatter, delegate to --fill.
+      Branch on note state:
+      - No frontmatter → prepend full folder-matched template (FM
+        + body), wrap any pre-existing body content in `## Capture`
+        at the end.
+      - Frontmatter present, body has no `## ` heading → insert
+        template body sections after the existing H1 (template's
+        own H1 stripped), wrap any pre-existing non-H1 content in
+        `## Capture`. Closes the gap for captures that land with
+        frontmatter but no body structure (Neovim auto-FM, mobile,
+        Obsidian Ctrl+N without template).
+      - Frontmatter present, body has ≥1 `## ` heading → treat as
+        structured; delegate to --fill (frontmatter fields + H1
+        sync only, body untouched).
+      Any `## ` heading in the body is the user's escape hatch to
+      opt out of template re-application.
 
   --check PATH [PATH ...]
       Report problems without modifying files. Prints one line per

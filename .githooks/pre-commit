@@ -8,11 +8,18 @@
 # (derived from .gitattributes filter=git-crypt rules) and runs
 # normalize.py --apply on each. Modified files are re-staged.
 #
-# --apply handles two cases: if a file has no frontmatter, the
-# folder-matched template is applied and any pre-existing body
-# content is wrapped in ## Capture. If frontmatter is present,
-# it delegates to --fill (canonical fields + aliases[0] ↔ H1
-# sync + H1 insertion when missing).
+# --apply branches three ways on note state:
+# - No frontmatter → prepend full folder-matched template and wrap
+#   any pre-existing body content in ## Capture.
+# - Frontmatter present, body has no `## ` heading → insert
+#   template body sections after the existing H1, wrap non-H1 body
+#   in ## Capture (closes the Neovim auto-FM / mobile / Ctrl+N
+#   capture gap).
+# - Frontmatter present, body has ≥1 `## ` heading → treat as
+#   structured; delegate to --fill (canonical fields + aliases[0]
+#   ↔ H1 sync + H1 insertion when missing).
+# Any `## ` heading in the body is the user's escape hatch to opt
+# out of template re-application.
 #
 # Auto-commit safe: non-interactive, exits 0 on success, warns on
 # malformed frontmatter but does not reject, so the hourly timer

@@ -12,7 +12,8 @@
 -- markdown rendering; it is not required by obsidian.nvim.
 --
 -- ---------------------------------------------------------------------------
--- Deviations from obsidian.nvim defaults (see DESIGN.md §5, §9, §11):
+-- Deviations from obsidian.nvim defaults (full table and rationale in
+-- DESIGN.md §12; the underlying design decisions live in §5, §9, §11):
 --
 -- Opts that change obsidian.nvim behavior beyond naming the workspace:
 --   notes_subdir, new_notes_location   :Obsidian new lands in 0-fleeting/.
