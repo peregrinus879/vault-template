@@ -41,7 +41,7 @@
 --
 -- Vault-specific keybindings (not obsidian.nvim commands):
 --   <leader>oS   Slugify note (slug rename + normalize.py --apply)
---   <leader>oM   Promote/move note to a different type (folder move +
+--   <leader>oP   Promote note to a different type (folder move +
 --                normalize.py --reapply). Same orchestration split as oS:
 --                Lua owns the filesystem action, normalize.py owns body
 --                and frontmatter.
@@ -262,6 +262,89 @@ return {
           end
         end,
         desc = "Slugify and normalize note",
+      },
+
+      -- oP — Promote note to a different type. Same orchestration split
+      -- as oS: Lua owns the filesystem action, normalize.py owns body
+      -- and frontmatter.
+      --  1. Picker (vim.ui.select) chooses the target type. Permanent
+      --     is listed first so Enter picks it without typing.
+      --  2. File is moved (os.rename) to the target folder. Filename
+      --     stem is unchanged, so [[wikilink]] resolution still works
+      --     by filename+alias — no :Obsidian rename needed (that one
+      --     is for name changes, which would break backlinks; folder
+      --     moves do not).
+      --  3. Buffer is swapped to the new path (bwipeout! + edit).
+      --  4. normalize.py --reapply inserts the target template's body
+      --     sections and preserves any `## Capture` block (or wraps
+      --     existing post-H1 content in a new `## Capture`).
+      -- Invariants preserved: id tracks the new filename stem (unchanged
+      -- on a folder-only move); aliases[1..] synonyms are kept; H1
+      -- reconciled with aliases[0].
+      {
+        "<leader>oP",
+        function()
+          local old_path = vim.api.nvim_buf_get_name(0)
+          if not old_path:find(vault_path .. "/", 1, true) then
+            vim.notify("Not in vault", vim.log.levels.WARN)
+            return
+          end
+
+          -- Permanent first so the picker default lands on it.
+          local types = { "permanent", "fleeting", "literature", "overview", "writing" }
+          local subdirs = {
+            fleeting = "0-fleeting",
+            literature = "1-literature",
+            permanent = "2-permanent",
+            overview = "3-overview",
+            writing = "4-writing",
+          }
+
+          local ok_write = pcall(vim.cmd, "write")
+          if not ok_write then
+            vim.notify("Could not save buffer", vim.log.levels.ERROR)
+            return
+          end
+
+          vim.ui.select(types, { prompt = "Promote to type:" }, function(choice)
+            if not choice then
+              return
+            end
+
+            local target_subdir = subdirs[choice]
+            local stem = vim.fn.fnamemodify(old_path, ":t:r")
+            local new_path = vault_path .. "/" .. target_subdir .. "/" .. stem .. ".md"
+
+            if old_path ~= new_path then
+              if vim.fn.filereadable(new_path) == 1 then
+                vim.notify("Target already exists: " .. target_subdir .. "/" .. stem .. ".md",
+                  vim.log.levels.ERROR)
+                return
+              end
+
+              local ok, err = os.rename(old_path, new_path)
+              if not ok then
+                vim.notify("Move failed: " .. tostring(err), vim.log.levels.ERROR)
+                return
+              end
+
+              vim.cmd("bwipeout!")
+              vim.cmd("edit " .. vim.fn.fnameescape(new_path))
+            end
+
+            if not run_normalize("--reapply", nil, new_path) then
+              return
+            end
+
+            if old_path ~= new_path then
+              vim.notify("Promoted to " .. choice .. ": " .. target_subdir .. "/" .. stem,
+                vim.log.levels.INFO)
+            else
+              vim.notify("Template reapplied (" .. choice .. ")", vim.log.levels.INFO)
+            end
+          end)
+        end,
+        desc = "Promote note to a different type and reapply template",
       },
     },
   },
