@@ -285,6 +285,17 @@ This is the most frequent workflow: turning a fleeting note into a literature po
 
 Fleeting notes rarely have backlinks, so nothing is lost by deleting them when you go with the side-by-side method. Use `<leader>op` when you want to keep the filename (and therefore any existing backlinks) stable.
 
+### Splitting a multi-idea note
+
+The "one claim per file" rule for permanent notes means a multi-idea note needs to be split. In Neovim, `<leader>ox` (visual-mode) does this in one keystroke:
+
+1. Visual-select the portion that represents the extractable idea.
+2. Press `<leader>ox`.
+3. A prompt asks for the new note's title.
+4. The selection is removed from the source, a new note is created with that selection as its body, and a `[[link]]` to the new note is inserted in place of the removed text.
+
+The new note is created in the default `notes_subdir` (`2-permanent/` in nvim) with the permanent template. Promote it with `<leader>op` if it belongs elsewhere.
+
 ## Linking
 
 Linking is the core habit. Do it every time you write in `2-permanent/`.
@@ -292,6 +303,15 @@ Linking is the core habit. Do it every time you write in `2-permanent/`.
 **In Obsidian:** type `[[`. An autocomplete dropdown appears. Start typing to filter. Select the target.
 
 **In Neovim:** type `[[` in Insert mode. obsidian.nvim opens a fuzzy picker over all note names. Start typing to filter, select a note, press Enter. The link inserts as `[[Note Title]]`.
+
+**Linking from an existing selection (Neovim, visual mode).** When the phrase you want to turn into a link is already written, visual-select it, then:
+
+| Binding | Action |
+|---|---|
+| `<leader>ol` | Link the selected text to an existing note (fuzzy picker) |
+| `<leader>oL` | Create a new note titled after the selection, and link to it |
+
+The selection becomes the link's display text automatically; no need to retype it.
 
 After inserting the link, write a short because-clause. A link without reasoning is decoration.
 
@@ -306,7 +326,7 @@ not the board.
 | Action | Obsidian desktop | Neovim |
 |---|---|---|
 | Backlinks (who links here?) | Right sidebar > Backlinks panel | `<leader>ob` |
-| Outgoing links (where does this point?) | Right sidebar > Outgoing links panel | `<leader>ol` |
+| Outgoing links (where does this point?) | Right sidebar > Outgoing links panel | `<leader>oa` |
 | Search vault content | `Ctrl+Shift+F` | `<leader>os` |
 | Find note by name | `Ctrl+O` (Quick Switcher) | `<leader>oo` |
 | Visual link map | `Ctrl+G` (Graph view) | N/A |
@@ -323,7 +343,7 @@ Check backlinks every time you open a permanent note or a literature note. Liter
 | Copy-pasting from sources into permanent notes | Paraphrase belongs in literature note pointers. Permanent notes must be in your words. |
 | Creating sub-folders inside `2-permanent/` | Links are the structure. Folders are storage. Keep `2-permanent/` flat. |
 | Renaming files with `mv` in the terminal | Use Obsidian's file explorer or neo-tree. Links break otherwise. |
-| Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. |
+| Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. In Neovim: visual-select the extractable idea, press `<leader>ox` (see §Promoting Notes > Splitting a multi-idea note). |
 | Waiting for the "right" title before writing | Write the note, title later. Rename is cheap; both editors update links. |
 | Creating fleeting notes in nvim with `<leader>on` | In nvim, `<leader>on` defaults to permanent. For a fleeting capture in nvim, press `<leader>oN` and pick `fleeting`. Or capture in Obsidian (mobile or desktop), where the default is fleeting. |
 | Ignoring backlinks | Check backlinks (Obsidian right sidebar or `<leader>ob`) on literature and permanent notes. |
