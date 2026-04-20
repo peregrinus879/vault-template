@@ -12,7 +12,7 @@ It owns:
 - Obsidian app configuration (`.obsidian/`)
 - Note templates (`5-templates/`)
 - Vault-specific Neovim plugins (`nvim-vault/`): obsidian.nvim config and render-markdown.nvim (recommended companion). Canonical home for these files.
-- Self-hosting reference files (`self-hosting/`): pinentry-null, systemd units
+- Hub-only reference files (`hub/`): pinentry-null, systemd units
 - Git hooks (`.githooks/`): note normalizer (pre-commit), public template sync (post-commit)
 
 It does not own:
@@ -32,16 +32,16 @@ It does not own:
 - `CLAUDE.md` - thin Claude Code wrapper importing `AGENTS.md`
 - `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` - vault-specific obsidian.nvim config (canonical). Deviations from obsidian.nvim defaults enumerated in DESIGN.md §12.
 - `nvim-vault/.config/nvim/lua/plugins/render-markdown.lua` - recommended markdown rendering (not required by obsidian.nvim)
-- `self-hosting/pinentry-null` - headless pinentry for unattended GPG operations
-- `self-hosting/vault-autocommit.service` - systemd oneshot for auto-commit
-- `self-hosting/vault-autocommit.timer` - hourly trigger for auto-commit
+- `hub/pinentry-null` - headless pinentry for unattended GPG operations
+- `hub/vault-autocommit.service` - systemd oneshot for auto-commit
+- `hub/vault-autocommit.timer` - hourly trigger for auto-commit
 - `.githooks/pre-commit` - note normalizer for staged notes in content directories (delegates to `.githooks/lib/normalize.py --apply`)
 - `.githooks/post-commit` - auto-sync hook for public template repo (enable with `git config core.hooksPath .githooks` on the hub)
 - `.githooks/lib/normalize.py` - **single source of truth for note normalization**. Called by the pre-commit hook (on every commit) and by the `<leader>oS` slugify orchestrator. Modes: `--apply` (no frontmatter → full template; frontmatter present + body has no `## ` → insert template body sections after H1, wrap pre-existing content in `## Capture`; frontmatter present + body has ≥1 `## ` → fill only), `--fill` (normalize canonical frontmatter fields, ensure body H1, sync `aliases[0]` with H1; prints modified paths to stdout), `--check` (report problems including unsubstituted `{{...}}` placeholders; non-zero exit). Any change to normalization behavior must go here. See DESIGN.md §11 for the identity model.
 
 ## Commit Policy
 
-Only commit `5-templates/`, `nvim-vault/`, `self-hosting/`, docs, `.githooks/`, and config. All other content is captured by the hourly auto-commit timer.
+Only commit `5-templates/`, `nvim-vault/`, `hub/`, docs, `.githooks/`, and config. All other content is captured by the hourly auto-commit timer.
 
 ## Propagation Model
 
@@ -59,7 +59,7 @@ Infrastructure directories use a dotfile prefix (`.obsidian/`, `.githooks/`, `.s
 
 ### Visible infrastructure
 
-`nvim-vault/` and `self-hosting/` are infrastructure directories that do not use a dot prefix. They are intentionally visible on GitHub for discoverability by public template users. Obsidian hiding is handled by `userIgnoreFilters` in `.obsidian/app.json` (search, graph, links) and `.obsidian/snippets/hide-root-docs.css` (file explorer sidebar, using `.nav-folder-title[data-path]` selectors).
+`nvim-vault/` and `hub/` are infrastructure directories that do not use a dot prefix. They are intentionally visible on GitHub for discoverability by public template users. Obsidian hiding is handled by `userIgnoreFilters` in `.obsidian/app.json` (search, graph, links) and `.obsidian/snippets/hide-root-docs.css` (file explorer sidebar, using `.nav-folder-title[data-path]` selectors).
 
 ### Current state per item
 
@@ -81,7 +81,7 @@ Infrastructure directories use a dotfile prefix (`.obsidian/`, `.githooks/`, `.s
 | `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups (transient) |
 | `.trash/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Obsidian soft-delete bucket |
 | `nvim-vault/` | Yes | Yes | Yes | Neovim overlay (LazyVim stow package) |
-| `self-hosting/` | Yes | Yes | Yes | Reference files for encryption and backup |
+| `hub/` | Yes | Yes | Yes | Hub-only reference files (pinentry, systemd units) |
 
 Two patterns visible at a glance:
 
@@ -118,7 +118,7 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 ### Deployment and operation
 
-12. **Editing `self-hosting/vault-autocommit.service` does NOT redeploy.** The running timer uses the static copy at `~/.config/systemd/user/vault-autocommit.service`. After any edit to the source, redeploy: `cp ~/vault/self-hosting/vault-autocommit.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user restart vault-autocommit.timer`.
+12. **Editing `hub/vault-autocommit.service` does NOT redeploy.** The running timer uses the static copy at `~/.config/systemd/user/vault-autocommit.service`. After any edit to the source, redeploy: `cp ~/vault/hub/vault-autocommit.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user restart vault-autocommit.timer`.
 13. **Every vault commit produces two commit lines in output**: one in the vault (your message), one `sync: YYYY-MM-DD-HHMM` in the public mirror (from `.githooks/post-commit`). This is expected; the public commit is a derived sync, not a duplicate of your work.
 14. **Hooks run only where `core.hooksPath` is set.** `SETUP-LOCAL.md` §2 sets it locally for new forks; `SETUP-HUB.md` §8.4 enables it on the hub. If a clone has no hooks configured, `pre-commit` normalization and `post-commit` public sync both no-op silently.
 
@@ -134,7 +134,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 - Editing `.obsidian/app.json` (default new-note folder, attachment folder, userIgnoreFilters) or `.obsidian/templates.json`
 - Editing `.stignore` (Syncthing propagation rules; affects what reaches other devices)
 - Changing `.gitignore`, `.stignore`, or the rsync allowlist in `.githooks/post-commit` (update the per-item state table in §Propagation Model)
-- Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `self-hosting/pinentry-null`
+- Editing GPG config (`~/.gnupg/gpg-agent.conf`) or `hub/pinentry-null`
 - Adding, renaming, or reordering sections across `README.md`, `SETUP-LOCAL.md`, `SETUP-HUB.md`, `WORKFLOW.md`, or `AGENTS.md`
 - Any change that references directory paths in templates, docs, or config
 - Completing a themed work pass (audit remediation, structural change, new hook or template, setup flow change): draft a `CHANGELOG.md` entry before declaring the work done, per §Changelog conventions
@@ -142,7 +142,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 ### What to check
 
 1. **git-crypt encryption**: `git-crypt status` must show all files in content directories as `encrypted`. If any content file shows `not encrypted`, stop and fix `.gitattributes` before pushing.
-2. **Public template repo**: `ls ~/projects/repos/templates/vault-template/` must show empty content directories (with `.gitkeep`), templates, config, docs, `nvim-vault/`, `self-hosting/`, and the `.public-mirror-marker` sentinel file. No note content. Grep for any content that should not be there.
+2. **Public template repo**: `ls ~/projects/repos/templates/vault-template/` must show empty content directories (with `.gitkeep`), templates, config, docs, `nvim-vault/`, `hub/`, and the `.public-mirror-marker` sentinel file. No note content. Grep for any content that should not be there.
 3. **Stale references**: `grep -rn '<old-name>' --include='*.md' --include='*.json' --include='*.css' . --exclude-dir=.git` must return no hits outside `.obsidian/workspace-mobile.json` (which Obsidian regenerates) and `CHANGELOG.md` (which preserves historical references).
 4. **obsidian.nvim config**: if directory paths changed, verify `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` has the correct `notes_subdir`, `templates.folder`, `attachments.folder`, and `templates.customizations` values.
 5. **Doc cross-references and overviews**: cross-document references (section numbers, file names, headings) must resolve. `README.md` Documentation table must list all public docs. `AGENTS.md` Key Files descriptions must still match each doc's actual scope. Run `grep -rn 'step [0-9]\|§[0-9]' --include='*.md' .` and confirm every referenced section exists.
@@ -166,7 +166,7 @@ Triggers for an update pass: end of a working session, completion of an audit or
 
 ## Known Limitations
 
-- **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, SETUP-LOCAL.md, SETUP-HUB.md, CHANGELOG.md, DESIGN.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `self-hosting/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
+- **Obsidian file explorer**: repo docs and infrastructure directories (README.md, WORKFLOW.md, SETUP-LOCAL.md, SETUP-HUB.md, CHANGELOG.md, DESIGN.md, AGENTS.md, CLAUDE.md, LICENSE, `nvim-vault/`, `hub/`) would appear in the Obsidian sidebar by default. `userIgnoreFilters` in `.obsidian/app.json` only hides them from search, graph, and link suggestions, not from the file explorer. Workaround: the tracked CSS snippet at `.obsidian/snippets/hide-root-docs.css` (enabled in `.obsidian/appearance.json`) hides them via `display: none` rules targeting both `.nav-file-title[data-path]` (files) and `.nav-folder-title[data-path]` (directories). Enable per device in Settings > Appearance > CSS snippets if Obsidian does not pick up the config automatically.
 - **Public repo commit messages must be opaque**: the post-commit hook uses `sync: <date>` for public template repo commits. Do not forward private repo commit messages to the public repo. Private commit messages may reference note names, topics, or other content that would leak through the public repo's git history.
 - **No batch slug rename**: the pre-commit hook normalizes frontmatter and applies templates but does not slugify filenames (renaming breaks wiki-links and causes Syncthing churn). Slug normalization requires `<leader>oS` one file at a time. Future enhancement: extend `<leader>oS` to operate on multiple files (e.g., all notes in a directory), or add a separate hook/script that renames files in `0-fleeting/` only (low-risk: fleeting notes are temporary and rarely have backlinks).
 - **Auto-commit timer can preempt planned commits**: `vault-autocommit.timer` fires hourly on the hub (`*:00`) and runs `git add -A`, commits any diff as `auto: <ts>`, and pushes. Push failures log to stderr (visible via `journalctl --user -u vault-autocommit`) but do not block the next tick. If a planned multi-stage change straddles the top of the hour, the timer will sweep staged changes into an `auto:` commit and push it before you can write a descriptive message. Before any structural change on the hub, pause the timer: `systemctl --user stop vault-autocommit.timer`. Restart after the planned commit: `systemctl --user start vault-autocommit.timer`. If the timer preempts anyway, prefer accepting the `auto:` message. Amending is allowed but requires force-push; reserve it for commits where the message loss is materially worse than a rewritten hash.
@@ -181,7 +181,7 @@ Items deliberately not done in past passes. Each carries a short rationale so fu
 
 ### Technical deferrals (low current value)
 
-- **Data-driven vault path in `self-hosting/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SETUP-HUB.md` §7. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
+- **Data-driven vault path in `hub/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SETUP-HUB.md` §7. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
 - **Defensive reload after `:Obsidian rename` in `<leader>oS`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `normalize.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
 
 ## Changelog

@@ -52,7 +52,7 @@ Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`
 5-templates/      Note templates (one per note type)
 6-assets/         Images, PDFs, and attachments
 nvim-vault/       Neovim overlay (LazyVim stow package)
-self-hosting/     Reference files for encryption and backup setup
+hub/              Hub-only reference files (pinentry, systemd units)
 .obsidian/        Obsidian app configuration
 .githooks/        Git hooks (note normalizer, public template sync)
 ```

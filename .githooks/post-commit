@@ -58,8 +58,8 @@ rsync -a --delete \
   \
   --include='/nvim-vault/' \
   --include='/nvim-vault/**' \
-  --include='/self-hosting/' \
-  --include='/self-hosting/**' \
+  --include='/hub/' \
+  --include='/hub/**' \
   --include='/5-templates/' \
   --include='/5-templates/**' \
   --include='/.githooks/' \
@@ -99,7 +99,7 @@ for dir in "$PUBLIC"/*/ "$PUBLIC"/.*/; do
   [ -d "$dir" ] || continue
   name="$(basename "$dir")"
   case "$name" in
-    . | .. | .git | .obsidian | .githooks | nvim-vault | self-hosting) continue ;;
+    . | .. | .git | .obsidian | .githooks | nvim-vault | hub) continue ;;
   esac
   [ -d "$VAULT/$name" ] || rm -rf "$dir"
 done
