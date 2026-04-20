@@ -27,7 +27,7 @@
 --                                      creation in nvim.
 --   templates.folder                   Points at vault's 5-templates/.
 --   templates.customizations           Routes each template type (picked
---                                      via <leader>oN or <leader>oM) to
+--                                      via <leader>oN or <leader>op) to
 --                                      its content folder (fleeting →
 --                                      0-fleeting/, literature →
 --                                      1-literature/, etc.).
@@ -40,26 +40,32 @@
 --   completion.blink + nvim_cmp        LazyVim ships blink.cmp; match it.
 --
 -- Vault-specific keybindings (not obsidian.nvim commands):
---   <leader>oS   Slugify note (slug rename + normalize.py --apply)
---   <leader>oP   Promote note to a different type (folder move +
---                normalize.py --reapply). Same orchestration split as oS:
---                Lua owns the filesystem action, normalize.py owns body
---                and frontmatter.
+--   <leader>o<space>   Slug-rename and normalize note (slug rename +
+--                      normalize.py --apply). Slugs the filename,
+--                      applies the folder-matched template body,
+--                      canonicalizes frontmatter, syncs H1 with
+--                      aliases[0].
+--   <leader>op         Promote note to a different type (folder move +
+--                      normalize.py --reapply). Same orchestration
+--                      split: Lua owns the filesystem action,
+--                      normalize.py owns body and frontmatter.
 --
--- Routine normalization (frontmatter hygiene, H1 insertion, aliases↔H1
--- sync, template body application when body lacks ## headings) runs
--- automatically via the pre-commit hook on every commit; users don't
--- need a keybinding for it. Use <leader>oS when you want the full
--- pipeline in-session (slug rename included).
+-- Routine normalization (template body, H1, aliases↔H1 sync, frontmatter
+-- canonicalization) runs automatically via the pre-commit hook on every
+-- commit; users don't need a keybinding for it. Use <leader>o<space>
+-- when you want the full pipeline in-session (slug rename included).
 --
--- Pass-through keybindings to obsidian.nvim native commands. Two
--- groups mirroring the plugin's general-action / note-action split;
--- within each group, alphabetical by the binding letter:
---   General:  <leader>on, oN, oo, os
---   Note:     <leader>ob, ol, op, or, ot
--- Descriptions are the plugin's own shipped strings from
--- lua/obsidian/commands/init-legacy.lua.
--- See the `keys` table below for each one's exact command mapping.
+-- Pass-through keybindings to obsidian.nvim native commands. Letters
+-- are vault choices (obsidian.nvim ships no <leader> defaults);
+-- descriptions are our own short forms (see AGENTS.md §Conventions).
+--
+-- Uppercase convention: when a lowercase/uppercase letter pair is a
+-- natural fit, uppercase = "the 'create a new note' variant of its
+-- lowercase sibling" (oN = new-from-template vs on = new; oL = link-
+-- to-new vs ol = link-to-existing). Not forced otherwise.
+--
+-- Bindings grouped by mode (normal, visual); within each group,
+-- alphabetical by the binding letter.
 -- ---------------------------------------------------------------------------
 
 vim.g.markdown_folding = 1
@@ -174,27 +180,26 @@ return {
       end,
     },
     keys = {
-      -- obsidian.nvim pass-through bindings. Two groups mirroring the
-      -- plugin's general-action / note-action split; within each group,
-      -- alphabetical by the binding letter (lowercase before uppercase
-      -- for same-letter pairs). Descriptions are the plugin's own
-      -- shipped strings from lua/obsidian/commands/init-legacy.lua.
-
-      -- General
+      -- Normal-mode pass-throughs, alphabetical by letter.
+      { "<leader>oa", "<cmd>Obsidian links<cr>", desc = "Collect all links in buffer" },
+      { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Collect backlinks" },
+      { "<leader>oc", "<cmd>Obsidian toc<cr>", desc = "Load ToC into a picker" },
+      { "<leader>oi", "<cmd>Obsidian paste_img<cr>", desc = "Paste image from clipboard" },
       { "<leader>on", "<cmd>Obsidian new<cr>", desc = "Create a new note" },
       { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "Create a new note from a template" },
       { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Switch notes" },
+      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note and update references" },
       { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault" },
+      { "<leader>ot", "<cmd>Obsidian tags<cr>", desc = "Find tags" },
 
-      -- Note
-      { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Collect backlinks" },
-      { "<leader>ol", "<cmd>Obsidian links<cr>", desc = "Collect all links within the current buffer" },
-      { "<leader>op", "<cmd>Obsidian paste_img<cr>", desc = "Paste an image from the clipboard" },
-      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note and update all references to it" },
-      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert a template" },
+      -- Visual-mode pass-throughs, alphabetical by letter.
+      { "<leader>ol", "<cmd>Obsidian link<cr>", mode = "v", desc = "Link text to existing note" },
+      { "<leader>oL", "<cmd>Obsidian link_new<cr>", mode = "v", desc = "Link text to new note" },
+      { "<leader>ox", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract text to new note and link to it" },
 
-      -- oS — Slugify note. Full canonicalization in one keystroke:
-      --  1. Slugifies the filename via :Obsidian rename (which rewrites
+      -- o<space> — Slug-rename and normalize note. Full pipeline in one
+      -- keystroke:
+      --  1. Slug-renames the filename via :Obsidian rename (which rewrites
       --     every [[wikilink]] in the vault).
       --  2. Runs normalize.py --apply, passing the pre-rename stem as
       --     the alias fallback so the readable name survives in
@@ -204,7 +209,7 @@ return {
       -- Invariants preserved: id = new filename stem; aliases[1..]
       -- user-added synonyms are kept; H1 reconciled with aliases[0].
       {
-        "<leader>oS",
+        "<leader>o<space>",
         function()
           local old_path = vim.api.nvim_buf_get_name(0)
           if not old_path:find(vault_path .. "/", 1, true) then
@@ -258,15 +263,15 @@ return {
           if renamed then
             vim.notify("Slugified: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
           else
-            vim.notify("Note canonicalized (filename already slug)", vim.log.levels.INFO)
+            vim.notify("Note normalized (filename already slug)", vim.log.levels.INFO)
           end
         end,
-        desc = "Slugify and normalize note",
+        desc = "Slug-rename and normalize note",
       },
 
-      -- oP — Promote note to a different type. Same orchestration split
-      -- as oS: Lua owns the filesystem action, normalize.py owns body
-      -- and frontmatter.
+      -- op — Promote note to a different type. Same orchestration split
+      -- as o<space>: Lua owns the filesystem action, normalize.py owns
+      -- body and frontmatter.
       --  1. Picker (vim.ui.select) chooses the target type. Permanent
       --     is listed first so Enter picks it without typing.
       --  2. File is moved (os.rename) to the target folder. Filename
@@ -282,7 +287,7 @@ return {
       -- on a folder-only move); aliases[1..] synonyms are kept; H1
       -- reconciled with aliases[0].
       {
-        "<leader>oP",
+        "<leader>op",
         function()
           local old_path = vim.api.nvim_buf_get_name(0)
           if not old_path:find(vault_path .. "/", 1, true) then
@@ -344,7 +349,7 @@ return {
             end
           end)
         end,
-        desc = "Promote note to a different type and reapply template",
+        desc = "Promote note to different type",
       },
     },
   },
