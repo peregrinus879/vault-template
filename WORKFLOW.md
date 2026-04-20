@@ -154,7 +154,7 @@ All templates share the same three frontmatter fields, matching obsidian.nvim's 
 
 No type-specific frontmatter. The folder path already encodes the note type (`2-permanent/...` vs `1-literature/...`); no redundant field is written. For dates, rely on `git log` (first-commit = created; last-commit = updated) or filesystem `mtime`. Literature notes carry bibliographic metadata (medium, author, year, identifier) in the body under `## Source`, not in frontmatter. Write your content in the body, below any instructional comments.
 
-**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste, Obsidian desktop Ctrl+N without a template) miss this auto-generation. The shared normalizer `.githooks/lib/normalize.py` holds the rules in one place and runs automatically on every commit via `.githooks/pre-commit` — `--apply` mode inserts the folder-matched template when appropriate, fills canonical fields, ensures a body `# H1`, and syncs `aliases[0]` with the H1 (H1 wins when both exist and differ). The apply rule branches on body structure: no frontmatter → full template + pre-existing body wrapped in `## Capture`; frontmatter present + body has no `## ` heading → insert template body sections only (note's H1 and existing content preserved, raw content moved to `## Capture`); frontmatter present + body has at least one `## ` heading → fill only (body untouched). User-added `aliases[1..]` synonyms are preserved throughout. In-session, `<leader>oS` runs the same normalization plus a slug rename. The hook never slugifies filenames on its own. See [DESIGN.md](DESIGN.md) §9 for the three-field schema rationale and §11 for the identity model.
+**Notes created outside templates** (mobile captures without pull-down, neo-tree `a`, copy-paste, Obsidian desktop Ctrl+N without a template) miss this auto-generation. The shared normalizer `.githooks/lib/normalize.py` holds the rules in one place and runs automatically on every commit via `.githooks/pre-commit` — `--apply` mode inserts the folder-matched template when appropriate, canonicalizes frontmatter, ensures a body `# H1`, and syncs `aliases[0]` with the H1 (H1 wins when both exist and differ). The apply rule branches on body structure: no frontmatter → full template + pre-existing body wrapped in `## Capture`; frontmatter present + body has no `## ` heading → insert template body sections only (note's H1 and existing content preserved, raw content moved to `## Capture`); frontmatter present + body has at least one `## ` heading → fill only (body untouched). User-added `aliases[1..]` synonyms are preserved throughout. In-session, `<leader>o<space>` runs the same normalization plus a slug rename. The hook never slugifies filenames on its own. See [DESIGN.md](DESIGN.md) §9 for the three-field schema rationale and §11 for the identity model.
 
 ### Fleeting Notes
 
@@ -266,10 +266,10 @@ This is the most frequent workflow: turning a fleeting note into a literature po
 
 ### In Neovim
 
-**`<leader>oP` method** (recommended; keeps the original filename and backlinks):
+**`<leader>op` method** (recommended; keeps the original filename and backlinks):
 
 1. Open the note to promote (from neo-tree or `<leader>oo`).
-2. Press `<leader>oP`. A picker opens with the five types; `permanent` is preselected.
+2. Press `<leader>op`. A picker opens with the five types; `permanent` is preselected.
 3. Hit Enter to accept permanent, or type the first letter of another type (`l` for literature, `f` for fleeting, `o` for overview, `w` for writing) and Enter.
 4. The file is moved to the target folder. The old template sections are replaced with the target template's sections. Any existing body content below H1 is preserved under `## Capture` for you to weave into the new structure. The buffer follows the file. Backlinks resolve automatically; the filename is unchanged, and `[[wiki-links]]` resolve by stem + alias regardless of folder.
 
@@ -283,7 +283,7 @@ This is the most frequent workflow: turning a fleeting note into a literature po
 6. Close the left pane: `<leader>wd` (closes the window, not the buffer).
 7. Delete the original: `<leader>e` to open neo-tree, navigate to it, press `d`.
 
-Fleeting notes rarely have backlinks, so nothing is lost by deleting them when you go with the side-by-side method. Use `<leader>oP` when you want to keep the filename (and therefore any existing backlinks) stable.
+Fleeting notes rarely have backlinks, so nothing is lost by deleting them when you go with the side-by-side method. Use `<leader>op` when you want to keep the filename (and therefore any existing backlinks) stable.
 
 ## Linking
 
@@ -328,7 +328,7 @@ Check backlinks every time you open a permanent note or a literature note. Liter
 | Creating fleeting notes in nvim with `<leader>on` | In nvim, `<leader>on` defaults to permanent. For a fleeting capture in nvim, press `<leader>oN` and pick `fleeting`. Or capture in Obsidian (mobile or desktop), where the default is fleeting. |
 | Ignoring backlinks | Check backlinks (Obsidian right sidebar or `<leader>ob`) on literature and permanent notes. |
 | Writing full paraphrases in literature notes | Literature notes are brief pointers, not full paraphrases. Develop ideas in permanent notes. |
-| Notes created in Obsidian keep typed filenames (`My thought.md`), never auto-slugified | Expected. Obsidian (mobile and desktop) uses the typed title as the filename; our vault only slugifies via `<leader>oS` in Neovim. Hourly auto-commit normalizes frontmatter and applies templates but never renames files. Run `<leader>oS` when you promote a note you want to keep. |
+| Notes created in Obsidian keep typed filenames (`My thought.md`), never auto-slugified | Expected. Obsidian (mobile and desktop) uses the typed title as the filename; our vault only slugifies via `<leader>o<space>` in Neovim. Hourly auto-commit normalizes frontmatter and applies templates but never renames files. Run `<leader>o<space>` when you promote a note you want to keep. |
 
 ## Using Obsidian
 
@@ -463,7 +463,7 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 | `s` | Open in a vertical split (side by side) |
 | `/` | Fuzzy filter the tree |
 
-**Creating a note in a specific folder:** the recommended way is `<leader>oN`, which picks a template and routes the note to the correct folder automatically. Alternatively, navigate to the target folder in neo-tree, press `a`, type the full filename including `.md`, and press Enter. Notes created via neo-tree `a` do not get auto-generated frontmatter or templates; use `<leader>ot` to insert a template afterward.
+**Creating a note in a specific folder:** the recommended way is `<leader>oN`, which picks a template and routes the note to the correct folder automatically. Alternatively, navigate to the target folder in neo-tree, press `a`, type the full filename including `.md`, and press Enter. Notes created via neo-tree `a` do not get auto-generated frontmatter or templates; they will get both automatically on the first commit via the pre-commit hook's normalize pass.
 
 ### Moving and Renaming Notes Safely
 
@@ -471,8 +471,8 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 **In Neovim**, two paths:
 
-- `<leader>oS` (recommended for slug renames). Slugifies the filename, invokes `:Obsidian rename` under the hood so backlinks update vault-wide, then runs `.githooks/lib/normalize.py --apply` to sync `id` to the new stem, apply the template if missing, and preserve the pre-rename readable name as `aliases[0]` when no body H1 exists. Works on a note that is already a slug too: the rename step is skipped and only normalization runs.
-- `<leader>or` (or `:Obsidian rename <new-title>`) for free-form renames where you want a new title that is not just a slug of the old one. Updates backlinks and frontmatter `id` but does not trigger full normalization; the next commit's pre-commit hook will sync `aliases[0]` with the new H1 if you also updated the H1, or you can run `<leader>oS` to canonicalize immediately.
+- `<leader>o<space>` (recommended for slug renames). Slug-renames the filename, invokes `:Obsidian rename` under the hood so backlinks update vault-wide, then runs `.githooks/lib/normalize.py --apply` to sync `id` to the new stem, apply the template if missing, and preserve the pre-rename readable name as `aliases[0]` when no body H1 exists. Works on a note that is already a slug too: the rename step is skipped and only normalization runs.
+- `<leader>or` (or `:Obsidian rename <new-title>`) for free-form renames where you want a new title that is not just a slug of the old one. Updates backlinks and frontmatter `id` but does not trigger full normalization; the next commit's pre-commit hook will sync `aliases[0]` with the new H1 if you also updated the H1, or you can run `<leader>o<space>` to normalize immediately.
 
 **Neo-tree renames (`r`) and moves (`m`) do NOT update wiki-links.** They are plain filesystem operations. Use them only when you intend to fix links manually afterward, or when the note has no backlinks (e.g., new fleeting notes).
 
@@ -492,20 +492,33 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 ### obsidian.nvim
 
+Normal-mode:
+
 | Keys | Action |
 |------|--------|
-| `<leader>on` | New note (default: permanent) |
-| `<leader>oN` | New note from template picker |
-| `<leader>oo` | Quick switch (find note by name) |
-| `<leader>os` | Search vault |
+| `<leader>oa` | Collect all links in buffer |
 | `<leader>ob` | Collect backlinks |
-| `<leader>ol` | Collect outgoing links |
-| `<leader>op` | Paste image from clipboard |
-| `<leader>or` | Rename note (updates all backlinks) |
-| `<leader>ot` | Insert template |
-| `<leader>oS` | Slugify and normalize note |
-| `<leader>oP` | Promote note to a different type |
+| `<leader>oc` | Load ToC into a picker |
+| `<leader>oi` | Paste image from clipboard |
+| `<leader>on` | Create a new note (default: permanent) |
+| `<leader>oN` | Create a new note from a template |
+| `<leader>oo` | Switch notes (fuzzy picker over name + aliases) |
+| `<leader>op` | Promote note to different type |
+| `<leader>or` | Rename note and update references |
+| `<leader>os` | Search vault (ripgrep over body text) |
+| `<leader>ot` | Find tags |
+| `<leader>o<space>` | Slug-rename and normalize note |
+| `<CR>` | Follow `[[link]]` under cursor (smart action) |
+| `]o` / `[o` | Next / previous link in current note |
 | `[[` | Insert wiki-link (fuzzy picker) |
+
+Visual-mode:
+
+| Keys | Action |
+|------|--------|
+| `<leader>ol` | Link selected text to existing note |
+| `<leader>oL` | Link selected text to new note |
+| `<leader>ox` | Extract selected text to new note and link to it |
 
 ### Buffers and Windows
 
