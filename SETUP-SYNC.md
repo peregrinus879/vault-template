@@ -163,6 +163,8 @@ Do not run git auto-commit from WSL. Tier 2 puts git operations exclusively on t
 6. Wait for initial sync to complete.
 7. Open Obsidian, choose **Open folder as vault**, select the Syncthing folder.
 
+Enable **Settings > Run Conditions > "Run on mobile data"** if you want sync on cellular. Off by default; symptom when off is "changes only propagate on WiFi". The vault is small (mostly markdown), so the cellular data cost is minimal. If `6-assets/` grows and that becomes a concern, cap transfer rates in **Settings > Advanced** or add `6-assets` to the device-local `.stignore` (trades data cost for per-device ignore drift).
+
 Syncthing on Android pauses on battery saver. Do not rename or move notes from the Android Files app; use Obsidian's file explorer only.
 
 On mobile, templates are not auto-applied. After creating a new note, swipe down (pull) to trigger the template picker. This behavior is configured by `mobilePullAction: insert-template` in `.obsidian/app.json` (already set in this template).
