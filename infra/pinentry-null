@@ -3,7 +3,7 @@
 # Returns an empty passphrase automatically so gpg-agent never blocks
 # on a terminal prompt. Used by the vault auto-commit timer.
 #
-# Install: cp self-hosting/pinentry-null ~/.local/bin/ && chmod +x ~/.local/bin/pinentry-null
+# Install: cp infra/pinentry-null ~/.local/bin/ && chmod +x ~/.local/bin/pinentry-null
 # Configure: set `pinentry-program /home/<user>/.local/bin/pinentry-null` in ~/.gnupg/gpg-agent.conf
 # Restart agent: gpgconf --kill gpg-agent
 

@@ -19,7 +19,7 @@ git clone https://github.com/peregrinus879/vault-template.git ~/vault
 cd ~/vault && rm -rf .git
 ```
 
-Choose a different path if you prefer; the default is `~/vault`. If you add Neovim later, set the `OBSIDIAN_VAULT` environment variable to match (see §3).
+Choose a different path if you prefer; the default is `~/vault`. If you add Neovim later, set the `OBSIDIAN_VAULT` environment variable to match (see §6.3).
 
 ## 2. Initialize version history (optional)
 
