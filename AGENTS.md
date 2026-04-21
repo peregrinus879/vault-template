@@ -121,6 +121,7 @@ Content directories never start with a dot.
 | `.stfolder/` | No (`.gitignore`) | Syncthing's own marker | No (rsync) | Syncthing folder sentinel |
 | `.stignore` | Yes | Yes | Yes | Syncthing ignore patterns |
 | `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups (transient) |
+| `.syncthing.*.tmp` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing in-flight transfer files; disposable |
 | `.trash/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Obsidian soft-delete bucket |
 | `nvim-vault/` | Yes | Yes | Yes | Neovim overlay (LazyVim stow package) |
 | `hub/` | Yes | Yes | Yes | Hub-only reference files (pinentry, systemd units) |

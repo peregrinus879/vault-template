@@ -5,6 +5,7 @@
 
 # Syncthing artifacts
 *.sync-conflict-*
+.syncthing.*.tmp
 .stfolder/
 .stversions/
 .trash/
