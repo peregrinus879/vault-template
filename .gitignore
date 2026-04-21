@@ -14,5 +14,9 @@
 .DS_Store
 Thumbs.db
 
+# Python bytecode cache (generated on import; never source)
+__pycache__/
+*.pyc
+
 # Claude Code local settings
 .claude/

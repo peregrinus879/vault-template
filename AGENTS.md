@@ -129,6 +129,7 @@ Content directories never start with a dot.
 | `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups on the hub (simple strategy, 10 versions kept, decrypted, auto-pruned hourly). Enable per `SETUP-SYNC.md` §1.1. |
 | `.syncthing.*.tmp` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing in-flight transfer files; disposable |
 | `.trash/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Obsidian soft-delete bucket |
+| `__pycache__/`, `*.pyc` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Python bytecode cache; generated on import, never source |
 | `nvim-vault/` | Yes | Yes | Yes | Neovim overlay (LazyVim stow package) |
 | `infra/` | Yes | Yes | Yes | Hub-only reference files (pinentry, systemd units) |
 
