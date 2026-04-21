@@ -231,6 +231,30 @@ On first sync, Obsidian may write to `.obsidian/app.json` at the same time the h
 2. Delete the conflict file (the one with `sync-conflict` in the name)
 3. Conflict files are ignored by `.gitignore` and will never be committed
 
+### 2.5 Real-time sync stops working (watcher stuck)
+
+Symptom: you edit or delete a file, and it does not appear on other devices until you click **Rescan** in the web UI or wait for the periodic rescan (default every 3600 s). The "Watch for Changes" setting is on and inotify limits (`cat /proc/sys/fs/inotify/max_user_watches`) are healthy.
+
+Cause: Syncthing's filesystem watcher can get stuck in error backoff after transient issues — a Syncthing restart during sync, OS sleep/wake, filesystem hiccup, or an upgrade. The folder shows as watched in the UI but events no longer reach it.
+
+Fix: restart Syncthing on the affected client.
+
+```bash
+# User service (most Linux desktop installs)
+systemctl --user restart syncthing
+
+# System-wide service
+sudo systemctl restart syncthing@$USER.service
+```
+
+Confirm the watcher came back up:
+
+```bash
+journalctl --user -u syncthing --since "5 minutes ago" | grep -iE "watcher|vault"
+```
+
+A healthy start logs `Watching for changes` or `Started filesystem watcher for <folder>`. If the watcher keeps failing after repeated restarts, drop **Rescan Interval** from 3600 to 60-120 s on that client (Folders > Vault > Edit > Advanced). That gives near-real-time sync without depending on the watcher; cost is a small CPU/disk tick per minute.
+
 ## Verify
 
 - Syncthing on the hub is running: `systemctl status syncthing@$USER`
