@@ -45,6 +45,12 @@
 --                      applies the folder-matched template body,
 --                      canonicalizes frontmatter, syncs H1 with
 --                      aliases[0].
+--   <leader>od         Delete current buffer's note with confirm prompt.
+--                      Safer than neo-tree deletes; recoverable via hub
+--                      .stversions/ (SETUP-SYNC.md §1.1).
+--   <leader>oD         Pick a note from the vault and delete it with
+--                      the same confirm prompt. Handy for triaging
+--                      0-fleeting/ without opening each candidate.
 --   <leader>op         Promote note to a different type (folder move +
 --                      normalize.py --reapply). Same orchestration
 --                      split: Lua owns the filesystem action,
@@ -62,10 +68,12 @@
 -- Uppercase convention: when a lowercase/uppercase letter pair is a
 -- natural fit, uppercase = "the 'create a new note' variant of its
 -- lowercase sibling" (oN = new-from-template vs on = new; oL = link-
--- to-new vs ol = link-to-existing). Not forced otherwise.
+-- to-new vs ol = link-to-existing). Not forced otherwise; the oD/od
+-- delete pair is a delete-mode variant, not a create-new variant.
 --
 -- Bindings grouped by mode (normal, visual); within each group,
--- alphabetical by the binding letter.
+-- alphabetical by the binding letter. Non-letter keys (e.g., `<space>`)
+-- sort after letters within their section.
 -- ---------------------------------------------------------------------------
 
 vim.g.markdown_folding = 1
@@ -120,6 +128,28 @@ local function run_normalize(mode, fallback_alias, target_path)
   end
 
   vim.cmd("edit!")
+  return true
+end
+
+-- Delete a note file with a confirm prompt. Wipes any loaded buffer
+-- holding the file. Caller is responsible for validating the path is
+-- inside the vault. Deletion propagates via Syncthing; the deleted
+-- file is recoverable from hub .stversions/ (see SETUP-SYNC.md §1.1).
+local function delete_note(path, display_name)
+  if vim.fn.confirm("Delete " .. display_name .. "?", "&No\n&Yes", 1) ~= 2 then
+    return false
+  end
+  local ok, err = os.remove(path)
+  if not ok then
+    vim.notify("Delete failed: " .. tostring(err), vim.log.levels.ERROR)
+    return false
+  end
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_get_name(bufnr) == path then
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+    end
+  end
+  vim.notify("Deleted: " .. display_name, vim.log.levels.INFO)
   return true
 end
 
@@ -183,90 +213,74 @@ return {
       -- Normal-mode pass-throughs, alphabetical by letter.
       { "<leader>oa", "<cmd>Obsidian links<cr>", desc = "Collect all links in buffer" },
       { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Collect backlinks" },
-      { "<leader>oc", "<cmd>Obsidian toc<cr>", desc = "Load ToC into a picker" },
+      { "<leader>oc", "<cmd>Obsidian toc<cr>", desc = "Load ToC into picker" },
+      { "<leader>of", "<cmd>Obsidian tags<cr>", desc = "Find tags" },
       { "<leader>oi", "<cmd>Obsidian paste_img<cr>", desc = "Paste image from clipboard" },
       { "<leader>on", "<cmd>Obsidian new<cr>", desc = "Create new note" },
       { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "Create new note from template" },
       { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Switch notes" },
       { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note and update references" },
       { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault" },
-      { "<leader>ot", "<cmd>Obsidian tags<cr>", desc = "Find tags" },
+      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
 
       -- Visual-mode pass-throughs, alphabetical by letter.
       { "<leader>ol", "<cmd>Obsidian link<cr>", mode = "v", desc = "Link text to existing note" },
       { "<leader>oL", "<cmd>Obsidian link_new<cr>", mode = "v", desc = "Link text to new note" },
       { "<leader>ox", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract text to new note and link to it" },
 
-      -- o<space> — Slug-rename and normalize note. Full pipeline in one
-      -- keystroke:
-      --  1. Slug-renames the filename via :Obsidian rename (which rewrites
-      --     every [[wikilink]] in the vault).
-      --  2. Runs normalize.py --apply, passing the pre-rename stem as
-      --     the alias fallback so the readable name survives in
-      --     aliases[0] when the body has no H1 yet.
-      -- No confirmation prompt: if you press the key, you want the slug.
-      -- Target-collision check still aborts with an error.
-      -- Invariants preserved: id = new filename stem; aliases[1..]
-      -- user-added synonyms are kept; H1 reconciled with aliases[0].
+      -- od — Delete the current buffer's note with a confirm prompt.
+      -- Motivation: avoid destructive single-keystroke deletes in
+      -- neo-tree (which can wipe the wrong file by accident). This
+      -- binding requires an explicit Y+Enter, making deletion a
+      -- deliberate act. The deleted file propagates via Syncthing;
+      -- hub .stversions/ retains a copy per SETUP-SYNC.md §1.1.
       {
-        "<leader>o<space>",
+        "<leader>od",
         function()
-          local old_path = vim.api.nvim_buf_get_name(0)
-          if not old_path:find(vault_path .. "/", 1, true) then
+          local path = vim.api.nvim_buf_get_name(0)
+          if not path:find(vault_path .. "/", 1, true) then
             vim.notify("Not in vault", vim.log.levels.WARN)
             return
           end
-
-          local stem = vim.fn.fnamemodify(old_path, ":t:r")
-          local slug = slugify(stem)
-
-          if slug == "" then
-            vim.notify("Slug is empty after sanitizing", vim.log.levels.ERROR)
-            return
-          end
-
-          local ok_write = pcall(vim.cmd, "write")
-          if not ok_write then
-            vim.notify("Could not save buffer", vim.log.levels.ERROR)
-            return
-          end
-
-          local final_path = old_path
-          local renamed = false
-
-          if stem ~= slug then
-            local dir = vim.fn.fnamemodify(old_path, ":h")
-            local target = dir .. "/" .. slug .. ".md"
-            if vim.fn.filereadable(target) == 1 then
-              vim.notify("Target already exists: " .. slug .. ".md", vim.log.levels.ERROR)
-              return
-            end
-
-            local ok_rename, err = pcall(vim.cmd, "Obsidian rename " .. slug)
-            if not ok_rename then
-              vim.notify("Rename failed: " .. tostring(err), vim.log.levels.ERROR)
-              return
-            end
-            final_path = vim.api.nvim_buf_get_name(0)
-            renamed = true
-            pcall(vim.cmd, "write")
-          end
-
-          local fallback = nil
-          if renamed then
-            fallback = stem
-          end
-          if not run_normalize("--apply", fallback, final_path) then
-            return
-          end
-
-          if renamed then
-            vim.notify("Slugified: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
-          else
-            vim.notify("Note normalized (filename already slug)", vim.log.levels.INFO)
-          end
+          delete_note(path, vim.fn.fnamemodify(path, ":t"))
         end,
-        desc = "Slug-rename and normalize note",
+        desc = "Delete note",
+      },
+
+      -- oD — Pick a note from the vault and delete it. Same confirm
+      -- prompt as <leader>od. Useful for triaging 0-fleeting/ without
+      -- having to open each candidate first. Paths under 5-templates/,
+      -- .obsidian/, .git/, .trash/, .stversions/ are excluded from the
+      -- picker list. The "D vs d" pair here is a delete-mode variant,
+      -- not the usual "create new" uppercase meaning.
+      {
+        "<leader>oD",
+        function()
+          local cmd = {
+            "find", vault_path, "-type", "f", "-name", "*.md",
+            "-not", "-path", "*/5-templates/*",
+            "-not", "-path", "*/.obsidian/*",
+            "-not", "-path", "*/.git/*",
+            "-not", "-path", "*/.trash/*",
+            "-not", "-path", "*/.stversions/*",
+          }
+          local files = vim.fn.systemlist(cmd)
+          if vim.v.shell_error ~= 0 or #files == 0 then
+            vim.notify("No notes found", vim.log.levels.WARN)
+            return
+          end
+          local display = {}
+          for _, f in ipairs(files) do
+            table.insert(display, f:sub(#vault_path + 2))
+          end
+          vim.ui.select(display, { prompt = "Delete note:" }, function(choice, idx)
+            if not choice then
+              return
+            end
+            delete_note(files[idx], choice)
+          end)
+        end,
+        desc = "Delete note from picker",
       },
 
       -- op — Promote note to a different type. Same orchestration split
@@ -350,6 +364,78 @@ return {
           end)
         end,
         desc = "Promote note to different type",
+      },
+
+      -- o<space> — Slug-rename and normalize note. Full pipeline in one
+      -- keystroke:
+      --  1. Slug-renames the filename via :Obsidian rename (which rewrites
+      --     every [[wikilink]] in the vault).
+      --  2. Runs normalize.py --apply, passing the pre-rename stem as
+      --     the alias fallback so the readable name survives in
+      --     aliases[0] when the body has no H1 yet.
+      -- No confirmation prompt: if you press the key, you want the slug.
+      -- Target-collision check still aborts with an error.
+      -- Invariants preserved: id = new filename stem; aliases[1..]
+      -- user-added synonyms are kept; H1 reconciled with aliases[0].
+      {
+        "<leader>o<space>",
+        function()
+          local old_path = vim.api.nvim_buf_get_name(0)
+          if not old_path:find(vault_path .. "/", 1, true) then
+            vim.notify("Not in vault", vim.log.levels.WARN)
+            return
+          end
+
+          local stem = vim.fn.fnamemodify(old_path, ":t:r")
+          local slug = slugify(stem)
+
+          if slug == "" then
+            vim.notify("Slug is empty after sanitizing", vim.log.levels.ERROR)
+            return
+          end
+
+          local ok_write = pcall(vim.cmd, "write")
+          if not ok_write then
+            vim.notify("Could not save buffer", vim.log.levels.ERROR)
+            return
+          end
+
+          local final_path = old_path
+          local renamed = false
+
+          if stem ~= slug then
+            local dir = vim.fn.fnamemodify(old_path, ":h")
+            local target = dir .. "/" .. slug .. ".md"
+            if vim.fn.filereadable(target) == 1 then
+              vim.notify("Target already exists: " .. slug .. ".md", vim.log.levels.ERROR)
+              return
+            end
+
+            local ok_rename, err = pcall(vim.cmd, "Obsidian rename " .. slug)
+            if not ok_rename then
+              vim.notify("Rename failed: " .. tostring(err), vim.log.levels.ERROR)
+              return
+            end
+            final_path = vim.api.nvim_buf_get_name(0)
+            renamed = true
+            pcall(vim.cmd, "write")
+          end
+
+          local fallback = nil
+          if renamed then
+            fallback = stem
+          end
+          if not run_normalize("--apply", fallback, final_path) then
+            return
+          end
+
+          if renamed then
+            vim.notify("Slugified: " .. stem .. " -> " .. slug .. ".md", vim.log.levels.INFO)
+          else
+            vim.notify("Note normalized (filename already slug)", vim.log.levels.INFO)
+          end
+        end,
+        desc = "Slug-rename and normalize note",
       },
     },
   },

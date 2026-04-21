@@ -517,7 +517,10 @@ Normal-mode:
 |------|--------|
 | `<leader>oa` | Collect all links in buffer |
 | `<leader>ob` | Collect backlinks |
-| `<leader>oc` | Load ToC into a picker |
+| `<leader>oc` | Load ToC into picker |
+| `<leader>od` | Delete current note (with confirm) |
+| `<leader>oD` | Delete note from picker (with confirm) |
+| `<leader>of` | Find tags |
 | `<leader>oi` | Paste image from clipboard |
 | `<leader>on` | Create a new note (default: permanent) |
 | `<leader>oN` | Create a new note from a template |
@@ -525,7 +528,7 @@ Normal-mode:
 | `<leader>op` | Promote note to different type |
 | `<leader>or` | Rename note and update references |
 | `<leader>os` | Search vault (ripgrep over body text) |
-| `<leader>ot` | Find tags |
+| `<leader>ot` | Insert template |
 | `<leader>o<space>` | Slug-rename and normalize note |
 | `<CR>` | Follow `[[link]]` under cursor (smart action) |
 | `]o` / `[o` | Next / previous link in current note |
