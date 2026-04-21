@@ -20,7 +20,7 @@ A self-hosted hub adds real-time sync across Linux, Windows, and Android, plus e
 - **[Tailscale](https://tailscale.com/)** installed and connected on all devices (hub and clients).
 - **GitHub account** with two repos: one private (encrypted backup, e.g., `vault-backup`), one public (template mirror, e.g., `vault-template`).
 
-This guide standardizes on `~/vault` for the hub. All commands, systemd units, and scripts assume this path. If you use a different location, adjust the service file (`hub/vault-autocommit.service`) and the commands below accordingly. The `OBSIDIAN_VAULT` environment variable documented in SETUP-LOCAL.md is for the Neovim overlay on local machines, not for hub infrastructure.
+This guide standardizes on `~/vault` for the hub. All commands, systemd units, and scripts assume this path. If you use a different location, adjust the service file (`infra/vault-autocommit.service`) and the commands below accordingly. The `OBSIDIAN_VAULT` environment variable documented in SETUP-LOCAL.md is for the Neovim overlay on local machines, not for hub infrastructure.
 
 ## 1. Hub baseline tools
 
@@ -274,10 +274,10 @@ gpg --change-passphrase vault-backup@noreply
 
 Configure GPG for unattended operation. gpg-agent invokes pinentry even for no-passphrase keys; the `pinentry-null` script provides a headless pinentry that returns an empty passphrase automatically.
 
-Install from the `hub/` directory:
+Install from the `infra/` directory:
 
 ```bash
-cp ~/vault/hub/pinentry-null ~/.local/bin/
+cp ~/vault/infra/pinentry-null ~/.local/bin/
 chmod +x ~/.local/bin/pinentry-null
 ```
 
@@ -381,12 +381,12 @@ Enable user linger so the timer persists across SSH logout:
 sudo loginctl enable-linger $USER
 ```
 
-Install the systemd units from `hub/`:
+Install the systemd units from `infra/`:
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cp ~/vault/hub/vault-autocommit.service ~/.config/systemd/user/
-cp ~/vault/hub/vault-autocommit.timer ~/.config/systemd/user/
+cp ~/vault/infra/vault-autocommit.service ~/.config/systemd/user/
+cp ~/vault/infra/vault-autocommit.timer ~/.config/systemd/user/
 ```
 
 Enable the timer:
@@ -469,7 +469,7 @@ The hook uses a fail-closed allowlist: only paths named explicitly in the `--inc
 
 | Rule | Effect |
 |---|---|
-| Explicit `--include` allowlist | Only named root files (docs, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`), `nvim-vault/**`, `hub/**`, `5-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
+| Explicit `--include` allowlist | Only named root files (docs, `LICENSE`, `.gitignore`, `.gitattributes`, `.stignore`), `nvim-vault/**`, `infra/**`, `5-templates/**`, `.githooks/**`, and public-safe `.obsidian/` subfiles are published |
 | Trailing `--exclude='*'` | Anything not in the allowlist is denied; a new top-level file or directory will not publish unless its path is added to the filter |
 | Sentinel check (`.public-mirror-marker`) | Hook refuses to sync unless `$PUBLIC` contains the marker file. Guards against a wrong `vault.publicPath` trashing an unrelated repo |
 | `--filter='P /.public-mirror-marker'` | Protects the sentinel file from `--delete` (the marker lives only in vault-template, not in the private vault) |

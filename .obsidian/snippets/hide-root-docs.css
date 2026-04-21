@@ -18,6 +18,6 @@
 
 /* Infrastructure directories (visible, not dot-prefixed) */
 .nav-folder-title[data-path="nvim-vault"],
-.nav-folder-title[data-path="hub"] {
+.nav-folder-title[data-path="infra"] {
   display: none;
 }

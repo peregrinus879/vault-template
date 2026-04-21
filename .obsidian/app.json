@@ -10,7 +10,7 @@
     "WORKFLOW.md",
     "LICENSE",
     "nvim-vault",
-    "hub"
+    "infra"
   ],
   "mobilePullAction": "insert-template",
   "newFileLocation": "folder",
