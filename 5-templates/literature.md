@@ -17,6 +17,6 @@ tags: []
 - Identifier: 
 
 ## Notes
-<!-- Paraphrase, one idea per bullet with locator. Link [[permanent-note]] when extracted. Quote only when wording matters. -->
+<!-- Page, colon, paraphrase, arrow, link. Example: `- p. 42: memory hierarchy depends on access patterns -> [[cache-locality]]`. Quote only when wording matters. -->
 
-- (p. ) → [[]]
+- p. : -> [[]]

@@ -24,7 +24,7 @@ The numbering reflects **sequence**, not **importance**. Permanent notes are whe
 
 ## 2. One literature note per source (merged bibliography and notes)
 
-**Decision**. Each source (book, paper, podcast, talk) gets exactly one file in `1-literature/`. That file carries both the bibliographic record (`## Source` block: medium, author, year, identifier) and the reading notes (`## Summary`, `## Key ideas`). Key ideas are paraphrased, not quoted, by default.
+**Decision**. Each source (book, paper, podcast, talk) gets exactly one file in `1-literature/`. That file carries both the bibliographic record (`## Source` block: medium, author, year, identifier) and the reading notes (`## Notes`). Notes are paraphrased, not quoted, by default.
 
 **Rationale**. Luhmann kept a separate bibliography box (`Literaturkartei`, ~15,000 cards) alongside his slip-box. Each bibliography card held full citation data and a short list of page-locked pointers to ideas worth extracting. He went from bibliography card straight to permanent notes. There was no intermediate "literature note" type in the sense Ahrens uses it.
 
@@ -42,7 +42,7 @@ Quotes are not forbidden. When exact wording matters (definitions, disputed phra
 | Quote-heavy literature notes with locators (Luhmann style) | Produces collectors, not thinkers. Ahrens's explicit warning. |
 | Bibliographic metadata in frontmatter instead of body | Tried earlier; frontmatter bloats with per-type fields and breaks the unified schema (see §9). |
 
-**When to revisit**. If reading volume grows to the point where separating raw pointers from developed notes reduces friction; at that point, promote `## Key ideas` to its own file per source.
+**When to revisit**. If reading volume grows to the point where separating raw pointers from developed notes reduces friction; at that point, promote `## Notes` to its own file per source.
 
 ## 3. One structure type: Overview (drop Index; use tags)
 
@@ -293,7 +293,7 @@ Two invariants run across these slots, auto-enforced by `normalize.py`:
 
 The signal is **any level-2 (`##`) heading anywhere in the body**. Rationale:
 
-- All vault templates use `##` for their body sections (`## Source`, `## Summary`, `## Key ideas`, `## Claim`, `## Development`, etc.). Fleeting is the exception (no sections) but that is the template applied to folderless captures anyway.
+- All vault templates use `##` for their body sections (`## Source`, `## Notes`, `## Development`, `## Connections`, `## Orientation`, etc.). Fleeting is the exception (no sections) but that is the template applied to folderless captures anyway.
 - A note's H1 (`# `) is the title and is always present after fill. Checking for `##` separates "has title only" from "has template structure applied."
 - Level-1 (`#`) would conflict with H1 detection; level-3+ would miss the template's own section markers.
 
