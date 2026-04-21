@@ -70,6 +70,58 @@ ssh -L 8384:127.0.0.1:8384 <user>@<tailscale-ip>
 # Open http://127.0.0.1:8384 in browser for GUI configuration
 ```
 
+### 1.1 Enable versioning on the vault folder (recommended)
+
+Syncthing can keep a rotating history of replaced and deleted files on the hub. This gives a cheap hub-local recovery path for accidental deletes or bad edits that would otherwise require pulling from the encrypted git remote.
+
+Apply via the REST API (headless-friendly; no GUI required):
+
+```bash
+APIKEY=$(grep -oP '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml \
+  || grep -oP '(?<=<apikey>)[^<]+' ~/.config/syncthing/config.xml)
+
+curl -sS -X PATCH -H "X-API-Key: $APIKEY" -H "Content-Type: application/json" \
+  http://127.0.0.1:8384/rest/config/folders/vault \
+  -d '{"versioning":{"type":"simple","params":{"keep":"10"},"cleanupIntervalS":3600}}'
+```
+
+**Where versions are saved**: `.stversions/` at the vault root, mirroring the original path with a timestamp suffix on the filename:
+
+```
+.stversions/
+├── 0-fleeting/
+│   └── Notes~20260422-001234.md
+├── 1-literature/
+│   └── ...
+```
+
+Properties of that location (already captured in `AGENTS.md` Propagation Model):
+
+- **Decrypted content** — copies come from the working tree, not git-crypt blobs; `cat` works directly.
+- **Hub-local** — `.stversions/` is in `.stignore`, so versioned copies never propagate to other devices.
+- **Never committed** — `.stversions/` is in `.gitignore`; the autocommit ignores it.
+- **Never mirrored** — not in the rsync allowlist; stays out of `vault-template`.
+- **Auto-cleaned** — versions past the 10-keep limit are pruned on the hourly cleanup tick.
+
+**Recovery procedure** when a file is lost or clobbered:
+
+```bash
+# List available versions for a specific path
+ls '~/vault/.stversions/0-fleeting/'
+
+# Restore the one you want
+cp '~/vault/.stversions/0-fleeting/Notes~20260422-001234.md' \
+   '~/vault/0-fleeting/Notes.md'
+```
+
+Syncthing treats the restored file as a normal working-tree change and propagates it to all connected devices on the next sync tick.
+
+**Recovery precedence** (cheapest to most expensive):
+
+1. **Obsidian file recovery plugin** on the device you last edited on (Command Palette → "File recovery: Open"). Per-device snapshots, finest granularity.
+2. **Hub `.stversions/`** (this section). Last 10 versions, hub-local, no keys required.
+3. **Encrypted git remote** (see [SETUP-BACKUP.md](SETUP-BACKUP.md) §6 Recovery). Full history, requires GPG + git-crypt keys.
+
 ## 2. Pair devices with the hub
 
 Each client device needs Syncthing installed and paired with the hub. Wait for the initial sync to complete (Syncthing UI shows "Up to Date") before moving on to any tier-2 work.

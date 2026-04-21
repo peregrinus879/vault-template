@@ -122,7 +122,7 @@ Content directories never start with a dot.
 | `.obsidian/themes/` | Yes | Yes | No (rsync) | Local theme; excluded from the public mirror so forks choose their own theme |
 | `.stfolder/` | No (`.gitignore`) | Syncthing's own marker | No (rsync) | Syncthing folder sentinel |
 | `.stignore` | Yes | Yes | Yes | Syncthing ignore patterns |
-| `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups (transient) |
+| `.stversions/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing versioning backups on the hub (simple strategy, 10 versions kept, decrypted, auto-pruned hourly). Enable per `SETUP-SYNC.md` §1.1. |
 | `.syncthing.*.tmp` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Syncthing in-flight transfer files; disposable |
 | `.trash/` | No (`.gitignore`) | No (`.stignore`) | No (rsync) | Obsidian soft-delete bucket |
 | `nvim-vault/` | Yes | Yes | Yes | Neovim overlay (LazyVim stow package) |
