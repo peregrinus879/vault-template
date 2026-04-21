@@ -23,8 +23,8 @@
 #
 # Auto-commit safe: non-interactive, exits 0 on success, warns on
 # malformed frontmatter but does not reject, so the hourly timer
-# stays unblocked. The hook never renames filenames — slug
-# normalization is user-driven via <leader>oS.
+# stays unblocked. The hook never renames filenames; slug
+# normalization is user-driven via <leader>o<space>.
 
 set -uo pipefail
 

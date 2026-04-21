@@ -907,7 +907,7 @@ def main() -> int:
     parser.add_argument("--fallback-alias", default=None,
                         help="Alias used for aliases[0] when no H1 is present. "
                              "Typically the pre-rename filename stem, supplied "
-                             "by the <leader>oS orchestrator.")
+                             "by the <leader>o<space> orchestrator.")
     args = parser.parse_args()
 
     if args.vault_root:
