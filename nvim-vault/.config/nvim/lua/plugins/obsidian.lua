@@ -215,22 +215,22 @@ return {
     },
     keys = {
       -- Normal-mode pass-throughs, alphabetical by letter.
-      { "<leader>oa", "<cmd>Obsidian links<cr>", desc = "Collect all links in buffer", icon = { icon = "📤" } },
-      { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Collect backlinks", icon = { icon = "📥" } },
-      { "<leader>oc", "<cmd>Obsidian toc<cr>", desc = "Load ToC into picker", icon = { icon = "📑" } },
-      { "<leader>of", "<cmd>Obsidian tags<cr>", desc = "Find tags", icon = { icon = "🏷" } },
-      { "<leader>oi", "<cmd>Obsidian paste_img<cr>", desc = "Paste image from clipboard", icon = { icon = "🖼" } },
-      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "Create new note", icon = { icon = "📝" } },
-      { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "Create new note from template", icon = { icon = "📝" } },
-      { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Switch notes", icon = { icon = "🔀" } },
-      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note and update references", icon = { icon = "✏" } },
-      { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault", icon = { icon = "🔍" } },
-      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template", icon = { icon = "📄" } },
+      { "<leader>oa", "<cmd>Obsidian links<cr>", desc = "Collect all links in buffer" },
+      { "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "Collect backlinks" },
+      { "<leader>oc", "<cmd>Obsidian toc<cr>", desc = "Load ToC into picker" },
+      { "<leader>of", "<cmd>Obsidian tags<cr>", desc = "Find tags" },
+      { "<leader>oi", "<cmd>Obsidian paste_img<cr>", desc = "Paste image from clipboard" },
+      { "<leader>on", "<cmd>Obsidian new<cr>", desc = "Create new note" },
+      { "<leader>oN", "<cmd>Obsidian new_from_template<cr>", desc = "Create new note from template" },
+      { "<leader>oo", "<cmd>Obsidian quick_switch<cr>", desc = "Switch notes" },
+      { "<leader>or", "<cmd>Obsidian rename<cr>", desc = "Rename note and update references" },
+      { "<leader>os", "<cmd>Obsidian search<cr>", desc = "Search vault" },
+      { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
 
       -- Visual-mode pass-throughs, alphabetical by letter.
-      { "<leader>ol", "<cmd>Obsidian link_new<cr>", mode = "v", desc = "Link text to new note", icon = { icon = "🔗" } },
-      { "<leader>oL", "<cmd>Obsidian link<cr>", mode = "v", desc = "Link text to existing note", icon = { icon = "🔗" } },
-      { "<leader>ox", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract text to new note and link to it", icon = { icon = "✂" } },
+      { "<leader>ol", "<cmd>Obsidian link_new<cr>", mode = "v", desc = "Link text to new note" },
+      { "<leader>oL", "<cmd>Obsidian link<cr>", mode = "v", desc = "Link text to existing note" },
+      { "<leader>ox", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract text to new note and link to it" },
 
       -- od — Delete the current buffer's note with a confirm prompt.
       -- Motivation: avoid destructive single-keystroke deletes in
@@ -249,7 +249,6 @@ return {
           delete_note(path, vim.fn.fnamemodify(path, ":t"))
         end,
         desc = "Delete note",
-        icon = { icon = "🗑" },
       },
 
       -- oD — Pick a note from the vault and delete it. Same confirm
@@ -286,7 +285,6 @@ return {
           end)
         end,
         desc = "Delete note from picker",
-        icon = { icon = "🗑" },
       },
 
       -- op — Promote note to a different type. Same orchestration split
@@ -370,7 +368,6 @@ return {
           end)
         end,
         desc = "Promote note to different type",
-        icon = { icon = "⬆" },
       },
 
       -- o<space> — Slug-rename and normalize note. Full pipeline in one
@@ -443,7 +440,6 @@ return {
           end
         end,
         desc = "Slug-rename and normalize note",
-        icon = { icon = "✨" },
       },
     },
   },
