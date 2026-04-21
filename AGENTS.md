@@ -58,24 +58,28 @@ Use "normalize" when describing the full pipeline or any superset of frontmatter
 
 ### Keybinding uppercase convention
 
-When a lowercase/uppercase letter pair under `<leader>o` is a natural fit, uppercase = "the 'create a new note' variant of its lowercase sibling":
+When a lowercase/uppercase letter pair under `<leader>o` is a natural fit, the pair follows one axis: **lowercase acts directly; uppercase prompts a picker**. The picker's content varies by context:
 
-- `<leader>on` = new note (default); `<leader>oN` = new note from template picker
-- `<leader>ol` = link text to existing note; `<leader>oL` = link text to new note
+- `<leader>on` creates a note with the default template; `<leader>oN` picks a template first.
+- `<leader>ol` creates a new note from the selection and links to it; `<leader>oL` picks an existing note to link to.
+- `<leader>od` deletes the current buffer; `<leader>oD` picks a note to delete from a vault-wide list.
 
-Not forced — applied only where the pair reads natural. Outside the "create new" family (e.g., `<leader>op` for promote), lowercase is the default letter. The convention lives in `nvim-vault/.config/nvim/lua/plugins/obsidian.lua`'s header comment.
+Not forced outside natural pairs. Upstream ships `:Obsidian link` / `:Obsidian link_new` with the picker on the lowercase side of a typical ol/oL mapping; we swap the two mappings locally (so `<leader>ol` calls `link_new` and `<leader>oL` calls `link`) to keep the lowercase-direct / uppercase-picker rule consistent. The convention lives in `nvim-vault/.config/nvim/lua/plugins/obsidian.lua`'s header comment.
 
 ### Keybinding desc strings
 
-Keybinding `desc` strings are our own short forms, not verbatim mirrors of obsidian.nvim's shipped desc strings in `lua/obsidian/commands/init-legacy.lua`. The policy change is deliberate: upstream's shipped strings are verbose for which-key popups (e.g., "Rename note and update all references to it"); short forms improve readability, and we accept maintaining them ourselves.
+Two contexts, two styles:
 
-When writing or editing a `desc`:
+- **In the plugin (`obsidian.lua`)**: `desc` strings are our own short forms. Upstream's shipped strings from `lua/obsidian/commands/init-legacy.lua` are verbose for which-key popups (e.g., "Rename note and update all references to it"); short forms improve readability in that context, and we accept maintaining them ourselves.
+- **In the docs (`WORKFLOW.md` Quick Reference and prose references)**: mirror upstream's shipped desc strings verbatim for pass-through bindings. Docs have more reading room and benefit from the full-sentence phrasing. For custom orchestrators (no upstream equivalent), use the plugin's short form verbatim — the short form works fine in prose too.
+
+When writing or editing a plugin `desc`:
 
 - Keep the imperative verb from upstream where possible ("Collect", "Link", "Rename", "Paste", "Switch").
 - Drop articles ("a", "an", "the") unless dropping them hurts readability.
 - Drop qualifiers already implied by context ("selected text" → "text" on a visual-mode binding; "within the current buffer" → "in buffer" on a per-note picker).
 - Do not invent new verbs upstream does not use; stay close to obsidian.nvim's command naming so readers switching between our docs and upstream docs recognize the action.
-- For custom orchestrators (`<leader>o<space>`, `<leader>op`), match the shipped-desc tone: primary verb(s) + object + optional "and <side-effect>" clause.
+- For custom orchestrators (`<leader>o<space>`, `<leader>op`, `<leader>od`, `<leader>oD`), match the shipped-desc tone: primary verb(s) + object + optional "and <side-effect>" clause.
 
 ## Propagation Model
 

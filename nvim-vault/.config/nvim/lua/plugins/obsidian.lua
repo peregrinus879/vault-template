@@ -66,10 +66,14 @@
 -- descriptions are our own short forms (see AGENTS.md §Conventions).
 --
 -- Uppercase convention: when a lowercase/uppercase letter pair is a
--- natural fit, uppercase = "the 'create a new note' variant of its
--- lowercase sibling" (oN = new-from-template vs on = new; oL = link-
--- to-new vs ol = link-to-existing). Not forced otherwise; the oD/od
--- delete pair is a delete-mode variant, not a create-new variant.
+-- natural fit, uppercase prompts a picker; lowercase acts directly.
+-- oN picks a template; oL picks an existing note to link to; oD picks
+-- a note to delete. Their lowercase siblings skip the picker: on
+-- creates with the default template, ol creates a new note from the
+-- selection, od deletes the current buffer. Upstream ships ol/oL with
+-- the picker on the lowercase side (:Obsidian link vs link_new); we
+-- swap the two mappings locally to keep the convention consistent.
+-- Not forced outside natural pairs.
 --
 -- Bindings grouped by mode (normal, visual); within each group,
 -- alphabetical by the binding letter. Non-letter keys (e.g., `<space>`)
@@ -224,8 +228,8 @@ return {
       { "<leader>ot", "<cmd>Obsidian template<cr>", desc = "Insert template" },
 
       -- Visual-mode pass-throughs, alphabetical by letter.
-      { "<leader>ol", "<cmd>Obsidian link<cr>", mode = "v", desc = "Link text to existing note" },
-      { "<leader>oL", "<cmd>Obsidian link_new<cr>", mode = "v", desc = "Link text to new note" },
+      { "<leader>ol", "<cmd>Obsidian link_new<cr>", mode = "v", desc = "Link text to new note" },
+      { "<leader>oL", "<cmd>Obsidian link<cr>", mode = "v", desc = "Link text to existing note" },
       { "<leader>ox", "<cmd>Obsidian extract_note<cr>", mode = "v", desc = "Extract text to new note and link to it" },
 
       -- od — Delete the current buffer's note with a confirm prompt.

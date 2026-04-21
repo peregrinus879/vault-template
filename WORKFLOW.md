@@ -305,10 +305,10 @@ Linking is the core habit. Do it every time you write in `2-permanent/`.
 
 **Linking from an existing selection (Neovim, visual mode).** When the phrase you want to turn into a link is already written, visual-select it, then:
 
-| Binding | Action |
-|---|---|
-| `<leader>ol` | Link the selected text to an existing note (fuzzy picker) |
-| `<leader>oL` | Create a new note titled after the selection, and link to it |
+| Binding | Action | Notes |
+|---|---|---|
+| `<leader>ol` | Link selected text to a new note | |
+| `<leader>oL` | Link selected text to an existing note | Fuzzy picker |
 
 The selection becomes the link's display text automatically; no need to retype it.
 
@@ -392,12 +392,12 @@ nvim
 
 LazyVim shows the dashboard. Pick notes by name rather than navigating folders.
 
-| Key | Action |
-|---|---|
-| `<leader>oo` | Find note by name |
-| `<leader>on` | New note (permanent by default) |
-| `<leader>oN` | New note from template picker |
-| `<leader>e` | Toggle neo-tree as left sidebar |
+| Key | Action | Notes |
+|---|---|---|
+| `<leader>oo` | Switch notes | Fuzzy picker over name + aliases |
+| `<leader>on` | Create a new note | Permanent by default in nvim |
+| `<leader>oN` | Create a new note from a template | |
+| `<leader>e` | Toggle neo-tree as left sidebar | |
 
 **B. Open a specific file.**
 
@@ -513,34 +513,34 @@ Navigate with `j`/`k`, open files with `Enter`, collapse directories with `h`. P
 
 Normal-mode:
 
-| Keys | Action |
-|------|--------|
-| `<leader>oa` | Collect all links in buffer |
-| `<leader>ob` | Collect backlinks |
-| `<leader>oc` | Load ToC into picker |
-| `<leader>od` | Delete current note (with confirm) |
-| `<leader>oD` | Delete note from picker (with confirm) |
-| `<leader>of` | Find tags |
-| `<leader>oi` | Paste image from clipboard |
-| `<leader>on` | Create a new note (default: permanent) |
-| `<leader>oN` | Create a new note from a template |
-| `<leader>oo` | Switch notes (fuzzy picker over name + aliases) |
-| `<leader>op` | Promote note to different type |
-| `<leader>or` | Rename note and update references |
-| `<leader>os` | Search vault (ripgrep over body text) |
-| `<leader>ot` | Insert template |
-| `<leader>o<space>` | Slug-rename and normalize note |
-| `<CR>` | Follow `[[link]]` under cursor (smart action) |
-| `]o` / `[o` | Next / previous link in current note |
-| `[[` | Insert wiki-link (fuzzy picker) |
+| Keys | Action | Notes |
+|------|--------|-------|
+| `<leader>oa` | Collect all links within the current buffer | |
+| `<leader>ob` | Collect backlinks | |
+| `<leader>oc` | Load the table of contents into a picker | |
+| `<leader>od` | Delete note | With confirm prompt; recoverable via hub `.stversions/` |
+| `<leader>oD` | Delete note from picker | With confirm prompt; picker excludes templates, .obsidian, .git, .trash, .stversions |
+| `<leader>of` | Find tags | |
+| `<leader>oi` | Paste an image from the clipboard | |
+| `<leader>on` | Create a new note | Permanent by default in nvim |
+| `<leader>oN` | Create a new note from a template | |
+| `<leader>oo` | Switch notes | Fuzzy picker over name + aliases |
+| `<leader>op` | Promote note to different type | Folder move + template reapply |
+| `<leader>or` | Rename note and update all references to it | |
+| `<leader>os` | Search vault | Ripgrep over body text |
+| `<leader>ot` | Insert a template | |
+| `<leader>o<space>` | Slug-rename and normalize note | Slug rename + apply template + sync H1/aliases |
+| `<CR>` | Follow `[[link]]` under cursor | Smart action |
+| `]o` / `[o` | Next / previous link in current note | |
+| `[[` | Insert wiki-link | Fuzzy picker |
 
 Visual-mode:
 
-| Keys | Action |
-|------|--------|
-| `<leader>ol` | Link selected text to existing note |
-| `<leader>oL` | Link selected text to new note |
-| `<leader>ox` | Extract selected text to new note and link to it |
+| Keys | Action | Notes |
+|------|--------|-------|
+| `<leader>ol` | Link selected text to a new note | |
+| `<leader>oL` | Link selected text to an existing note | Fuzzy picker |
+| `<leader>ox` | Extract selected text to a new note and link to it | |
 
 ### Buffers and Windows
 
@@ -559,13 +559,13 @@ Visual-mode:
 
 ### Finding Files
 
-| Keys | Action |
-|------|--------|
-| `<leader>oo` | Find note by name (obsidian.nvim, vault-scoped) |
-| `<leader>os` | Search note content (obsidian.nvim, vault-scoped) |
-| `<leader><space>` | Find any file by name (LazyVim, all files) |
-| `<leader>/` | Grep across vault |
-| `<leader>fr` | Recent files |
+| Keys | Action | Notes |
+|------|--------|-------|
+| `<leader>oo` | Switch notes | obsidian.nvim, vault-scoped |
+| `<leader>os` | Search vault | obsidian.nvim, vault-scoped |
+| `<leader><space>` | Find any file by name | LazyVim, all files |
+| `<leader>/` | Grep across vault | |
+| `<leader>fr` | Recent files | |
 
 ### Neo-tree
 
