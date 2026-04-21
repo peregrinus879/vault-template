@@ -47,7 +47,9 @@ rsync -a --delete \
   --include='/README.md' \
   --include='/WORKFLOW.md' \
   --include='/SETUP-LOCAL.md' \
-  --include='/SETUP-HUB.md' \
+  --include='/SETUP-SYNC.md' \
+  --include='/SETUP-BACKUP.md' \
+  --include='/SETUP-MIRROR.md' \
   --include='/DESIGN.md' \
   --include='/AGENTS.md' \
   --include='/CLAUDE.md' \
@@ -108,7 +110,7 @@ done
 # included set. Files removed from the allowlist (excluded by --exclude='*')
 # are invisible to rsync and left behind. This loop catches them.
 # Keep in sync with the rsync --include list above.
-ALLOWED_ROOT_FILES="README.md WORKFLOW.md SETUP-LOCAL.md SETUP-HUB.md DESIGN.md AGENTS.md CLAUDE.md LICENSE .gitignore .gitattributes .stignore .public-mirror-marker"
+ALLOWED_ROOT_FILES="README.md WORKFLOW.md SETUP-LOCAL.md SETUP-SYNC.md SETUP-BACKUP.md SETUP-MIRROR.md DESIGN.md AGENTS.md CLAUDE.md LICENSE .gitignore .gitattributes .stignore .public-mirror-marker"
 for file in "$PUBLIC"/* "$PUBLIC"/.*; do
   [ -f "$file" ] || continue
   name="$(basename "$file")"

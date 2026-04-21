@@ -1,6 +1,6 @@
 # Vault Workflow
 
-A hands-on tutorial for running a Zettelkasten in this vault. It covers two editors: [Obsidian](https://obsidian.md) (desktop and mobile GUI) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal, inside Neovim). Both read the same markdown files in the same folder. You do not need to pick one; use Obsidian on desktop and mobile, Neovim at the keyboard, Obsidian when you want the graph view. For installation, see [SETUP-LOCAL.md](SETUP-LOCAL.md); for multi-device sync and encrypted backup, see [SETUP-HUB.md](SETUP-HUB.md).
+A hands-on tutorial for running a Zettelkasten in this vault. It covers two editors: [Obsidian](https://obsidian.md) (desktop and mobile GUI) and [obsidian.nvim](https://github.com/obsidian-nvim/obsidian.nvim) (terminal, inside Neovim). Both read the same markdown files in the same folder. You do not need to pick one; use Obsidian on desktop and mobile, Neovim at the keyboard, Obsidian when you want the graph view. For installation, see [SETUP-LOCAL.md](SETUP-LOCAL.md); for multi-device sync, see [SETUP-SYNC.md](SETUP-SYNC.md); for encrypted backup, see [SETUP-BACKUP.md](SETUP-BACKUP.md); for the public template mirror, see [SETUP-MIRROR.md](SETUP-MIRROR.md).
 
 ## The Method
 

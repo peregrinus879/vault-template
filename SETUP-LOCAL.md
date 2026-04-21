@@ -1,8 +1,16 @@
 # Setup: Local vault (Obsidian + optional Neovim)
 
-Run the Zettelkasten on a single machine with Obsidian on desktop and, optionally, obsidian.nvim in the terminal. No multi-device sync and no encrypted backup; for those layers, see [SETUP-HUB.md](SETUP-HUB.md).
+Run the Zettelkasten on a single machine with Obsidian on desktop and, optionally, obsidian.nvim in the terminal. No multi-device sync and no encrypted backup. This is the foundation for every other tier.
 
 This path takes 5 to 15 minutes depending on whether you add Neovim.
+
+Later tiers, each building on this one:
+
+| Tier | Doc | Adds |
+|---|---|---|
+| 1 | [SETUP-SYNC.md](SETUP-SYNC.md) | Multi-device sync via Syncthing + always-on hub |
+| 2 | [SETUP-BACKUP.md](SETUP-BACKUP.md) | Encrypted git backup to GitHub with hourly autocommit |
+| 3 | [SETUP-MIRROR.md](SETUP-MIRROR.md) | Public template mirror via post-commit sync |
 
 ## 1. Clone the template
 
@@ -51,7 +59,7 @@ Or download from [obsidian.md/download](https://obsidian.md/download).
 winget install Obsidian.Obsidian
 ```
 
-Mobile install is covered in [SETUP-HUB.md](SETUP-HUB.md) §3.3, since a useful mobile setup requires sync.
+Mobile install is covered in [SETUP-SYNC.md](SETUP-SYNC.md) §2.3, since a useful mobile setup requires sync.
 
 ## 4. Open as vault
 
@@ -147,4 +155,4 @@ Try `<leader>on` to create a new note (defaults to permanent in nvim), or `<lead
 ## Next steps
 
 - [WORKFLOW.md](WORKFLOW.md): Zettelkasten method, naming conventions, capture loop, keybindings.
-- [SETUP-HUB.md](SETUP-HUB.md): multi-device sync, encrypted backup, public template mirroring.
+- [SETUP-SYNC.md](SETUP-SYNC.md): tier 1, multi-device sync via Syncthing.

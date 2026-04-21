@@ -4,10 +4,14 @@ Opinionated structure, templates for every note type, multi-device sync, and opt
 
 ## Choose your path
 
-| Path | What you get | Time |
-|---|---|---|
-| **Local** ([SETUP-LOCAL.md](SETUP-LOCAL.md)) | Full Zettelkasten template on one machine: Obsidian plus optional Neovim overlay and local git version history. | 5 to 15 min |
-| **Hub** ([SETUP-HUB.md](SETUP-HUB.md)) | Adds real-time multi-device sync (Linux, Windows, Android), encrypted GitHub backup, and automated public template mirroring. Builds on the Local path. | +30 min |
+Four tiers, each building on the previous. Start at Local, stop wherever meets your needs.
+
+| Tier | Path | What it adds | Time |
+|---|---|---|---|
+| 0 | **Local** ([SETUP-LOCAL.md](SETUP-LOCAL.md)) | Full Zettelkasten template on one machine: Obsidian plus optional Neovim overlay and local git version history. | 5 to 15 min |
+| 1 | **Sync** ([SETUP-SYNC.md](SETUP-SYNC.md)) | Real-time multi-device sync (Linux, Windows, Android) via Syncthing over Tailscale, with an always-on hub as the asynchronous peer. | +15 min |
+| 2 | **Backup** ([SETUP-BACKUP.md](SETUP-BACKUP.md)) | Dual-layer encrypted backup to GitHub (git-crypt + git-remote-gcrypt) with hourly autocommit and documented recovery. | +20 min |
+| 3 | **Mirror** ([SETUP-MIRROR.md](SETUP-MIRROR.md)) | Public `vault-template` mirror via rsync-based post-commit sync. Note content never reaches the public repo. | +10 min |
 
 ## Highlights
 
@@ -40,7 +44,7 @@ git clone https://github.com/peregrinus879/vault-template.git ~/vault
 cd ~/vault && rm -rf .git
 ```
 
-Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`. Write a thought. See [SETUP-LOCAL.md](SETUP-LOCAL.md) for the full local setup (version history, Neovim). For multi-device sync and encrypted backup, see [SETUP-HUB.md](SETUP-HUB.md).
+Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`. Write a thought. See [SETUP-LOCAL.md](SETUP-LOCAL.md) for the full local setup (version history, Neovim). For multi-device sync, encrypted backup, and public template mirroring, see [SETUP-SYNC.md](SETUP-SYNC.md) and the tiers that build on it.
 
 ## Structure
 
@@ -76,8 +80,10 @@ All templates share the same three-field frontmatter (`id`, `aliases`, `tags`), 
 
 | Doc | What it covers |
 |-----|---------------|
-| [SETUP-LOCAL.md](SETUP-LOCAL.md) | Clone, Obsidian install, version history, optional Neovim overlay |
-| [SETUP-HUB.md](SETUP-HUB.md) | Self-hosted hub: Syncthing, device pairing, encryption, automated backup, public template mirroring |
+| [SETUP-LOCAL.md](SETUP-LOCAL.md) | Tier 0: clone, Obsidian install, version history, optional Neovim overlay |
+| [SETUP-SYNC.md](SETUP-SYNC.md) | Tier 1: Syncthing hub, device pairing (Linux, Windows, Android), conflict resolution |
+| [SETUP-BACKUP.md](SETUP-BACKUP.md) | Tier 2: git-crypt, git-remote-gcrypt, GPG, deploy key, auto-commit, recovery |
+| [SETUP-MIRROR.md](SETUP-MIRROR.md) | Tier 3: public `vault-template` mirror via post-commit sync |
 | [WORKFLOW.md](WORKFLOW.md) | Zettelkasten method, naming conventions, capture loop, keybindings |
 | [DESIGN.md](DESIGN.md) | Opinionated choices and the reasoning behind each |
 | [AGENTS.md](AGENTS.md) | AI assistant context for working with this repo |
