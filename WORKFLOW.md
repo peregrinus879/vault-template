@@ -342,6 +342,7 @@ Check backlinks every time you open a permanent note or a literature note. Liter
 | Copy-pasting from sources into permanent notes | Paraphrase belongs in literature note pointers. Permanent notes must be in your words. |
 | Creating sub-folders inside `2-permanent/` | Links are the structure. Folders are storage. Keep `2-permanent/` flat. |
 | Renaming files with `mv` in the terminal | Use Obsidian's file explorer or neo-tree. Links break otherwise. |
+| Deleting the wrong note from neo-tree | Neo-tree's `d` prompts for confirm, but it deletes whatever the cursor is on in a fast-navigation tree — easy to target the wrong file. Prefer `<leader>od` (explicit current buffer) or `<leader>oD` (pick by name from a list) in Neovim. Both also confirm; deletions propagate via Syncthing and are recoverable from hub `.stversions/`. |
 | Multi-idea notes ("X and also Y") | Split into atomic notes. One claim per file. In Neovim: visual-select the extractable idea, press `<leader>ox` (see §Promoting Notes > Splitting a multi-idea note). |
 | Waiting for the "right" title before writing | Write the note, title later. Rename is cheap; both editors update links. |
 | Creating fleeting notes in nvim with `<leader>on` | In nvim, `<leader>on` defaults to permanent. For a fleeting capture in nvim, press `<leader>oN` and pick `fleeting`. Or capture in Obsidian (mobile or desktop), where the default is fleeting. |

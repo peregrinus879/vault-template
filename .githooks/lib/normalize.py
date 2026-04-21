@@ -34,7 +34,7 @@ Modes:
 
   --reapply PATH [PATH ...]
       Force-apply the folder-matched template regardless of body
-      state, used by the <leader>oM promotion orchestrator after
+      state, used by the <leader>op promotion orchestrator after
       moving a file between content folders.
       - No frontmatter → fall back to --apply (branch 1 handles it).
       - Frontmatter present → split the body at the first `## Capture`
@@ -695,7 +695,7 @@ def reapply_file(
 ) -> bool:
     """Force-apply the folder-matched template, preserving captured content.
 
-    Counterpart to apply_file for the promotion workflow (<leader>oM).
+    Counterpart to apply_file for the promotion workflow (<leader>op).
     Unlike --apply, --reapply does not honor the `## ` escape hatch:
     it rewrites the body's template sections even when the note
     already has `## ` headings.
@@ -896,7 +896,7 @@ def main() -> int:
                             "frontmatter; otherwise equivalent to --fill.")
     group.add_argument("--reapply", action="store_true",
                        help="Force-apply folder-matched template, preserving "
-                            "any `## Capture` block. Used by the <leader>oM "
+                            "any `## Capture` block. Used by the <leader>op "
                             "promotion orchestrator.")
     group.add_argument("--check", action="store_true",
                        help="Report issues; exit non-zero if any found.")

@@ -362,20 +362,22 @@ Known limitations:
 | `ui.enable = false` | Plugin's own UI renderer disabled | Overlap with `render-markdown.nvim` (recommended companion); leaving obsidian.nvim's UI on produces double rendering |
 | `completion.blink = true`, `completion.nvim_cmp = false` | Use blink.cmp, not nvim-cmp | LazyVim default is blink.cmp; align the completion engine |
 
-**Added keybindings**. obsidian.nvim provides no default keybindings. Every `<leader>o*` binding is a vault choice. The two below are custom orchestrators (not obsidian.nvim commands); they shell out to `.githooks/lib/normalize.py`:
+**Added keybindings**. obsidian.nvim provides no default keybindings. Every `<leader>o*` binding is a vault choice. The four below are custom orchestrators (not obsidian.nvim commands); the first two shell out to `.githooks/lib/normalize.py`, the latter two handle filesystem deletion with a confirm prompt:
 
 | Keybinding | Invokes | Purpose |
 |---|---|---|
 | `<leader>o<space>` | `:Obsidian rename <slug>` + `normalize.py --apply` | Slug-rename and normalize note: slug filename (with vault-wide `[[wikilink]]` rewrite), apply folder-matched template body, canonicalize frontmatter, sync H1 with `aliases[0]` |
 | `<leader>op` | `os.rename` (folder-only move) + `normalize.py --reapply` | Promote note to a different type: picker selects target type, file moves to matching folder, target template's body sections are installed, any `## Capture` block is preserved |
+| `<leader>od` | `os.remove` (current buffer) + `vim.fn.confirm` | Delete current note after a default-No confirm prompt; wipes any buffer holding the file. Syncthing propagates; hub `.stversions/` retains a copy |
+| `<leader>oD` | `vim.ui.select` picker + `os.remove` | Pick a note from the vault and delete it with the same confirm prompt; picker excludes `5-templates/`, `.obsidian/`, `.git/`, `.trash/`, `.stversions/` |
 
 Routine normalization (template body application, H1 insertion, aliases↔H1 sync, frontmatter canonicalization) runs automatically via the pre-commit hook on every commit. No in-session keybinding is needed for routine cases; pressing `<leader>o<space>` in-session runs the full pipeline plus a slug rename.
 
 Why `<leader>op` uses `os.rename` rather than `:Obsidian rename`: backlinks in this vault resolve by filename stem plus alias, and `<leader>op` does not change the filename stem; only the folder. Folder-only moves cannot break backlinks. `:Obsidian rename` is for name changes, which can break backlinks when the stem changes and are only safe via obsidian.nvim's vault-wide link rewrite. The two orchestrators intentionally pick different primitives for this reason.
 
-All other `<leader>o*` bindings are pass-throughs to native obsidian.nvim subcommands. Letters are vault choices (obsidian.nvim ships no `<leader>` defaults); descriptions are our own short forms (policy: AGENTS.md §Conventions). Normal-mode bindings: `on` (new), `oN` (new-from-template), `oo` (quick_switch), `os` (search), `oa` (links in buffer), `ob` (backlinks), `oc` (toc), `oi` (paste_img), `or` (rename), `ot` (tags). Visual-mode bindings: `ol` (link to existing), `oL` (link to new), `ox` (extract_note). Within each mode group, alphabetical by binding letter (stable against upstream churn).
+The remaining `<leader>o*` bindings are pass-throughs to native obsidian.nvim subcommands. Letters are vault choices (obsidian.nvim ships no `<leader>` defaults); plugin desc strings are our own short forms, while docs mirror upstream's shipped desc verbatim (policy: AGENTS.md §Conventions). Normal-mode pass-throughs: `on` (new), `oN` (new-from-template), `oo` (quick_switch), `os` (search), `oa` (links in buffer), `ob` (backlinks), `oc` (toc), `of` (tags), `oi` (paste_img), `or` (rename), `ot` (template). Visual-mode pass-throughs: `ol` (link_new — create new from selection), `oL` (link — existing-note picker), `ox` (extract_note). Within each mode group, alphabetical by binding letter (stable against upstream churn).
 
-**Uppercase convention** (also documented in AGENTS.md §Conventions and `obsidian.lua`'s header): when a lowercase/uppercase letter pair is a natural fit, uppercase = "the 'create a new note' variant of its lowercase sibling": `oN` = new-from-template vs `on` = new; `oL` = link-to-new vs `ol` = link-to-existing. Not forced outside that family.
+**Uppercase convention** (also documented in AGENTS.md §Conventions and `obsidian.lua`'s header): when a lowercase/uppercase letter pair is a natural fit, the pair follows one axis — **lowercase acts directly; uppercase prompts a picker**. `oN` picks a template, `oL` picks an existing note to link to, `oD` picks a note to delete. Their lowercase siblings skip the picker: `on` creates with the default template, `ol` creates a new note from the selection, `od` deletes the current buffer. Upstream ships `:Obsidian link` with the picker and `:Obsidian link_new` without, which would put the picker on the lowercase side of `ol`/`oL`; the overlay swaps the two mappings locally so the rule holds. Not forced outside natural pairs.
 
 **Alternatives considered**.
 
