@@ -111,7 +111,7 @@ Open the fleeting folder.
 
 **In Obsidian:** expand `0-fleeting/` in the file explorer sidebar.
 
-**In Neovim:** `nvim ~/vault/0-fleeting/`
+**In Neovim:** `nvim ~/Projects/vault/0-fleeting/`
 
 For each note, make one decision:
 
@@ -387,7 +387,7 @@ Three entry patterns.
 **A. Bare nvim (recommended).**
 
 ```bash
-cd ~/vault
+cd ~/Projects/vault
 nvim
 ```
 
@@ -403,7 +403,7 @@ LazyVim shows the dashboard. Pick notes by name rather than navigating folders.
 **B. Open a specific file.**
 
 ```bash
-nvim ~/vault/0-fleeting/some-note.md
+nvim ~/Projects/vault/0-fleeting/some-note.md
 ```
 
 File opens in the editor; `<leader>e` toggles neo-tree on the left.
@@ -411,7 +411,7 @@ File opens in the editor; `<leader>e` toggles neo-tree on the left.
 **C. Open a directory.**
 
 ```bash
-nvim ~/vault/
+nvim ~/Projects/vault/
 ```
 
 Neo-tree fills the whole window. Press `s` on a file in the tree to open it in a vertical split; the tree stays on the left as a sidebar.

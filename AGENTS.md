@@ -173,7 +173,7 @@ Rules that must hold continuously. Each is a specific failure mode observed in p
 
 ### Deployment and operation
 
-12. **Editing `infra/vault-autocommit.service` does NOT redeploy.** The running timer uses the static copy at `~/.config/systemd/user/vault-autocommit.service`. After any edit to the source, redeploy: `cp ~/vault/infra/vault-autocommit.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user restart vault-autocommit.timer`.
+12. **Editing `infra/vault-autocommit.service` does NOT redeploy.** The running timer uses the static copy at `~/.config/systemd/user/vault-autocommit.service`. After any edit to the source, redeploy: `cp ~/Projects/vault/infra/vault-autocommit.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user restart vault-autocommit.timer`.
 13. **Every vault commit produces two commit lines in output**: one in the vault (your message), one `sync: YYYY-MM-DD-HHMM` in the public mirror (from `.githooks/post-commit`). This is expected; the public commit is a derived sync, not a duplicate of your work.
 14. **Hooks run only where `core.hooksPath` is set.** `SETUP-LOCAL.md` §2 sets it locally for new forks; `SETUP-MIRROR.md` §4 enables it on the hub so the post-commit public sync runs. If a clone has no hooks configured, `pre-commit` normalization and `post-commit` public sync both no-op silently.
 
@@ -197,7 +197,7 @@ After any change that adds, renames, or moves content directories, modifies `.gi
 ### What to check
 
 1. **git-crypt encryption**: `git-crypt status` must show all files in content directories as `encrypted`. If any content file shows `not encrypted`, stop and fix `.gitattributes` before pushing.
-2. **Public template repo**: `ls ~/projects/repos/templates/vault-template/` must show empty content directories (with `.gitkeep`), templates, config, docs, `nvim-vault/`, `infra/`, and the `.public-mirror-marker` sentinel file. No note content. Grep for any content that should not be there.
+2. **Public template repo**: `ls ~/Projects/repos/templates/vault-template/` must show empty content directories (with `.gitkeep`), templates, config, docs, `nvim-vault/`, `infra/`, and the `.public-mirror-marker` sentinel file. No note content. Grep for any content that should not be there.
 3. **Stale references**: `grep -rn '<old-name>' --include='*.md' --include='*.json' --include='*.css' --include='*.py' --include='*.lua' --include='*.sh' --include='pre-commit' --include='post-commit' --include='pinentry-null' . --exclude-dir=.git` must return no hits outside `.obsidian/workspace-mobile.json` (which Obsidian regenerates) and `CHANGELOG.md` (which preserves historical references). Docs and config alone are not enough; code comments and extensionless scripts carry the same drift risk — a previous `<leader>oS` rename left stale refs in `.githooks/pre-commit` and `.githooks/lib/normalize.py` that the docs-only grep missed.
 4. **obsidian.nvim config**: if directory paths changed, verify `nvim-vault/.config/nvim/lua/plugins/obsidian.lua` has the correct `notes_subdir`, `templates.folder`, `attachments.folder`, and `templates.customizations` values.
 5. **Doc cross-references and overviews**: cross-document references (section numbers, file names, headings) must resolve. `README.md` Documentation table must list all public docs. `AGENTS.md` Key Files descriptions must still match each doc's actual scope. Run `grep -rn 'step [0-9]\|§[0-9]' --include='*.md' .` and confirm every referenced section exists.
@@ -236,7 +236,7 @@ Items deliberately not done in past passes. Each carries a short rationale so fu
 
 ### Technical deferrals (low current value)
 
-- **Data-driven vault path in `infra/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/vault`. Forks using a different path edit the copied unit per `SETUP-BACKUP.md` §5. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/vault` convention.
+- **Data-driven vault path in `infra/vault-autocommit.service`**. The unit hardcodes `WorkingDirectory=%h/Projects/vault`. Forks using a different path edit the copied unit per `SETUP-BACKUP.md` §5. A systemd drop-in override (`~/.config/systemd/user/vault-autocommit.service.d/override.conf`) or `EnvironmentFile` would remove the manual edit but adds a config file for a single value. Revisit if a fork deviates from the `~/Projects/vault` convention.
 - **Defensive reload after `:Obsidian rename` in `<leader>o<space>`**. The Lua orchestrator reads `vim.api.nvim_buf_get_name(0)` immediately after `:Obsidian rename` and assumes the buffer name reflects the new path. True in the current obsidian.nvim; a future upstream change to rename semantics would leave `normalize.py` running on a stale path. No defensive reload is implemented. Revisit if obsidian.nvim's rename contract changes.
 
 ## Changelog

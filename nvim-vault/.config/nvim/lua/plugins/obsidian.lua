@@ -7,7 +7,7 @@
 -- Required system packages: ripgrep, wl-clipboard (Wayland) or xclip (X11).
 -- On WSL, also install wsl-open for :Obsidian open.
 --
--- Set OBSIDIAN_VAULT to override the default vault path (~/vault).
+-- Set OBSIDIAN_VAULT to override the default vault path (~/Projects/vault).
 -- render-markdown.lua in this directory is a recommended companion for visual
 -- markdown rendering; it is not required by obsidian.nvim.
 --
@@ -94,7 +94,7 @@ local function slugify(title)
   return title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):gsub("%-+", "-"):gsub("^%-", ""):gsub("%-$", ""):lower()
 end
 
-local vault_path = vim.env.OBSIDIAN_VAULT or (vim.env.HOME .. "/vault")
+local vault_path = vim.env.OBSIDIAN_VAULT or (vim.env.HOME .. "/Projects/vault")
 
 -- Invoke .githooks/lib/normalize.py on a file. mode is "--apply" or
 -- "--fill". If target_path is nil, the current buffer is used (saving

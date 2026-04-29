@@ -15,18 +15,19 @@ Later tiers, each building on this one:
 ## 1. Clone the template
 
 ```bash
-git clone https://github.com/peregrinus879/vault-template.git ~/vault
-cd ~/vault && rm -rf .git
+mkdir -p ~/Projects
+git clone https://github.com/peregrinus879/vault-template.git ~/Projects/vault
+cd ~/Projects/vault && rm -rf .git
 ```
 
-Choose a different path if you prefer; the default is `~/vault`. If you add Neovim later, set the `OBSIDIAN_VAULT` environment variable to match (see §6.3).
+Choose a different path if you prefer; the default is `~/Projects/vault`. If you add Neovim later, set the `OBSIDIAN_VAULT` environment variable to match (see §6.3).
 
 ## 2. Initialize version history (optional)
 
 Initialize a fresh git repo for local version history and to enable the pre-commit note normalizer:
 
 ```bash
-cd ~/vault
+cd ~/Projects/vault
 git init -b main
 git config core.hooksPath .githooks
 git add -A && git commit -m "init: vault from template"
@@ -122,7 +123,7 @@ The `nvim-vault/` directory is a stow-compatible overlay containing obsidian.nvi
 **Option A: Stow** (recommended if you manage dotfiles with stow):
 
 ```bash
-cd ~/vault && stow -v -t ~ nvim-vault
+cd ~/Projects/vault && stow -v -t ~ nvim-vault
 ```
 
 This creates symlinks in `~/.config/nvim/lua/plugins/` pointing to the vault's overlay files.
@@ -130,12 +131,12 @@ This creates symlinks in `~/.config/nvim/lua/plugins/` pointing to the vault's o
 **Option B: Copy**:
 
 ```bash
-cp ~/vault/nvim-vault/.config/nvim/lua/plugins/* ~/.config/nvim/lua/plugins/
+cp ~/Projects/vault/nvim-vault/.config/nvim/lua/plugins/* ~/.config/nvim/lua/plugins/
 ```
 
 ### 6.3 Vault path
 
-The overlay defaults to `~/vault`. If you cloned elsewhere, set the `OBSIDIAN_VAULT` environment variable:
+The overlay defaults to `~/Projects/vault`. If you cloned elsewhere, set the `OBSIDIAN_VAULT` environment variable:
 
 ```bash
 # In ~/.bashrc, ~/.zshrc, or equivalent
@@ -145,7 +146,7 @@ export OBSIDIAN_VAULT="$HOME/notes"
 ### 6.4 Verify
 
 ```bash
-nvim ~/vault/0-fleeting/test.md
+nvim ~/Projects/vault/0-fleeting/test.md
 ```
 
 Run `:checkhealth obsidian` inside Neovim. All checks should pass.

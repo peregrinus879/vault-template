@@ -3,8 +3,8 @@ Description=Auto-commit vault changes to git
 
 [Service]
 Type=oneshot
-# %h expands to $HOME. Change "vault" if your vault lives elsewhere.
-WorkingDirectory=%h/vault
+# %h expands to $HOME. Change "Projects/vault" if your vault lives elsewhere.
+WorkingDirectory=%h/Projects/vault
 ExecStart=/bin/bash -c '\
   git add -A && \
   if ! git diff --cached --quiet; then \

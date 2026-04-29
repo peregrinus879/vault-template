@@ -17,11 +17,11 @@ Add real-time file sync across Linux desktops, Windows (native + WSL), and Andro
 - **Arch Linux** on the remote hub (headless, always-on).
 - **[Tailscale](https://tailscale.com/)** installed and connected on all devices (hub and clients).
 
-This guide standardizes on `~/vault` for the hub. If you use a different location, adjust the paths accordingly.
+This guide standardizes on `~/Projects/vault` for the hub and desktop clients. If you use a different location, adjust the paths accordingly. Mobile can keep its platform-local storage path.
 
 ## 1. Hub Syncthing
 
-The remote hub runs Syncthing as a system service (always-on, survives reboot). The vault directory (`~/vault`) is created by Syncthing during the first device pairing.
+The remote hub runs Syncthing as a system service (always-on, survives reboot). The vault directory (`~/Projects/vault`) is created by Syncthing during the first device pairing.
 
 ```bash
 sudo pacman -S syncthing
@@ -31,8 +31,11 @@ sudo systemctl enable --now syncthing@$USER.service
 Add the vault folder and harden for Tailscale-only sync:
 
 ```bash
+# Create the parent directory
+mkdir -p ~/Projects
+
 # Add vault folder
-syncthing cli config folders add --id vault --path ~/vault --label vault
+syncthing cli config folders add --id vault --path ~/Projects/vault --label vault
 
 # Restrict listener to Tailscale IP only
 syncthing cli config options raw-listen-addresses 0 set tcp://<tailscale-ip>:22000
@@ -107,11 +110,11 @@ Properties of that location (already captured in `AGENTS.md` Propagation Model):
 
 ```bash
 # List available versions for a specific path
-ls '~/vault/.stversions/0-fleeting/'
+ls '~/Projects/vault/.stversions/0-fleeting/'
 
 # Restore the one you want
-cp '~/vault/.stversions/0-fleeting/Notes~20260422-001234.md' \
-   '~/vault/0-fleeting/Notes.md'
+cp '~/Projects/vault/.stversions/0-fleeting/Notes~20260422-001234.md' \
+   '~/Projects/vault/0-fleeting/Notes.md'
 ```
 
 Syncthing treats the restored file as a normal working-tree change and propagates it to all connected devices on the next sync tick.
@@ -177,7 +180,7 @@ Access the web UI at `http://127.0.0.1:8384` (`localhost` may not work on Window
 Pair with the hub:
 
 1. Click **Add Remote Device**, paste the hub's device ID, set address to `tcp://<hub-tailscale-ip>:22000`
-2. Accept the **vault** folder share when it appears, set path to `C:\Users\<user>\vault`
+2. Accept the **vault** folder share when it appears, set path to `C:\Users\<user>\Projects\vault`
 3. Harden for Tailscale-only sync via **Actions** > **Settings** > **Connections**:
    - Set **Sync Protocol Listen Addresses** to `tcp://<tailscale-ip>:22000`
    - Uncheck **NAT Traversal**
@@ -191,7 +194,8 @@ Wait for initial sync to complete.
 **WSL access**: symlink the Windows-synced vault into WSL:
 
 ```bash
-ln -s /mnt/c/Users/<user>/vault ~/vault
+mkdir -p ~/Projects
+ln -s /mnt/c/Users/<user>/Projects/vault ~/Projects/vault
 ```
 
 **Neovim in WSL** *(skip if not applicable)*: install Neovim and apply the vault overlay inside WSL:
@@ -200,7 +204,7 @@ ln -s /mnt/c/Users/<user>/vault ~/vault
 sudo pacman -S --needed neovim ripgrep git stow
 git clone https://github.com/LazyVim/starter ~/.config/nvim
 rm -rf ~/.config/nvim/.git
-cd ~/vault && stow -v -t ~ nvim-vault
+cd ~/Projects/vault && stow -v -t ~ nvim-vault
 ```
 
 Do not run git auto-commit from WSL. Tier 2 puts git operations exclusively on the remote hub.
@@ -211,7 +215,7 @@ Do not run git auto-commit from WSL. Tier 2 puts git operations exclusively on t
 2. Install [Tailscale](https://play.google.com/store/apps/details?id=com.tailscale.ipn) and sign in.
 3. Install [Syncthing-Fork](https://github.com/Catfriend1/syncthing-android) via [Obtainium](https://github.com/ImranR98/Obtainium) (recommended) or [Play Store](https://play.google.com/store/apps/details?id=com.github.catfriend1.syncthingandroid).
 4. Add the hub as a remote device (paste device ID, set address to `tcp://<hub-tailscale-ip>:22000`).
-5. Accept the vault folder share; set path to device storage (e.g., `[int]/Obsidian/vault`).
+5. Accept the vault folder share; set path to device storage (e.g., `[int]/Obsidian/vault`). Mobile does not need to use the desktop `Projects` convention.
 6. Wait for initial sync to complete.
 7. Open Obsidian, choose **Open folder as vault**, select the Syncthing folder.
 

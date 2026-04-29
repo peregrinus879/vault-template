@@ -40,11 +40,12 @@ The apply rule branches three ways on the note's state: no frontmatter → prepe
 ## Quick start
 
 ```bash
-git clone https://github.com/peregrinus879/vault-template.git ~/vault
-cd ~/vault && rm -rf .git
+mkdir -p ~/Projects
+git clone https://github.com/peregrinus879/vault-template.git ~/Projects/vault
+cd ~/Projects/vault && rm -rf .git
 ```
 
-Open Obsidian, choose **Open folder as vault**, select `~/vault`. Press `Ctrl+N`. Write a thought. See [SETUP-LOCAL.md](SETUP-LOCAL.md) for the full local setup (version history, Neovim). For multi-device sync, encrypted backup, and public template mirroring, see [SETUP-SYNC.md](SETUP-SYNC.md) and the tiers that build on it.
+Open Obsidian, choose **Open folder as vault**, select `~/Projects/vault`. Press `Ctrl+N`. Write a thought. See [SETUP-LOCAL.md](SETUP-LOCAL.md) for the full local setup (version history, Neovim). For multi-device sync, encrypted backup, and public template mirroring, see [SETUP-SYNC.md](SETUP-SYNC.md) and the tiers that build on it.
 
 ## Structure
 

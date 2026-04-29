@@ -383,7 +383,7 @@ def ensure_h1(body: list[str], title: str) -> list[str]:
 def derive_folder_type(path: str, vault_root: str) -> str:
     """Extract the type suffix from the top-level content folder name.
 
-    Example: vault_root=/home/user/vault, path=.../2-permanent/foo.md
+    Example: vault_root=/home/user/Projects/vault, path=.../2-permanent/foo.md
     -> 'permanent'. Returns empty string if the path is not under a
     content folder matching the N-name pattern.
     """

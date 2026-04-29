@@ -46,7 +46,7 @@ git config --global user.email "your-email@example.com"
 Initialize git in the vault on the hub (if not already):
 
 ```bash
-cd ~/vault
+cd ~/Projects/vault
 git init -b main
 git config core.hooksPath .githooks
 git add -A && git commit -m "init: vault on hub"
@@ -67,7 +67,7 @@ Adding a new content directory requires adding a rule to `.gitattributes`. The p
 
 ```bash
 sudo pacman -S git-crypt
-cd ~/vault && git-crypt init
+cd ~/Projects/vault && git-crypt init
 git-crypt export-key ~/vault-git-crypt.key
 ```
 
@@ -126,7 +126,7 @@ Configure GPG for unattended operation. gpg-agent invokes pinentry even for no-p
 Install from the `infra/` directory:
 
 ```bash
-cp ~/vault/infra/pinentry-null ~/.local/bin/
+cp ~/Projects/vault/infra/pinentry-null ~/.local/bin/
 chmod +x ~/.local/bin/pinentry-null
 ```
 
@@ -178,7 +178,7 @@ The GitHub backup repo name may differ from the local vault directory name (e.g.
 gcrypt supports both per-remote and repo-wide config keys. Participants and signing key can be set as `remote.<name>.gcrypt-participants` / `remote.<name>.gcrypt-signingkey`, or repo-wide as `gcrypt.participants` and `user.signingkey`. `gcrypt.gpg-args` is documented as a repo-level or global value; a per-remote variant is not documented upstream, so leave it set at repo level. The commands below use repo-local values; this repo has a single gcrypt remote so either layout works.
 
 ```bash
-cd ~/vault
+cd ~/Projects/vault
 git remote add origin "gcrypt::git@github.com:<owner>/<repo>.git#main"
 git config gcrypt.participants "<GPG-FINGERPRINT>"
 git config user.signingkey "<GPG-FINGERPRINT>"
@@ -210,7 +210,7 @@ Generate a dedicated SSH key (no passphrase) for unattended push:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/vault-deploy-key -N "" -C "vault-autocommit"
-cd ~/vault && git config core.sshCommand "ssh -i ~/.ssh/vault-deploy-key -o IdentitiesOnly=yes"
+cd ~/Projects/vault && git config core.sshCommand "ssh -i ~/.ssh/vault-deploy-key -o IdentitiesOnly=yes"
 gh repo deploy-key add ~/.ssh/vault-deploy-key.pub --repo <owner>/<repo> --title "vault-autocommit" --allow-write
 ```
 
@@ -219,7 +219,7 @@ gh repo deploy-key add ~/.ssh/vault-deploy-key.pub --repo <owner>/<repo> --title
 Verify push works without passphrase prompt:
 
 ```bash
-cd ~/vault && git push --dry-run origin main
+cd ~/Projects/vault && git push --dry-run origin main
 ```
 
 ## 5. Auto-commit timer
@@ -234,8 +234,8 @@ Install the systemd units from `infra/`:
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cp ~/vault/infra/vault-autocommit.service ~/.config/systemd/user/
-cp ~/vault/infra/vault-autocommit.timer ~/.config/systemd/user/
+cp ~/Projects/vault/infra/vault-autocommit.service ~/.config/systemd/user/
+cp ~/Projects/vault/infra/vault-autocommit.timer ~/.config/systemd/user/
 ```
 
 Enable the timer:
@@ -270,20 +270,21 @@ Install `pinentry-null` and configure `gpg-agent.conf` as described in §3.3.
 ### 6.3 Clone from encrypted remote
 
 ```bash
+mkdir -p ~/Projects
 git clone -c gcrypt.gpg-args="--no-tty" \
-  "gcrypt::git@github.com:<owner>/<repo>.git#main" ~/vault
+  "gcrypt::git@github.com:<owner>/<repo>.git#main" ~/Projects/vault
 ```
 
 ### 6.4 Unlock git-crypt
 
 ```bash
-cd ~/vault && git-crypt unlock <path-to-git-crypt-key>
+cd ~/Projects/vault && git-crypt unlock <path-to-git-crypt-key>
 ```
 
 ### 6.5 Configure gcrypt for future pushes
 
 ```bash
-cd ~/vault
+cd ~/Projects/vault
 git config gcrypt.participants "<GPG-FINGERPRINT>"
 git config user.signingkey "<GPG-FINGERPRINT>"
 git config gcrypt.gpg-args "--no-tty"
@@ -294,7 +295,7 @@ Without the GPG key, the clone fails. Without the git-crypt key, file contents a
 ## Verify
 
 - Auto-commit timer is active: `systemctl --user list-timers vault-autocommit.timer`
-- Deploy key push works: `cd ~/vault && git push --dry-run origin main`
+- Deploy key push works: `cd ~/Projects/vault && git push --dry-run origin main`
 - Encryption: the GitHub repo shows only opaque encrypted data (no readable filenames or content)
 
 ## Next steps

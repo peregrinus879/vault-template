@@ -23,7 +23,7 @@ VAULT="$(git rev-parse --show-toplevel)"
 
 # PUBLIC can be overridden per-repo via `git config vault.publicPath`;
 # default is the canonical location on the remote hub.
-PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/projects/repos/templates/vault-template")"
+PUBLIC="$(git -C "$VAULT" config vault.publicPath 2>/dev/null || echo "$HOME/Projects/repos/templates/vault-template")"
 
 # Bail if the public repo isn't cloned on this machine.
 [ -d "$PUBLIC/.git" ] || exit 0
