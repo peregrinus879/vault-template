@@ -64,6 +64,8 @@ rsync -a --delete \
   --include='/infra/**' \
   --include='/5-templates/' \
   --include='/5-templates/**' \
+  --exclude='__pycache__/' \
+  --exclude='*.pyc' \
   --include='/.githooks/' \
   --include='/.githooks/**' \
   \
@@ -134,6 +136,14 @@ done
 # what is included). Explicit cleanup here keeps the public mirror
 # theme-free on every sync.
 rm -rf "$PUBLIC/.obsidian/themes"
+
+# Python bytecode is generated locally and ignored by git/Syncthing.
+# Keep the public mirror aligned with that rule even though .githooks/**
+# is otherwise allowlisted.
+if [ -d "$PUBLIC/.githooks" ]; then
+  find "$PUBLIC/.githooks" -type d -name __pycache__ -prune -exec rm -rf {} +
+  find "$PUBLIC/.githooks" -type f -name '*.pyc' -delete
+fi
 
 cd "$PUBLIC" || exit 1
 git add -A
